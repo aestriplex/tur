@@ -47,7 +47,7 @@ ret:
 	return repo;
 }
 
-static return_code_t get_repos_list(settings_t settings, repository_list_t *list)
+return_code_t get_repos_list(settings_t settings, repository_list_t *list)
 {
 	size_t len = 0;
 	ssize_t read;

@@ -1,6 +1,7 @@
 #ifndef __REPO_H__
 #define __REPO_H__
 
+#include "codes.h"
 #include "settings.h"
 #include "str.h"
 
@@ -30,5 +31,6 @@ typedef struct _commit_history {
 } commit_history_t;
 
 commit_history_t *get_commit_history(repository_t repo, settings_t settings);
+return_code_t get_repos_list(settings_t settings, repository_list_t *list);
 
 #endif /* __REPO_H__ */

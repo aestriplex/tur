@@ -1,4 +1,5 @@
 #include "opts_args.h"
+#include "repo.h"
 #include "settings.h"
 #include "str.h"
 
@@ -30,6 +31,8 @@ void print_help(void)
 }
 
 int main(int argc, char *argv[]) {
+	repository_list_t *head = NULL;
+	return_code_t ret;
 	int ch, option_index = 0;
 
 	if (argc == 1) {
@@ -65,7 +68,12 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	head = malloc(sizeof(repository_list_t));
+	ret = get_repos_list(settings, head);
 
+	if (ret != OK) { return ret; }
+
+	
 	
 	return 0;
 }
