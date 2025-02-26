@@ -1,4 +1,4 @@
-/* settings.c
+/* test.h
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
@@ -19,20 +19,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "settings.h"
-#include "str.h"
+#ifndef __TEST_H__
+#define __TEST_H__
 
-#include <stdlib.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
-static str_t default_repos_path;
+#define RESET "\033[0m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define TICK "\u2713"
+#define CROSS "\u2A09"
 
-settings_t default_settings(void)
-{
-	return (settings_t) {
-		.output = STDOUT,
-		.format_cache = false,
-		.verbose = false,
-		.repos_path = default_repos_path,
-		.email = EMPTY_STR
-	};
-}
+/* assertions */
+void assert_true(bool condition, const char *message);
+
+/* Performances */
+typedef struct timespec tick_t;
+uint64_t get_nanos(void);
+double get_time_diff(uint64_t start);
+
+#endif /* __TEST_H__ */

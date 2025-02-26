@@ -21,6 +21,7 @@
 
 #include "str.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -39,4 +40,14 @@ str_t str_init_unbounded(const char *str)
 		.val = str,
 		.len = strnlen(str, UINT16_MAX)
 	};
+}
+
+bool str_equals(str_t str1, str_t str2) {
+	if (str1.len != str2.len) { return false; }
+	return strncmp(str1.val, str2.val, str1.len) == 0;
+}
+
+bool str_arr_equals(str_t str, const char *expected) {
+	if (str.len != strlen(expected)) return false;
+	return strncmp(str.val, expected, str.len) == 0;
 }

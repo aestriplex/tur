@@ -24,8 +24,8 @@
 #include "settings.h"
 #include "str.h"
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <git2.h>
 
@@ -37,33 +37,42 @@ static void print_commit_info(const git_commit *commit) {
 	printf("Message: %s\n\n", git_commit_message(commit));
 }
 
-static repository_t parse_repository(const char *line, ssize_t len)
+repository_t parse_repository(const char *line, ssize_t len)
 {
 	repository_t repo = { 0 };
-	
 	const char *bracket_open = strchr(line, '[');
+	
 	if (bracket_open == NULL) {
 		repo.path = str_init(line, len);
-		repo.url = str_init_unbounded(0);
-		goto ret;
-	}
-	
-	const char *bracket_close = strchr(bracket_open, ']');
-	if (bracket_close == NULL) {
-		size_t path_len = bracket_open - line;
-		repo.path = str_init(line, path_len);
-		
-		size_t url_len = len - path_len - 1;
-		repo.url = str_init(bracket_open + 1, url_len);
+		repo.url = EMPTY_STR;
 		goto ret;
 	}
 	
 	size_t path_len = bracket_open - line;
-	size_t url_len = bracket_close - bracket_open - 1;
-	
 	repo.path = str_init(line, path_len);
-	repo.url = str_init(bracket_open + 1, url_len);
-
+	
+	int nesting = 1;
+	const char *bracket_close = NULL;
+	for (const char *p = bracket_open + 1; p < line + len; p++) {
+		if (*p == '[') {
+			nesting++;
+		} else if (*p == ']') {
+			nesting--;
+			if (nesting == 0) {
+				bracket_close = p;
+				break;
+			}
+		}
+	}
+	
+	if (bracket_close == NULL) {
+		size_t url_len = len - path_len - 1;
+		repo.url = str_init(bracket_open + 1, url_len);
+	} else {
+		size_t url_len = bracket_close - bracket_open - 1;
+		repo.url = str_init(bracket_open + 1, url_len);
+	}
+	
 ret:
 	return repo;
 }

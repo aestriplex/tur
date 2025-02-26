@@ -51,6 +51,7 @@ typedef struct _commit_history {
 	struct _commit_history *parent;
 } commit_history_t;
 
+repository_t parse_repository(const char *line, ssize_t len);
 commit_history_t *get_commit_history(repository_t repo, settings_t settings);
 return_code_t get_repos_list(settings_t settings, repository_list_t *list);
 

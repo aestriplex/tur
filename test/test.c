@@ -1,4 +1,4 @@
-/* settings.c
+/* test.c
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
@@ -19,20 +19,32 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "settings.h"
-#include "str.h"
-
+#include "test.h"
 #include <stdlib.h>
+#include <time.h>
+#ifdef __linux__
+#include <linux/time.h>
+#endif
 
-static str_t default_repos_path;
-
-settings_t default_settings(void)
+void assert_true(bool condition, const char *label)
 {
-	return (settings_t) {
-		.output = STDOUT,
-		.format_cache = false,
-		.verbose = false,
-		.repos_path = default_repos_path,
-		.email = EMPTY_STR
-	};
+	if (condition) { 
+		printf(GREEN "PASSED (" TICK "): %s" RESET "\n", label); 
+		return;
+	}
+
+	printf(RED "FAILED (" CROSS "): %s\n" RESET, label);
+	exit(1);
+}
+
+uint64_t get_nanos(void)
+{
+	tick_t start;
+	clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+	return (uint64_t) start.tv_sec*1e9 + (uint64_t) start.tv_nsec;
+}
+
+double get_time_diff(uint64_t prev_tick)
+{
+	return (get_nanos() - prev_tick)*1e-9;
 }

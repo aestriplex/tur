@@ -22,14 +22,20 @@
 #ifndef __STR_H__
 #define __STR_H__
 
+#include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 typedef struct {
 	const char*val;
 	uint16_t len;
 } str_t;
 
+#define EMPTY_STR (str_t) { .val="", .len=0 }
+
 str_t str_init(const char *str, uint16_t len);
 str_t str_init_unbounded(const char *str);
+bool str_equals(str_t str1, str_t str2);
+bool str_arr_equals(str_t str, const char *expected);
 
 #endif /* __STR_H__ */ 

@@ -56,3 +56,6 @@ src/tur
 
 # Editor
 .vscode
+
+# tests
+test/test_parse_repository
