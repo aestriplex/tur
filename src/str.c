@@ -23,22 +23,22 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 str_t str_init(const char *str, uint16_t len)
 {
-	return (str_t) {
-		.val = str,
-		.len = len
-	};
-}
+	char *copy = malloc(len + 1);
+	if (!copy) {
+		fprintf(stderr, "str_init: memory allocation failed\n");
+		return EMPTY_STR;
+	}
+	strncpy(copy, str, len);
+	copy[len] = '\0';
 
-/* this should be used only if it's guaranteed that str is NULL terminating */
-str_t str_init_unbounded(const char *str)
-{
 	return (str_t) {
-		.val = str,
-		.len = strnlen(str, UINT16_MAX)
+		.val = copy,
+		.len = len
 	};
 }
 

@@ -31,15 +31,18 @@
 #define AUTHORED 0x00
 #define CO_AUTHORED 0x02
 
+#define DEFAULT_N_REPOSITORY 10
+
 typedef struct {
 	str_t url;
 	str_t path;
 } repository_t;
 
-typedef struct _repository_list {
-	repository_t repository;
-	struct _repository_list *next;
-} repository_list_t;
+typedef struct {
+	repository_t *repositories;
+	size_t count;
+	size_t capacity;
+} repository_array_t;
 
 typedef struct {
 	char *hash;
@@ -53,6 +56,6 @@ typedef struct _commit_history {
 
 repository_t parse_repository(const char *line, ssize_t len);
 commit_history_t *get_commit_history(repository_t repo, settings_t settings);
-return_code_t get_repos_list(settings_t settings, repository_list_t *list);
+return_code_t get_repos_array(settings_t settings, repository_array_t *repos);
 
 #endif /* __REPO_H__ */

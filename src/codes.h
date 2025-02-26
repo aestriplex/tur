@@ -25,6 +25,7 @@
 typedef enum {
 	OK = 0x00,
 	INVALID_REPOS_LIST_PATH = 0x01,
+	ARRAY_RESIZE_ALLOCATION_ERROR = 0x02
 } return_code_t;
 
 #endif /* __CODES_H__ */

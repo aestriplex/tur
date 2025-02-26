@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "str.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,7 +66,7 @@ repository_t parse_repository(const char *line, ssize_t len)
 		}
 	}
 	
-	if (bracket_close == NULL) {
+	if (!bracket_close) {
 		size_t url_len = len - path_len - 1;
 		repo.url = str_init(bracket_open + 1, url_len);
 	} else {
@@ -77,25 +78,50 @@ ret:
 	return repo;
 }
 
-return_code_t get_repos_list(settings_t settings, repository_list_t *list)
-{
+return_code_t get_repos_array(settings_t settings, repository_array_t *repos) {
 	size_t len = 0;
 	ssize_t read;
-	char * line = NULL;
-	repository_list_t *current = list;
-	FILE *repos_list = fopen(settings.repos_path.val, "r");
+	char *line = NULL;
+	FILE *repos_list;
 
+	repos_list = fopen(settings.repos_path.val, "r");
 	if (!repos_list) { return INVALID_REPOS_LIST_PATH; }
 
-	while ((read = getline(&line, &len, repos_list)) != -1) {
-		current->repository = parse_repository(line, read);
-		current->next = malloc(sizeof(repository_list_t));
-		if (!current->next) {
-			fprintf(stderr, "Cannot allocate memory for repository `%s`\n", line);
-			continue;
-		}
-		current = current->next;
+	repos->repositories = malloc(DEFAULT_N_REPOSITORY * sizeof(repository_t));
+	if (!repos->repositories) {
+		fclose(repos_list);
+		return ARRAY_RESIZE_ALLOCATION_ERROR;
 	}
+	repos->count = 0;
+	repos->capacity = DEFAULT_N_REPOSITORY;
+
+	while ((read = getline(&line, &len, repos_list)) != -1) {
+		char *trimmed = line;
+		while (*trimmed && isspace((unsigned char)*trimmed)) { trimmed++; }
+
+		char *end = trimmed + strlen(trimmed) - 1;
+		while (end > trimmed && isspace((unsigned char)*end)) {
+			*end = '\0';
+			end--;
+		}
+
+		if (*trimmed == '\0') { continue; } 
+
+		if (repos->count >= repos->capacity) {
+			size_t new_capacity = repos->capacity * 2;
+			repository_t *new_repos = realloc(repos->repositories, new_capacity * sizeof(repository_t));
+			if (!new_repos) {
+				fprintf(stderr, "get_repos_array: memory allocation failed while expanding repository array\n");
+				break;
+			}
+			repos->repositories = new_repos;
+			repos->capacity = new_capacity;
+		}
+		repos->repositories[repos->count] = parse_repository(line, read);
+		repos->count++;
+	}
+
+	free(line);
 	fclose(repos_list);
 
 	return OK;
@@ -111,12 +137,12 @@ commit_history_t *get_commit_history(repository_t repo, settings_t settings) {
 	git_libgit2_init();
 
 	if (git_repository_open(&git_repo, repo.path.val) != 0) {
-		fprintf(stderr, "Failed to open repository\n");
+		fprintf(stderr, "Failed to open repository `%s`\n", repo.path.val);
 		goto ret;
 	}
 
 	if (git_revwalk_new(&walker, git_repo) != 0) {
-		fprintf(stderr, "Failed to create revwalk\n");
+		fprintf(stderr, "An error occurred while reading from `%s`\n", repo.path.val);
 		goto cleanup;
 	}
 

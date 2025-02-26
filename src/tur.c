@@ -27,6 +27,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <getopt.h>
 
 static settings_t settings;
@@ -52,7 +53,7 @@ void print_help(void)
 }
 
 int main(int argc, char *argv[]) {
-	repository_list_t *head = NULL;
+	repository_array_t repos;
 	return_code_t ret;
 	int ch, option_index = 0;
 
@@ -75,13 +76,13 @@ int main(int argc, char *argv[]) {
 			settings.format_cache = true;
 			break;
 		case 'e':
-			settings.email = str_init_unbounded(optarg);
+			settings.email = str_init(optarg, (uint16_t) strlen(optarg));
 			break;
 		case 'o':
 			settings.output = parse_output_file_ext(optarg);
 			break;
 		case 'r':
-			settings.repos_path = str_init_unbounded(optarg);
+			settings.repos_path = str_init(optarg, (uint16_t) strlen(optarg));
 			break;
 		default:
 			print_help();
@@ -89,12 +90,12 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	head = malloc(sizeof(repository_list_t));
-	ret = get_repos_list(settings, head);
+	ret = get_repos_array(settings, &repos);
 
 	if (ret != OK) { return ret; }
 
-	
+	printf("#Repos: %zu\n", repos.count);
+	printf("Repo 1: %s\n", repos.repositories[0].path.val);
 	
 	return 0;
 }
