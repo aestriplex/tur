@@ -2,9 +2,9 @@
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
- * This file is part of tur
+ * This file is part of TUR.
  *
- * tur is free software; you can redistribute it and/or modify
+ * TUR is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
@@ -79,31 +79,34 @@ static bool is_co_author(const git_commit *commit, str_t email)
 	return false;
 }
 
-commit_history_t *get_commit_history(repository_t repo, settings_t settings)
+work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 {
-	commit_history_t *history = NULL, *current = NULL;
 	git_repository *git_repo = NULL;
 	git_revwalk *walker = NULL;
 	git_commit *raw_commit = NULL;
+	work_history_t *history = NULL;
+	commit_list_t *current = NULL;
+	size_t n_authored = 0, n_co_authored = 0;
 	git_oid oid;
 
 	git_libgit2_init();
 
-	if (git_repository_open(&git_repo, repo.path.val) != 0) {
-		fprintf(stderr, "Failed to open repository `%s`\n", repo.path.val);
+	if (git_repository_open(&git_repo, repo_path.val) != 0) {
+		fprintf(stderr, "Failed to open repository `%s`\n", repo_path.val);
 		goto ret;
 	}
 
 	if (git_revwalk_new(&walker, git_repo) != 0) {
-		fprintf(stderr, "An error occurred while reading from `%s`\n", repo.path.val);
+		fprintf(stderr, "An error occurred while reading from `%s`\n", repo_path.val);
 		goto cleanup;
 	}
 
 	git_revwalk_push_head(walker);
 	git_revwalk_sorting(walker, GIT_SORT_TIME);
 
-	history = malloc(sizeof(commit_history_t));
-	current = history;
+	history = malloc(sizeof(work_history_t));
+	history->list = malloc(sizeof(commit_list_t));
+	current = history->list;
 
 	while (git_revwalk_next(&oid, walker) == 0) {
 
@@ -117,12 +120,14 @@ commit_history_t *get_commit_history(repository_t repo, settings_t settings)
 
 		if (is_author(author, settings.email)) {
 			res = AUTHORED;
+			n_authored++;
 		} else if (is_co_author(raw_commit, settings.email)) {
 			res = CO_AUTHORED;
+			n_co_authored++;
 		} else {
 			goto free_commit;
 		}
-		current->parent = malloc(sizeof(commit_history_t));
+		current->parent = malloc(sizeof(commit_list_t));
 		current = current->parent;
 		current->commit = (commit_t) {
 			.hash = str_init(hash, GIT_HASH_LEN),
@@ -132,7 +137,7 @@ commit_history_t *get_commit_history(repository_t repo, settings_t settings)
 		current->parent = NULL;
 		
 
-free_commit:
+	free_commit:
 		git_commit_free(raw_commit);
 	}
 
@@ -140,6 +145,10 @@ free_commit:
 	git_libgit2_shutdown();
 
 	current->parent = NULL;
+	history->n_authored = n_authored;
+	history->n_co_authored = n_co_authored;
+	history->authored = NULL;
+	history->co_authored = NULL;
 
 cleanup:
 	git_repository_free(git_repo);

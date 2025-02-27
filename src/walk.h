@@ -2,9 +2,9 @@
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
- * This file is part of tur
+ * This file is part of TUR.
  *
- * tur is free software; you can redistribute it and/or modify
+ * TUR is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
@@ -21,6 +21,8 @@
 
 #ifndef __WALK_H__
 #define __WALK_H__
+
+#include "commit.h"
 
 return_code_t walk_through_repos(const repository_array_t *repos, settings_t settings);
 

@@ -2,9 +2,9 @@
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
- * This file is part of tur
+ * This file is part of TUR.
  *
- * tur is free software; you can redistribute it and/or modify
+ * TUR is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
@@ -25,16 +25,48 @@
 #include "settings.h"
 #include "walk.h"
 
-return_code_t walk_through_repos(const repository_array_t *repos, settings_t settings)
+#include <stdlib.h>
+
+static commit_refs_t *init_commit_refs(size_t n_commits)
 {
-	repository_t repo;
-	commit_history_t *history;
-	for (size_t i = 0; i < repos->count; i++) {
-		repo = repos->repositories[i];
-		history = get_commit_history(repo, settings);
+	commit_refs_t *c_r = malloc(sizeof(commit_refs_t));
+	c_r->commits = malloc(n_commits * sizeof(commit_t *));
+	c_r->n_commits = n_commits;
+	return c_r;
+}
+
+static commit_refs_t *get_commit_refs(commit_list_t *commits, size_t commit_with_resp, responsability_t resp)
+{
+	commit_refs_t *commits_with_resp = init_commit_refs(commit_with_resp);
+	commit_list_t *current = commits;
+	size_t i = 0;
+	while (current) {
+		if (current->commit.responsability == resp) {
+			commits_with_resp->commits[i] = current;
+			i++;
+		}
+		current = current->parent;
 	}
 
-	printf("%p\n", history);
+	return commits_with_resp;
+}
+
+void select_output_printer()
+{
+	
+}
+
+return_code_t walk_through_repos(const repository_array_t *repos, settings_t settings)
+{
+	repository_t *repo;
+
+	for (size_t i = 0; i < repos->count; i++) {
+		repo = repos->repositories + i;
+		repo->history = get_commit_history(repo->path, settings);
+		repo->history->authored = get_commit_refs(repo->history->list, repo->history->n_authored, AUTHORED);
+		repo->history->co_authored = get_commit_refs(repo->history->list, repo->history->n_co_authored, CO_AUTHORED);
+		printf("Repository: %s\nAuthored: %d\nCo-authored: %d\n\n", repo->name, repo->history->authored->n_commits, repo->history->co_authored->n_commits);
+	}
 
 	return OK;
 }

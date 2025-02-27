@@ -2,9 +2,9 @@
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
- * This file is part of tur
+ * This file is part of TUR.
  *
- * tur is free software; you can redistribute it and/or modify
+ * TUR is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
@@ -37,20 +37,29 @@ static str_t get_repo_name(str_t repo_path)
 	return str_init(repo_name, (uint16_t) strlen(repo_name));
 }
 
+repository_t init_repo(str_t path, str_t url)
+{
+	return (repository_t) {
+		.path = path,
+		.url = url,
+		.name = get_repo_name(path),
+		.history = NULL
+	};
+}
+
 repository_t parse_repository(const char *line, ssize_t len)
 {
 	repository_t repo = { 0 };
 	const char *bracket_open = strchr(line, '[');
 	
 	if (bracket_open == NULL) {
-		repo.path = str_init(line, len);
-		repo.url = EMPTY_STR;
-		goto ret;
+		return init_repo(str_init(line, len), EMPTY_STR);
 	}
 	
 	size_t path_len = bracket_open - line;
 	repo.path = str_init(line, path_len);
-	
+	repo.name = get_repo_name(repo.path);
+
 	int nesting = 1;
 	const char *bracket_close = NULL;
 	for (const char *p = bracket_open + 1; p < line + len; p++) {
@@ -73,7 +82,6 @@ repository_t parse_repository(const char *line, ssize_t len)
 		repo.url = str_init(bracket_open + 1, url_len);
 	}
 	
-ret:
 	return repo;
 }
 

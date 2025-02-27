@@ -2,9 +2,9 @@
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
- * This file is part of tur
+ * This file is part of TUR.
  *
- * tur is free software; you can redistribute it and/or modify
+ * TUR is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
@@ -22,7 +22,6 @@
 #ifndef __COMMIT_H__
 #define __COMMIT_H__
 
-#include "repo.h"
 #include "settings.h"
 #include "str.h"
 
@@ -43,11 +42,24 @@ typedef struct {
 	str_t date;
 } commit_t;
 
-typedef struct _commit_history {
+typedef struct _commit_list {
 	commit_t commit;
-	struct _commit_history *parent;
-} commit_history_t;
+	struct _commit_list *parent;
+} commit_list_t;
 
-commit_history_t *get_commit_history(repository_t repo, settings_t settings);
+typedef struct {
+	size_t n_commits;
+	commit_t **commits;
+} commit_refs_t;
+
+typedef struct {
+	commit_list_t *list;
+	size_t n_authored;
+	size_t n_co_authored;
+	commit_refs_t *authored;
+	commit_refs_t *co_authored;
+} work_history_t;
+
+work_history_t *get_commit_history(str_t repo_path, settings_t settings);
 
 #endif /* __COMMIT_H__ */
