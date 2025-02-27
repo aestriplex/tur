@@ -22,6 +22,7 @@
 #include "opts_args.h"
 #include "settings.h"
 
+#include <stdio.h>
 #include <string.h>
 
 tur_output_t parse_output_file_ext(const char *arg)
@@ -32,7 +33,6 @@ tur_output_t parse_output_file_ext(const char *arg)
 	
 	dot++;
 	
-	// Compare with known extensions and return corresponding enum value
 	if (strcasecmp(dot, "tex") == 0) {
 		return LATEX;
 	} else if (strcasecmp(dot, "html") == 0 || strcasecmp(dot, "htm") == 0) {
@@ -42,5 +42,6 @@ tur_output_t parse_output_file_ext(const char *arg)
 	}
 
 default_ret:
+	fprintf(stderr, "Invalid file extension: .%s; output redirected on stdout.\n", dot);
 	return STDOUT;
 }

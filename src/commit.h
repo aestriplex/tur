@@ -1,4 +1,4 @@
-/* repo.h
+/* commit.h
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
@@ -19,29 +19,35 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __REPO_H__
-#define __REPO_H__
+#ifndef __COMMIT_H__
+#define __COMMIT_H__
 
-#include "codes.h"
+#include "repo.h"
 #include "settings.h"
 #include "str.h"
 
 #include <stdint.h>
 
-#define DEFAULT_N_REPOSITORY 10
+#define COAUTHOR_PREFIX "Co-authored-by:"
+#define COAUTHOR_PREFIX_LEN 15
+#define GIT_HASH_LEN 40
+
+typedef enum {
+	AUTHORED,
+	CO_AUTHORED
+} responsability_t;
 
 typedef struct {
-	str_t url;
-	str_t path;
-} repository_t;
+	str_t hash;
+	responsability_t responsability;
+	str_t date;
+} commit_t;
 
-typedef struct {
-	repository_t *repositories;
-	size_t count;
-	size_t capacity;
-} repository_array_t;
+typedef struct _commit_history {
+	commit_t commit;
+	struct _commit_history *parent;
+} commit_history_t;
 
-repository_t parse_repository(const char *line, ssize_t len);
-return_code_t get_repos_array(settings_t settings, repository_array_t *repos);
+commit_history_t *get_commit_history(repository_t repo, settings_t settings);
 
-#endif /* __REPO_H__ */
+#endif /* __COMMIT_H__ */

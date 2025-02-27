@@ -29,7 +29,8 @@ static str_t default_repos_path;
 settings_t default_settings(void)
 {
 	return (settings_t) {
-		.output = STDOUT,
+		.output_mode = STDOUT,
+		.output = EMPTY_STR,
 		.format_cache = false,
 		.verbose = false,
 		.repos_path = default_repos_path,

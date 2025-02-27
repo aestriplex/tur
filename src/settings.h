@@ -37,7 +37,8 @@ typedef struct {
 	bool verbose;
 	bool format_cache;
 	str_t email;
-	tur_output_t output;
+	tur_output_t output_mode;
+	str_t output;
 	str_t repos_path;
 } settings_t;
 

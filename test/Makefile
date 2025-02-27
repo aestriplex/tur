@@ -25,7 +25,7 @@ all: test_parse_repository
 	./test_parse_repository
 
 test_parse_repository: test.c test_parse_repository.c repo.o str.o
-	$(CC) $(CFLAGS) -o $@ $^ -lgit2
+	$(CC) $(CFLAGS) -o $@ $^
 
 repo.o: ../src/repo.c
 	$(CC) $(CFLAGS) -o $@ -c $^

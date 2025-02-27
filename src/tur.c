@@ -23,6 +23,7 @@
 #include "repo.h"
 #include "settings.h"
 #include "str.h"
+#include "walk.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -64,7 +65,7 @@ int main(int argc, char *argv[]) {
 
 	settings = default_settings();
 
-	while ((ch = getopt_long(argc, argv, "hvfo:r:", long_options, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "hvfo:r:e:", long_options, &option_index)) != -1) {
 		switch (ch) {
 		case 'h':
 			print_help();
@@ -79,7 +80,8 @@ int main(int argc, char *argv[]) {
 			settings.email = str_init(optarg, (uint16_t) strlen(optarg));
 			break;
 		case 'o':
-			settings.output = parse_output_file_ext(optarg);
+			settings.output_mode = parse_output_file_ext(optarg);
+			settings.output = str_init(optarg, (uint16_t) strlen(optarg));
 			break;
 		case 'r':
 			settings.repos_path = str_init(optarg, (uint16_t) strlen(optarg));
@@ -91,11 +93,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	ret = get_repos_array(settings, &repos);
-
 	if (ret != OK) { return ret; }
 
-	printf("#Repos: %zu\n", repos.count);
-	printf("Repo 1: %s\n", repos.repositories[0].path.val);
-	
+	ret = walk_through_repos(&repos, settings);
+	if (ret != OK) { return ret; }
+
 	return 0;
 }

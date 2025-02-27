@@ -25,17 +25,16 @@
 #include "str.h"
 
 #include <ctype.h>
+#include <libgen.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <git2.h>
 
-static void print_commit_info(const git_commit *commit) {
-	const git_signature *author = git_commit_author(commit);
-	printf("Commit: %s\n", git_oid_tostr_s(git_commit_id(commit)));
-	printf("Author: %s <%s>\n", author->name, author->email);
-	printf("Date: %s", ctime((const time_t *) &author->when.time));
-	printf("Message: %s\n\n", git_commit_message(commit));
+static str_t get_repo_name(str_t repo_path)
+{
+	char *repo_name = basename(repo_path.val);
+	return str_init(repo_name, (uint16_t) strlen(repo_name));
 }
 
 repository_t parse_repository(const char *line, ssize_t len)
@@ -78,7 +77,8 @@ ret:
 	return repo;
 }
 
-return_code_t get_repos_array(settings_t settings, repository_array_t *repos) {
+return_code_t get_repos_array(settings_t settings, repository_array_t *repos)
+{
 	size_t len = 0;
 	ssize_t read;
 	char *line = NULL;
@@ -125,42 +125,4 @@ return_code_t get_repos_array(settings_t settings, repository_array_t *repos) {
 	fclose(repos_list);
 
 	return OK;
-}
-
-commit_history_t *get_commit_history(repository_t repo, settings_t settings) {
-	commit_history_t *history = NULL;
-	git_repository *git_repo = NULL;
-	git_revwalk *walker = NULL;
-	git_oid oid;
-	git_commit *commit = NULL;
-
-	git_libgit2_init();
-
-	if (git_repository_open(&git_repo, repo.path.val) != 0) {
-		fprintf(stderr, "Failed to open repository `%s`\n", repo.path.val);
-		goto ret;
-	}
-
-	if (git_revwalk_new(&walker, git_repo) != 0) {
-		fprintf(stderr, "An error occurred while reading from `%s`\n", repo.path.val);
-		goto cleanup;
-	}
-
-	git_revwalk_push_head(walker);
-	git_revwalk_sorting(walker, GIT_SORT_TIME);
-
-	while (git_revwalk_next(&oid, walker) == 0) {
-		if (git_commit_lookup(&commit, git_repo, &oid) == 0) {
-			print_commit_info(commit);
-			git_commit_free(commit);
-		}
-	}
-
-	git_revwalk_free(walker);
-	git_libgit2_shutdown();
-
-cleanup:
-	git_repository_free(git_repo);
-ret:
-	return history;
 }

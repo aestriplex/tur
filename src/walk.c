@@ -1,4 +1,4 @@
-/* repo.h
+/* walk.c
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
@@ -19,29 +19,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __REPO_H__
-#define __REPO_H__
-
 #include "codes.h"
+#include "commit.h"
+#include "repo.h"
 #include "settings.h"
-#include "str.h"
+#include "walk.h"
 
-#include <stdint.h>
+return_code_t walk_through_repos(const repository_array_t *repos, settings_t settings)
+{
+	repository_t repo;
+	commit_history_t *history;
+	for (size_t i = 0; i < repos->count; i++) {
+		repo = repos->repositories[i];
+		history = get_commit_history(repo, settings);
+	}
 
-#define DEFAULT_N_REPOSITORY 10
+	printf("%p\n", history);
 
-typedef struct {
-	str_t url;
-	str_t path;
-} repository_t;
-
-typedef struct {
-	repository_t *repositories;
-	size_t count;
-	size_t capacity;
-} repository_array_t;
-
-repository_t parse_repository(const char *line, ssize_t len);
-return_code_t get_repos_array(settings_t settings, repository_array_t *repos);
-
-#endif /* __REPO_H__ */
+	return OK;
+}

@@ -1,4 +1,4 @@
-/* repo.h
+/* walk.h
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
@@ -19,29 +19,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __REPO_H__
-#define __REPO_H__
+#ifndef __WALK_H__
+#define __WALK_H__
 
-#include "codes.h"
-#include "settings.h"
-#include "str.h"
+return_code_t walk_through_repos(const repository_array_t *repos, settings_t settings);
 
-#include <stdint.h>
-
-#define DEFAULT_N_REPOSITORY 10
-
-typedef struct {
-	str_t url;
-	str_t path;
-} repository_t;
-
-typedef struct {
-	repository_t *repositories;
-	size_t count;
-	size_t capacity;
-} repository_array_t;
-
-repository_t parse_repository(const char *line, ssize_t len);
-return_code_t get_repos_array(settings_t settings, repository_array_t *repos);
-
-#endif /* __REPO_H__ */
+#endif /* __WALK_H__ */
