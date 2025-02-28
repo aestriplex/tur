@@ -23,6 +23,7 @@
 #include "commit.h"
 #include "repo.h"
 #include "settings.h"
+#include "view.h"
 #include "walk.h"
 
 #include <stdlib.h>
@@ -42,7 +43,7 @@ static commit_refs_t *get_commit_refs(commit_list_t *commits, size_t commit_with
 	size_t i = 0;
 	while (current) {
 		if (current->commit.responsability == resp) {
-			commits_with_resp->commits[i] = current;
+			commits_with_resp->commits[i] = &current->commit;
 			i++;
 		}
 		current = current->parent;
@@ -51,9 +52,23 @@ static commit_refs_t *get_commit_refs(commit_list_t *commits, size_t commit_with
 	return commits_with_resp;
 }
 
-void select_output_printer()
+static void print_output(const repository_array_t *repos, settings_t settings)
 {
-	
+	switch (settings.output_mode) {
+	case STDOUT:
+		print_stdout(repos, settings);
+		break;
+	case LATEX:
+		generate_latex_file(repos, settings);
+		break;
+	case HTML:
+	case JEKYLL:
+		fprintf(stderr, "Output mode not implemented yet...\n");
+		break;
+	default:
+		fprintf(stderr, "corrupted output mode [%d]... stdout selected", settings.output_mode);
+		break;
+	}
 }
 
 return_code_t walk_through_repos(const repository_array_t *repos, settings_t settings)
@@ -65,7 +80,8 @@ return_code_t walk_through_repos(const repository_array_t *repos, settings_t set
 		repo->history = get_commit_history(repo->path, settings);
 		repo->history->authored = get_commit_refs(repo->history->list, repo->history->n_authored, AUTHORED);
 		repo->history->co_authored = get_commit_refs(repo->history->list, repo->history->n_co_authored, CO_AUTHORED);
-		printf("Repository: %s\nAuthored: %d\nCo-authored: %d\n\n", repo->name, repo->history->authored->n_commits, repo->history->co_authored->n_commits);
+		
+		print_output(repos, settings);
 	}
 
 	return OK;

@@ -1,4 +1,4 @@
-/* view.h
+/* utils.c
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
@@ -19,13 +19,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __VIEW_H__
-#define __VIEW_H__
+#include "str.h"
+#include "utils.h"
 
-#include "repo.h"
-#include "settings.h"
+#include <string.h>
+#include <time.h>
 
-void generate_latex_file(const repository_array_t *repos, settings_t settings);
-void print_stdout(const repository_array_t *repos, settings_t settings);
-
-#endif /* __VIEW_H__ */
+str_t time_to_string(const time_t *timestamp)
+{
+	const char *date = ctime(timestamp);
+	return str_init(date, (uint16_t) strlen(date));
+}

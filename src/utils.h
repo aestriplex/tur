@@ -1,4 +1,4 @@
-/* view.h
+/* utils.h
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
@@ -19,13 +19,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __VIEW_H__
-#define __VIEW_H__
+#ifndef __UTILS_H__
+#define __UTILS_H__
 
-#include "repo.h"
-#include "settings.h"
+#include "str.h"
 
-void generate_latex_file(const repository_array_t *repos, settings_t settings);
-void print_stdout(const repository_array_t *repos, settings_t settings);
+#include <time.h>
 
-#endif /* __VIEW_H__ */
+str_t time_to_string(const time_t *timestamp);
+
+#endif /* __UTILS_H__ */

@@ -20,6 +20,7 @@
 
 CC = gcc
 CFLAGS = -Wall -pedantic -O3 -std=c2x
+DEBUG_FLAGS = -Wall -pedantic -g -std=c2x
 INCLUDE = /usr/local/include
 LIB = -lgit2
 OUT = tur
@@ -29,6 +30,10 @@ all: *.o
 
 *.o: *.c
 	$(CC) $(CFLAGS) -c $^
+
+.PHONY: debug
+debug: *.c
+	$(CC) $(DEBUG_FLAGS) -o $(OUT) $^ $(LIB) -I=$(INCLUDE)
 
 .PHONY:clean
 clean:

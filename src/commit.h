@@ -40,6 +40,7 @@ typedef struct {
 	str_t hash;
 	responsability_t responsability;
 	str_t date;
+	str_t msg;
 } commit_t;
 
 typedef struct _commit_list {

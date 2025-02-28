@@ -21,6 +21,7 @@
 
 #include "commit.h"
 #include "str.h"
+#include "utils.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -44,7 +45,7 @@ static bool is_co_author(const git_commit *commit, str_t email)
 		return false;
 	}
 
-	line = message;
+	line = (char *)message;
 	while (line) {
 		const char *next_line = strchr(line, '\n');
 		size_t line_len = (next_line) ? (size_t)(next_line - line) : strlen(line);
@@ -73,7 +74,7 @@ static bool is_co_author(const git_commit *commit, str_t email)
 				}
 			}
 		}
-		line = (next_line) ? next_line + 1 : NULL;
+		line = (next_line) ? (char *)next_line + 1 : NULL;
 	}
 
 	return false;
@@ -113,9 +114,11 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 		if (git_commit_lookup(&raw_commit, git_repo, &oid) != 0) { continue; }
 		
 		const char *hash = git_oid_tostr_s(git_commit_id(raw_commit));
+		const char *msg = git_commit_message(raw_commit);
 		const git_signature *author = git_commit_author(raw_commit);
+
 		if (!author) { continue; }
-		const char *date = ctime((const time_t *) &author->when.time);
+
 		responsability_t res;
 
 		if (is_author(author, settings.email)) {
@@ -131,11 +134,11 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 		current = current->parent;
 		current->commit = (commit_t) {
 			.hash = str_init(hash, GIT_HASH_LEN),
-			.date = str_init(date, (uint16_t) strlen(date)),
+			.date = time_to_string((const time_t *) &author->when.time),
+			.msg = str_init(msg, strlen(msg)),
 			.responsability = res,
 		};
 		current->parent = NULL;
-		
 
 	free_commit:
 		git_commit_free(raw_commit);

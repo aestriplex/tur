@@ -33,7 +33,7 @@
 
 static str_t get_repo_name(str_t repo_path)
 {
-	char *repo_name = basename(repo_path.val);
+	char *repo_name = basename((char *)repo_path.val);
 	return str_init(repo_name, (uint16_t) strlen(repo_name));
 }
 
