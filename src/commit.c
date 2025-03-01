@@ -21,7 +21,6 @@
 
 #include "commit.h"
 #include "str.h"
-#include "utils.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -134,7 +133,7 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 		current = current->parent;
 		current->commit = (commit_t) {
 			.hash = str_init(hash, GIT_HASH_LEN),
-			.date = time_to_string((const time_t *) &author->when.time),
+			.date = (const time_t *) &author->when.time,
 			.msg = str_init(msg, strlen(msg)),
 			.responsability = res,
 		};

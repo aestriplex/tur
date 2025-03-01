@@ -62,6 +62,8 @@ static void print_output(const repository_array_t *repos, settings_t settings)
 		generate_latex_file(repos, settings);
 		break;
 	case HTML:
+		generate_html_file(repos, settings);
+		break;
 	case JEKYLL:
 		fprintf(stderr, "Output mode not implemented yet...\n");
 		break;

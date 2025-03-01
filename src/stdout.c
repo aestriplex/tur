@@ -19,6 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "utils.h"
 #include "view.h"
 
 #include <stdio.h>
@@ -27,11 +28,10 @@ void print_stdout(const repository_array_t *repos, settings_t settings)
 {
 	for (size_t i = 0; i < repos->count; i++) {
 		const repository_t repo = repos->repositories[i];
-
-		fprintf(stdout, "Repository: %s\n", repo.name.val);
-
 		const commit_refs_t *authored = repo.history->authored;
 		const commit_refs_t *co_authored = repo.history->co_authored;
+
+		fprintf(stdout, "Repository: %s\n", repo.name.val);
 
 		if(!authored) { goto co_authored; }
 
@@ -39,7 +39,7 @@ void print_stdout(const repository_array_t *repos, settings_t settings)
 		for (size_t n_c = 0; n_c < repo.history->n_authored; n_c++) {
 			fprintf(stdout, "\t%s %s",
 					authored->commits[n_c]->hash.val,
-					authored->commits[n_c]->date.val);
+					time_to_string(authored->commits[n_c]->date).val);
 		}
 
 	co_authored:
@@ -50,7 +50,9 @@ void print_stdout(const repository_array_t *repos, settings_t settings)
 		for (size_t n_c = 0; n_c < repo.history->n_co_authored; n_c++) {
 			fprintf(stdout, "\t%s %s",
 					co_authored->commits[n_c]->hash.val,
-					co_authored->commits[n_c]->date.val);
+					time_to_string(co_authored->commits[n_c]->date).val);
 		}
 	}
+
+	fflush(stdout);
 }

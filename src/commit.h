@@ -26,6 +26,7 @@
 #include "str.h"
 
 #include <stdint.h>
+#include <time.h>
 
 #define COAUTHOR_PREFIX "Co-authored-by:"
 #define COAUTHOR_PREFIX_LEN 15
@@ -39,7 +40,7 @@ typedef enum {
 typedef struct {
 	str_t hash;
 	responsability_t responsability;
-	str_t date;
+	const time_t * date;
 	str_t msg;
 } commit_t;
 
