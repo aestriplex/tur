@@ -31,9 +31,9 @@
 #define GITHUB_URL      "commit/"
 #define GITHUB_URL_SIZE 7
 
-str_t time_to_string(const time_t *timestamp)
+str_t time_to_string(time_t timestamp)
 {
-	const char *date = ctime(timestamp);
+	const char *date = ctime(&timestamp);
 	return str_init(date, (uint16_t) strlen(date));
 }
 

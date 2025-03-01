@@ -82,9 +82,9 @@ return_code_t walk_through_repos(const repository_array_t *repos, settings_t set
 		repo->history = get_commit_history(repo->path, settings);
 		repo->history->authored = get_commit_refs(repo->history->list, repo->history->n_authored, AUTHORED);
 		repo->history->co_authored = get_commit_refs(repo->history->list, repo->history->n_co_authored, CO_AUTHORED);
-		
-		print_output(repos, settings);
 	}
 
+	print_output(repos, settings);
+	
 	return OK;
 }

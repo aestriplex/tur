@@ -37,12 +37,13 @@ void generate_html_file(const repository_array_t *repos, settings_t settings)
 
 		fprintf(out, "<h2>%s</h2>\n\n", repo.name.val);
 		
-		if(!authored) { goto co_authored; }
+		if(repo.history->n_authored == 0) { goto co_authored; }
 
 		fprintf(out, "\n<h3>Authored</h3>\n\n<ul>\n");
 		
 		for (size_t n_c = 0; n_c < repo.history->n_authored; n_c++) {
-			fprintf(out, "\t<li>%s %s</li>",
+			fprintf(out, "\t<li><a href='%s' target='_blank>%s %s</a></li>",
+					get_github_url(repo.url, authored->commits[n_c]->hash),
 					authored->commits[n_c]->hash.val,
 					time_to_string(authored->commits[n_c]->date).val);
 		}
@@ -51,7 +52,7 @@ void generate_html_file(const repository_array_t *repos, settings_t settings)
 
 	co_authored:
 		
-		if(!co_authored) { goto co_authored; }
+		if(repo.history->n_co_authored == 0) { continue; }
 
 		fprintf(out, "\n<h3>Co-authored</h3>\n\n<ul>\n");
 		

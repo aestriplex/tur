@@ -133,7 +133,7 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 		current = current->parent;
 		current->commit = (commit_t) {
 			.hash = str_init(hash, GIT_HASH_LEN),
-			.date = (const time_t *) &author->when.time,
+			.date = (time_t) author->when.time,
 			.msg = str_init(msg, strlen(msg)),
 			.responsability = res,
 		};

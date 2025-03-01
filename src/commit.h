@@ -40,7 +40,7 @@ typedef enum {
 typedef struct {
 	str_t hash;
 	responsability_t responsability;
-	const time_t * date;
+	time_t date;
 	str_t msg;
 } commit_t;
 

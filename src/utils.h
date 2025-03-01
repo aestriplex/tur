@@ -26,7 +26,7 @@
 
 #include <time.h>
 
-str_t time_to_string(const time_t *timestamp);
+str_t time_to_string(time_t timestamp);
 str_t get_github_url(str_t repo_url, str_t commit_hash);
 
 #endif /* __UTILS_H__ */

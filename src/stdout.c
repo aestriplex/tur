@@ -33,7 +33,7 @@ void print_stdout(const repository_array_t *repos, settings_t settings)
 
 		fprintf(stdout, "Repository: %s\n", repo.name.val);
 
-		if(!authored) { goto co_authored; }
+		if(repo.history->n_authored == 0) { goto co_authored; }
 
 		fprintf(stdout, "Authored commits:\n");
 		for (size_t n_c = 0; n_c < repo.history->n_authored; n_c++) {
@@ -44,7 +44,7 @@ void print_stdout(const repository_array_t *repos, settings_t settings)
 
 	co_authored:
 
-		if(!co_authored) { continue; }
+		if(repo.history->n_co_authored == 0) { continue; }
 
 		fprintf(stdout, "Co-authored commits:\n");
 		for (size_t n_c = 0; n_c < repo.history->n_co_authored; n_c++) {
