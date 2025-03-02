@@ -57,7 +57,7 @@ str_t *parse_emails(const char *input, int *count)
 	size_t len = strlen(input);
 	char *str = strdup(input);
 	if (!str) {
-		perror("malloc failed");
+		fprintf(stderr, "[parse_emails] cannot duplicate input string: malloc error\n");
 		return NULL;
 	}
 
@@ -69,6 +69,7 @@ str_t *parse_emails(const char *input, int *count)
 	char *trimmed_str = trim_whitespace(str);
 
 	if (strlen(trimmed_str) == 0) {
+		/* happy path, empty list */
 		*count = 0;
 		free(str);
 		return NULL;
@@ -77,7 +78,7 @@ str_t *parse_emails(const char *input, int *count)
 	size_t capacity = DEFAULT_EMAIL_ARR_SIZE;
 	str_t *emails = malloc(capacity * sizeof(str_t));
 	if (!emails) {
-		perror("malloc failed");
+		fprintf(stderr, "[parse_emails] cannot allocate email array memory: malloc error\n");
 		free(str);
 		return NULL;
 	}
@@ -94,7 +95,7 @@ str_t *parse_emails(const char *input, int *count)
 
 		emails[*count].val = strdup(trimmed_email);
 		if (!emails[*count].val) {
-			perror("malloc failed");
+			fprintf(stderr, "[parse_emails] cannot duplicate email #%d: strdup error\n", *count);
 			for (int i = 0; i < *count; i++) {
 				free((char *)emails[i].val);
 			}
@@ -110,7 +111,7 @@ str_t *parse_emails(const char *input, int *count)
 			capacity += DEFAULT_EMAIL_ARR_SIZE;
 			emails = realloc(emails, capacity * sizeof(str_t));
 			if (!emails) {
-				perror("realloc failed");
+				fprintf(stderr, "[parse_emails] cannot resize email arrays #%d: realloc error\n", *count);
 				for (int i = 0; i < *count; i++) {
 					free((char *)emails[i].val);
 				}
@@ -127,7 +128,7 @@ str_t *parse_emails(const char *input, int *count)
 
 		emails[*count].val = strdup(trimmed_email);
 		if (!emails[*count].val) {
-			perror("malloc failed");
+			fprintf(stderr, "[parse_emails] cannot duplicate email #%d: strdup error\n", *count);
 			for (int i = 0; i < *count; i++) {
 				free((char *)emails[i].val);
 			}
