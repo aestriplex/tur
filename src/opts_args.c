@@ -143,4 +143,3 @@ str_t *parse_emails(const char *input, int *count)
 	free(str);
 	return emails;
 }
-
