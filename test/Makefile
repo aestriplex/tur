@@ -20,11 +20,16 @@
 
 CC = gcc
 CFLAGS = -Wall -pedantic -O3 -std=c2x
+TEST_BINS = test_parse_repository test_parse_email_list
 
-all: test_parse_repository
+all: $(TEST_BINS)
 	./test_parse_repository
+	./test_parse_email_list
 
 test_parse_repository: test.c test_parse_repository.c repo.o str.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+test_parse_email_list: test.c test_parse_email_list.c opts_args.o str.o utils.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 repo.o: ../src/repo.c
@@ -32,3 +37,13 @@ repo.o: ../src/repo.c
 
 str.o: ../src/str.c
 	$(CC) $(CFLAGS) -o $@ -c $^
+
+opts_args.o: ../src/opts_args.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+utils.o: ../src/utils.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+.PHONY: clean
+clean:
+	rm -f *o $(TEST_BINS)
