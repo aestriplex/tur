@@ -69,13 +69,13 @@ static bool is_co_author(const git_commit *commit, str_t *emails, int n_emails)
 					strncpy(coauthor_email, email_start + 1, email_len);
 					coauthor_email[email_len] = '\0';
 
-					bool is_coauthor = true;
 					for (int i = 0; i < n_emails; i++) {
-						is_coauthor &= str_arr_equals(emails[i], coauthor_email);
+						if (str_arr_equals(emails[i], coauthor_email)) {
+							free(coauthor_email);
+							return true;
+						}
 					}
 					free(coauthor_email);
-
-					if (is_coauthor) { return true; }
 				}
 			}
 		}
