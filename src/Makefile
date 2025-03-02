@@ -22,6 +22,7 @@ CC = gcc
 CFLAGS = -Wall -pedantic -O3 -std=c2x
 DEBUG_FLAGS = -Wall -pedantic -g -std=c2x
 INCLUDE_PATH = /usr/local/include
+INSTALL_PATH = /usr/local/bin
 LIB_PATH = /usr/local/lib
 LIB = -lgit2
 OUT = tur
@@ -39,3 +40,7 @@ debug: *.c
 .PHONY:clean
 clean:
 	rm -f *.o $(OUT)
+
+.PHONY: install
+install:
+	cp $(OUT) $(INSTALL_PATH)/$(OUT)
