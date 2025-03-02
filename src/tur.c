@@ -52,8 +52,30 @@ void print_help(void)
 		   "---------------------------------\n"
 		   "Developed by aestriplex, (c) 2025\n"
 		   "\n"
-		   "Usage:\ttur [h] [v] [o] [r]\n"
-		   "\n");
+		   "Usage: tur [OPTIONS]\n"
+		   "\nOptions:\n"
+		   "  -h, --help              Show this help message and exit\n"
+		   "  -v, --verbose           Enable verbose output\n"
+		   "                          Default: false\n"
+		   "  -f, --format            Enable formatting\n"
+		   "  -g, --group             Group commit by repository\n"
+		   "                          Default: false\n"
+		   "  -e, --email EMAIL       Specify a single email address\n"
+		   "  -m, --mail-list FILE    Specify a comma separated email addresses\n"
+		   "  -o, --out FILE          Specify an output file. Allowed extensions are:\n"
+		   "                              .tex          (LaTeX)\n"
+		   "                              .html / .html (HTML)\n"
+		   "                              .md           (Markdown)\n"
+		   "                          Default: stdout\n"
+		   "  -r, --repos REPOS       Specify the file containing the list of repositories.\n"
+		   "                          Default: .rlist in the current folder\n"
+		   "\n"
+		   "Examples:\n"
+		   "  tur --verbose --email user@example.com\n"
+		   "  tur --mail-list user1@example.com,user2@example.com --out commits.tex\n"
+		   "\n"
+		   "\n"
+		);
 }
 
 int main(int argc, char *argv[]) {
