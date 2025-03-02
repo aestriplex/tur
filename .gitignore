@@ -60,3 +60,6 @@ src/tur
 # tests
 test/test_parse_repository
 test/test_parse_email_list
+
+# macOS garbage file
+.DS_Store
