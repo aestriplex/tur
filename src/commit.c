@@ -27,12 +27,15 @@
 #include <string.h>
 #include <git2.h>
 
-static inline bool is_author(const git_signature *author, str_t email)
+static inline bool is_author(const git_signature *author, str_t *emails, int n_emails)
 {
-	return str_arr_equals(email, author->email);
+	for (int i = 0; i < n_emails; i++) {
+		if (str_arr_equals(emails[i], author->email)) { return true; }
+	}
+	return false;
 }
 
-static bool is_co_author(const git_commit *commit, str_t email)
+static bool is_co_author(const git_commit *commit, str_t *emails, int n_emails)
 {
 	const char *message;
 	char *line;
@@ -66,7 +69,10 @@ static bool is_co_author(const git_commit *commit, str_t email)
 					strncpy(coauthor_email, email_start + 1, email_len);
 					coauthor_email[email_len] = '\0';
 
-					bool is_coauthor = str_arr_equals(email, coauthor_email);
+					bool is_coauthor = true;
+					for (int i = 0; i < n_emails; i++) {
+						is_coauthor &= str_arr_equals(emails[i], coauthor_email);
+					}
 					free(coauthor_email);
 
 					if (is_coauthor) { return true; }
@@ -120,10 +126,10 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 
 		responsability_t res;
 
-		if (is_author(author, settings.email)) {
+		if (is_author(author, settings.emails, settings.n_emails)) {
 			res = AUTHORED;
 			n_authored++;
-		} else if (is_co_author(raw_commit, settings.email)) {
+		} else if (is_co_author(raw_commit, settings.emails, settings.n_emails)) {
 			res = CO_AUTHORED;
 			n_co_authored++;
 		} else {

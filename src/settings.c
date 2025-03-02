@@ -35,7 +35,8 @@ settings_t default_settings(void)
 		.format_cache = false,
 		.verbose = false,
 		.repos_path = str_init(DEFAULT_REPOS_LIST_PATH, DEFAULT_REPOS_LIST_PATH_SIZE),
-		.email = EMPTY_STR,
+		.emails = NULL,
+		.n_emails = 0,
 		.grouped = false
 	};
 }

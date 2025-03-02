@@ -23,6 +23,7 @@
 #include "repo.h"
 #include "settings.h"
 #include "str.h"
+#include "utils.h"
 #include "walk.h"
 
 #include <stdbool.h>
@@ -33,13 +34,14 @@
 
 static settings_t settings;
 static struct option long_options[] = {
-	{ "help",    no_argument,       0, 'h' },
-	{ "verbose", no_argument,       0, 'v' },
-	{ "format",  no_argument,       0, 'f' },
-	{ "group",   no_argument,       0, 'g' },
-	{ "email",   required_argument, 0, 'e' },
-	{ "out",     required_argument, 0, 'o' },
-	{ "repos",   required_argument, 0, 'r' },
+	{ "help",      no_argument,       0, 'h' },
+	{ "verbose",   no_argument,       0, 'v' },
+	{ "format",    no_argument,       0, 'f' },
+	{ "group",     no_argument,       0, 'g' },
+	{ "email",     required_argument, 0, 'e' },
+	{ "mail-list", required_argument, 0, 'm' },
+	{ "out",       required_argument, 0, 'o' },
+	{ "repos",     required_argument, 0, 'r' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -57,20 +59,20 @@ void print_help(void)
 int main(int argc, char *argv[]) {
 	repository_array_t repos;
 	return_code_t ret;
-	int ch, option_index = 0;
+	int ch, n_emails, option_index = 0;
 
 	if (argc == 1) {
 		print_help();
-		return 0;
+		goto end;
 	}
 
 	settings = default_settings();
 
-	while ((ch = getopt_long(argc, argv, "hvfo:r:e:g:", long_options, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "hvgfo:r:e:m:", long_options, &option_index)) != -1) {
 		switch (ch) {
 		case 'h':
 			print_help();
-			return 0;
+			goto end;
 		case 'v':
 			settings.verbose = true;
 			break;
@@ -78,7 +80,9 @@ int main(int argc, char *argv[]) {
 			settings.format_cache = true;
 			break;
 		case 'e':
-			settings.email = str_init(optarg, (uint16_t) strlen(optarg));
+			settings.emails = malloc(sizeof(str_t));
+			*(settings.emails)  = str_init(optarg, (uint16_t) strlen(optarg));
+			settings.n_emails = 1;
 			break;
 		case 'g' :
 			settings.grouped = true;
@@ -89,6 +93,10 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'r':
 			settings.repos_path = str_init(optarg, (uint16_t) strlen(optarg));
+			break;
+		case 'm':
+			settings.emails = parse_emails(optarg, &n_emails);
+			settings.n_emails = n_emails;
 			break;
 		default:
 			print_help();
@@ -102,5 +110,6 @@ int main(int argc, char *argv[]) {
 	ret = walk_through_repos(&repos, settings);
 	if (ret != OK) { return ret; }
 
+end:
 	return 0;
 }

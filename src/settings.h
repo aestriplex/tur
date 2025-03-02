@@ -37,7 +37,8 @@ typedef struct {
 	bool verbose;
 	bool format_cache;
 	bool grouped;
-	str_t email;
+	str_t *emails;
+	int n_emails;
 	tur_output_t output_mode;
 	str_t output;
 	str_t repos_path;

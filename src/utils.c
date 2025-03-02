@@ -24,6 +24,7 @@
 #include "str.h"
 #include "utils.h"
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -44,4 +45,22 @@ str_t get_github_url(str_t repo_url, str_t commit_hash)
 	sprintf(url, "%s%s%s", repo_url.val, GITHUB_URL, commit_hash.val);
 
 	return str_init(url, new_len);
+}
+
+char* trim_whitespace(char *str)
+{
+	char *end;
+
+	while (isspace((unsigned char)*str)) str++;
+
+	if (*str == 0) {
+		return str;
+	}
+
+	end = str + strlen(str) - 1;
+	while (end > str && isspace((unsigned char)*end)) end--;
+
+	*(end + 1) = '\0';
+
+	return str;
 }

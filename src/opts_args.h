@@ -23,7 +23,9 @@
 #define __OPTS_ARGS__
 
 #include "settings.h"
+#include "str.h"
 
 tur_output_t parse_output_file_ext(const char *arg);
+str_t *parse_emails(const char *input, int *count);
 
 #endif /* __OPTS_ARGS__ */
