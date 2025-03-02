@@ -24,6 +24,52 @@
 
 #include <stdio.h>
 
+static void print_stdout_grouped(const repository_t *repo,
+								 const commit_refs_t *authored,
+								 const commit_refs_t *co_authored)
+{
+	fprintf(stdout, "Repository: %s\n", repo->name.val);
+
+	if(repo->history->n_authored == 0) { goto co_authored; }
+
+	fprintf(stdout, "Authored commits:\n");
+	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
+		fprintf(stdout, "\t%s %s",
+				authored->commits[n_c]->hash.val,
+				time_to_string(authored->commits[n_c]->date).val);
+	}
+
+co_authored:
+
+	if(repo->history->n_co_authored == 0) { return; }
+
+	fprintf(stdout, "Co-authored commits:\n");
+	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
+		fprintf(stdout, "\t%s %s",
+				co_authored->commits[n_c]->hash.val,
+				time_to_string(co_authored->commits[n_c]->date).val);
+	}
+}
+
+static void print_stdout_list(const repository_t *repo,
+							  const commit_refs_t *authored,
+							  const commit_refs_t *co_authored)
+{
+	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
+		fprintf(stdout, "[%s,A] %s %s",
+				repo->name.val,
+				authored->commits[n_c]->hash.val,
+				time_to_string(authored->commits[n_c]->date).val);
+	}
+
+	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
+		fprintf(stdout, "[%s,C] %s %s",
+				repo->name.val,
+				co_authored->commits[n_c]->hash.val,
+				time_to_string(co_authored->commits[n_c]->date).val);
+	}
+}
+
 void print_stdout(const repository_array_t *repos, settings_t settings)
 {
 	for (size_t i = 0; i < repos->count; i++) {
@@ -31,26 +77,10 @@ void print_stdout(const repository_array_t *repos, settings_t settings)
 		const commit_refs_t *authored = repo.history->authored;
 		const commit_refs_t *co_authored = repo.history->co_authored;
 
-		fprintf(stdout, "Repository: %s\n", repo.name.val);
-
-		if(repo.history->n_authored == 0) { goto co_authored; }
-
-		fprintf(stdout, "Authored commits:\n");
-		for (size_t n_c = 0; n_c < repo.history->n_authored; n_c++) {
-			fprintf(stdout, "\t%s %s",
-					authored->commits[n_c]->hash.val,
-					time_to_string(authored->commits[n_c]->date).val);
-		}
-
-	co_authored:
-
-		if(repo.history->n_co_authored == 0) { continue; }
-
-		fprintf(stdout, "Co-authored commits:\n");
-		for (size_t n_c = 0; n_c < repo.history->n_co_authored; n_c++) {
-			fprintf(stdout, "\t%s %s",
-					co_authored->commits[n_c]->hash.val,
-					time_to_string(co_authored->commits[n_c]->date).val);
+		if (settings.grouped) {
+			print_stdout_grouped(&repo, authored, co_authored);
+		} else {
+			print_stdout_list(&repo, authored, co_authored);
 		}
 	}
 

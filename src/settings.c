@@ -24,7 +24,8 @@
 
 #include <stdlib.h>
 
-static str_t default_repos_path;
+#define DEFAULT_REPOS_LIST_PATH      ".rlist"
+#define DEFAULT_REPOS_LIST_PATH_SIZE 6
 
 settings_t default_settings(void)
 {
@@ -33,7 +34,8 @@ settings_t default_settings(void)
 		.output = EMPTY_STR,
 		.format_cache = false,
 		.verbose = false,
-		.repos_path = default_repos_path,
-		.email = EMPTY_STR
+		.repos_path = str_init(DEFAULT_REPOS_LIST_PATH, DEFAULT_REPOS_LIST_PATH_SIZE),
+		.email = EMPTY_STR,
+		.grouped = false
 	};
 }

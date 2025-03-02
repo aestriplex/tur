@@ -36,6 +36,7 @@ typedef enum {
 typedef struct {
 	bool verbose;
 	bool format_cache;
+	bool grouped;
 	str_t email;
 	tur_output_t output_mode;
 	str_t output;

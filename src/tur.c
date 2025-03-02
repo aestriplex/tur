@@ -36,6 +36,7 @@ static struct option long_options[] = {
 	{ "help",    no_argument,       0, 'h' },
 	{ "verbose", no_argument,       0, 'v' },
 	{ "format",  no_argument,       0, 'f' },
+	{ "group",   no_argument,       0, 'g' },
 	{ "email",   required_argument, 0, 'e' },
 	{ "out",     required_argument, 0, 'o' },
 	{ "repos",   required_argument, 0, 'r' },
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]) {
 
 	settings = default_settings();
 
-	while ((ch = getopt_long(argc, argv, "hvfo:r:e:", long_options, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "hvfo:r:e:g:", long_options, &option_index)) != -1) {
 		switch (ch) {
 		case 'h':
 			print_help();
@@ -78,6 +79,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'e':
 			settings.email = str_init(optarg, (uint16_t) strlen(optarg));
+			break;
+		case 'g' :
+			settings.grouped = true;
 			break;
 		case 'o':
 			settings.output_mode = parse_output_file_ext(optarg);
