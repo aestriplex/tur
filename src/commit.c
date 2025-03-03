@@ -135,6 +135,7 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 		} else {
 			goto free_commit;
 		}
+		
 		current->parent = malloc(sizeof(commit_list_t));
 		current = current->parent;
 		current->commit = (commit_t) {

@@ -28,6 +28,18 @@
 
 #include <stdlib.h>
 
+static int compare_commits(const void* a, const void* b)
+{
+	commit_t *first = (commit_t *)a;
+	commit_t *second = (commit_t *)b;
+
+	if (!first || !second) { return 0; }
+
+	if (first->date == second->date) { return 0; }
+
+	return first->date < second->date ? -1 : 1;
+}
+
 static commit_refs_t *init_commit_refs(size_t n_commits)
 {
 	commit_refs_t *c_r = malloc(sizeof(commit_refs_t));
@@ -36,7 +48,8 @@ static commit_refs_t *init_commit_refs(size_t n_commits)
 	return c_r;
 }
 
-static commit_refs_t *get_commit_refs(commit_list_t *commits, size_t commit_with_resp, responsability_t resp)
+static commit_refs_t *get_commit_refs(commit_list_t *commits, size_t commit_with_resp,
+									  responsability_t resp, settings_t settings)
 {
 	commit_refs_t *commits_with_resp = init_commit_refs(commit_with_resp);
 	commit_list_t *current = commits;
@@ -47,6 +60,10 @@ static commit_refs_t *get_commit_refs(commit_list_t *commits, size_t commit_with
 			i++;
 		}
 		current = current->parent;
+	}
+
+	if (settings.sorted) {
+		qsort(commits_with_resp->commits, commit_with_resp, sizeof(commit_t), compare_commits);
 	}
 
 	return commits_with_resp;
@@ -80,8 +97,8 @@ return_code_t walk_through_repos(const repository_array_t *repos, settings_t set
 	for (size_t i = 0; i < repos->count; i++) {
 		repo = repos->repositories + i;
 		repo->history = get_commit_history(repo->path, settings);
-		repo->history->authored = get_commit_refs(repo->history->list, repo->history->n_authored, AUTHORED);
-		repo->history->co_authored = get_commit_refs(repo->history->list, repo->history->n_co_authored, CO_AUTHORED);
+		repo->history->authored = get_commit_refs(repo->history->list, repo->history->n_authored, AUTHORED, settings);
+		repo->history->co_authored = get_commit_refs(repo->history->list, repo->history->n_co_authored, CO_AUTHORED, settings);
 	}
 
 	print_output(repos, settings);
