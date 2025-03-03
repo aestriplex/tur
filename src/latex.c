@@ -36,32 +36,36 @@ static void generate_latex_file_grouped(FILE *out,
 	if(repo->history->n_authored == 0) { goto co_authored; }
 
 	fprintf(out, "\n\\subsection{Authored}\n\\label{subsec:%s-authored}\n\n"
-					"\\begin{itemize}\n", repo->name.val);
+					"\\begin{enumerate}\n", repo->name.val);
 	
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "\t\\item \\href{%s}{%s} %s",
+		fprintf(out, "\t\\item \\label{%s:item:%s} \\href{%s}{%s} %s",
+				repo->name.val,
+				authored->commits[n_c]->hash.val,
 				get_github_url(repo->url, authored->commits[n_c]->hash).val,
 				authored->commits[n_c]->hash.val,
 				time_to_string(authored->commits[n_c]->date).val);
 	}
 
-	fprintf(out, "\\end{itemize}\n");
+	fprintf(out, "\\end{enumerate}\n");
 
 co_authored:
 	
 	if(repo->history->n_co_authored == 0) { return; }
 
 	fprintf(out, "\n\\subsection{Co-authored}\n\\label{subsec:%s-co-authored}\n\n"
-					"\\begin{itemize}\n", repo->name.val);
+					"\\begin{enumerate}\n", repo->name.val);
 	
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(out, "\t\\item \\href{%s}{%s} %s",
+		fprintf(out, "\t\\item \\label{%s:item:%s} \\href{%s}{%s} %s",
+				repo->name.val,
+				co_authored->commits[n_c]->hash.val,
 				get_github_url(repo->url, authored->commits[n_c]->hash).val,
 				co_authored->commits[n_c]->hash.val,
 				time_to_string(co_authored->commits[n_c]->date).val);
 	}
 
-	fprintf(out, "\\end{itemize}\n");
+	fprintf(out, "\\end{enumerate}\n");
 }
 
 static void generate_latex_file_list(FILE *out, const
@@ -70,7 +74,9 @@ static void generate_latex_file_list(FILE *out, const
 									 const commit_refs_t *co_authored)
 {
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "\t\\item[] [%s,A] \\href{%s}{%s} %s",
+		fprintf(out, "\t\\item \\label{%s:item:%s} [%s,A] \\href{%s}{%s} %s",
+				repo->name.val,
+				authored->commits[n_c]->hash.val,
 				repo->name.val,
 				get_github_url(repo->url, authored->commits[n_c]->hash).val,
 				authored->commits[n_c]->hash.val,
@@ -78,7 +84,9 @@ static void generate_latex_file_list(FILE *out, const
 	}
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(out, "\t\\item[] [%s,C] \\href{%s}{%s} %s",
+		fprintf(out, "\t\\item \\label{%s:item:%s} [%s,C] \\href{%s}{%s} %s",
+				repo->name.val,
+				co_authored->commits[n_c]->hash.val,
 				repo->name.val,
 				get_github_url(repo->url, authored->commits[n_c]->hash).val,
 				co_authored->commits[n_c]->hash.val,
@@ -95,7 +103,7 @@ void generate_latex_file(const repository_array_t *repos, settings_t settings)
 				 "include it in a LaTeX document with *hyperref* package.");
 
 	if (!settings.grouped) {
-		fprintf(out, "\n\n\\begin{itemize}\n");
+		fprintf(out, "\n\n\\begin{enumerate}\n");
 	}
 
 	for (size_t i = 0; i < repos->count; i++) {
@@ -112,7 +120,7 @@ void generate_latex_file(const repository_array_t *repos, settings_t settings)
 	}
 
 	if (!settings.grouped) {
-		fprintf(out, "\n\n\\end{itemize}\n");
+		fprintf(out, "\n\n\\end{enumerate}\n");
 	}
 
 	fclose(out);

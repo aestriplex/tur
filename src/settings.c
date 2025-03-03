@@ -37,6 +37,7 @@ settings_t default_settings(void)
 		.repos_path = str_init(DEFAULT_REPOS_LIST_PATH, DEFAULT_REPOS_LIST_PATH_SIZE),
 		.emails = NULL,
 		.n_emails = 0,
-		.grouped = false
+		.grouped = false,
+		.sorted = false
 	};
 }

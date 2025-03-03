@@ -38,6 +38,7 @@ static struct option long_options[] = {
 	{ "verbose",   no_argument,       0, 'v' },
 	{ "format",    no_argument,       0, 'f' },
 	{ "group",     no_argument,       0, 'g' },
+	{ "sort",      no_argument,       0, 's' },
 	{ "email",     required_argument, 0, 'e' },
 	{ "mail-list", required_argument, 0, 'm' },
 	{ "out",       required_argument, 0, 'o' },
@@ -60,6 +61,8 @@ void print_help(void)
 		   "  -f, --format            Enable formatting\n"
 		   "  -g, --group             Group commit by repository\n"
 		   "                          Default: false\n"
+		   "  -s, --sort              Sort commit by date\n"
+		   "                          Default: false\n"
 		   "  -e, --email EMAIL       Specify a single email address\n"
 		   "  -m, --mail-list FILE    Specify a comma separated email addresses\n"
 		   "  -o, --out FILE          Specify an output file. Allowed extensions are:\n"
@@ -71,8 +74,8 @@ void print_help(void)
 		   "                          Default: .rlist in the current folder\n"
 		   "\n"
 		   "Examples:\n"
-		   "  tur --verbose --email user@example.com\n"
-		   "  tur --mail-list user1@example.com,user2@example.com --out commits.tex\n"
+		   "  tur -v -e user@example.com\n"
+		   "  tur -m user1@example.com,user2@example.com --o commits.tex\n"
 		   "\n"
 		   "\n"
 		);
@@ -90,7 +93,7 @@ int main(int argc, char *argv[]) {
 
 	settings = default_settings();
 
-	while ((ch = getopt_long(argc, argv, "hvgfo:r:e:m:", long_options, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "hvgsfo:r:e:m:", long_options, &option_index)) != -1) {
 		switch (ch) {
 		case 'h':
 			print_help();
@@ -108,6 +111,9 @@ int main(int argc, char *argv[]) {
 			break;
 		case 'g' :
 			settings.grouped = true;
+			break;
+		case 's':
+			settings.sorted = true;
 			break;
 		case 'o':
 			settings.output_mode = parse_output_file_ext(optarg);

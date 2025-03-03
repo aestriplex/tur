@@ -1,4 +1,4 @@
-# src/Makefile
+# Makefile
 # -----------------------------------------------------------------------
 # Copyright (C) 2025  Matteo Nicoli
 # 
@@ -18,39 +18,18 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-CC = gcc
-CFLAGS = -Wall -pedantic -O3 -std=c2x
-DEBUG_FLAGS = -Wall -pedantic -g -std=c2x
-INCLUDE_PATH = /usr/local/include
-INSTALL_PATH = /usr/local/bin
-LIB_PATH = /usr/local/lib
-LIB = -lgit2
-OUT = tur
+all: adf test
 
-# Change include and lib path for macOS with Apple Silicon
-UNAME_S := $(shell uname -s)
-UNAME_M := $(shell uname -m)
-ifeq ($(UNAME_S), Darwin)
-    ifeq ($(UNAME_M), arm64)
-        INCLUDE_PATH = /opt/homebrew/include
-        LIB_PATH = /opt/homebrew/lib
-    endif
-endif
+adf:
+	@echo "*****************************\n  Building tur\n*****************************"
+	@$(MAKE) -C src/
 
-all: *.o
-	$(CC) $(CFLAGS) -I$(INCLUDE_PATH) -L$(LIB_PATH) $(LIB) -o $(OUT) $^
+.PHONY : test
+test:
+	@echo "*****************************\n  TESTS\n*****************************"
+	@$(MAKE) -C test/
 
-*.o: *.c
-	$(CC) -I$(INCLUDE_PATH) $(CFLAGS) -c $^
-
-.PHONY: debug
-debug: *.c
-	$(CC) $(DEBUG_FLAGS) $(LIB) -I$(INCLUDE_PATH) -L$(LIB_PATH) -o $(OUT) $^
-
-.PHONY:clean
+.PHONY : clean
 clean:
-	rm -f *.o $(OUT)
-
-.PHONY: install
-install:
-	cp $(OUT) $(INSTALL_PATH)/$(OUT)
+	@$(MAKE) -C src clean
+	@$(MAKE) -C test clean

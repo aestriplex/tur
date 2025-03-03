@@ -28,8 +28,6 @@
 #include <stdint.h>
 #include <time.h>
 
-#define COAUTHOR_PREFIX "Co-authored-by:"
-#define COAUTHOR_PREFIX_LEN 15
 #define GIT_HASH_LEN 40
 
 typedef enum {
@@ -44,10 +42,11 @@ typedef struct {
 	str_t msg;
 } commit_t;
 
-typedef struct _commit_list {
-	commit_t commit;
-	struct _commit_list *parent;
-} commit_list_t;
+typedef struct {
+	commit_t *commits;
+	size_t count;
+	size_t capacity;
+} commit_arr_t;
 
 typedef struct {
 	size_t n_commits;
@@ -55,7 +54,7 @@ typedef struct {
 } commit_refs_t;
 
 typedef struct {
-	commit_list_t *list;
+	commit_arr_t commit_arr;
 	size_t n_authored;
 	size_t n_co_authored;
 	commit_refs_t *authored;
