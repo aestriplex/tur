@@ -26,11 +26,21 @@ LIB_PATH = /usr/local/lib
 LIB = -lgit2
 OUT = tur
 
+# Change include and lib path for macOS with Apple Silicon
+UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
+ifeq ($(UNAME_S), Darwin)
+    ifeq ($(UNAME_M), arm64)
+        INCLUDE_PATH = /opt/homebrew/include
+        LIB_PATH = /opt/homebrew/lib
+    endif
+endif
+
 all: *.o
 	$(CC) $(CFLAGS) -I$(INCLUDE_PATH) -L$(LIB_PATH) $(LIB) -o $(OUT) $^
 
 *.o: *.c
-	$(CC) $(CFLAGS) -c $^
+	$(CC) -I$(INCLUDE_PATH) $(CFLAGS) -c $^
 
 .PHONY: debug
 debug: *.c
