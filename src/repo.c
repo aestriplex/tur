@@ -116,10 +116,10 @@ return_code_t get_repos_array(settings_t settings, repository_array_t *repos)
 		if (*trimmed == '\0') { continue; } 
 
 		if (repos->count >= repos->capacity) {
-			size_t new_capacity = repos->capacity * 2;
+			size_t new_capacity = repos->capacity + DEFAULT_N_REPOSITORY;
 			repository_t *new_repos = realloc(repos->repositories, new_capacity * sizeof(repository_t));
 			if (!new_repos) {
-				fprintf(stderr, "get_repos_array: memory allocation failed while expanding repository array\n");
+				fprintf(stderr, "[get_repos_array] memory allocation failed while expanding repository array\n");
 				break;
 			}
 			repos->repositories = new_repos;

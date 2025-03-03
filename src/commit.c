@@ -27,6 +27,10 @@
 #include <string.h>
 #include <git2.h>
 
+#define COAUTHOR_PREFIX "Co-authored-by:"
+#define COAUTHOR_PREFIX_LEN 15
+#define COMMIT_ARRAY_DEFAULT_SIZE 10
+
 static inline bool is_author(const git_signature *author, str_t *emails, int n_emails)
 {
 	for (int i = 0; i < n_emails; i++) {
@@ -91,7 +95,6 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 	git_revwalk *walker = NULL;
 	git_commit *raw_commit = NULL;
 	work_history_t *history = NULL;
-	commit_list_t *current = NULL;
 	size_t n_authored = 0, n_co_authored = 0;
 	git_oid oid;
 
@@ -111,8 +114,19 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 	git_revwalk_sorting(walker, GIT_SORT_TIME);
 
 	history = malloc(sizeof(work_history_t));
-	history->list = malloc(sizeof(commit_list_t));
-	current = history->list;
+	history->commit_arr = (commit_arr_t) {
+		.capacity = COMMIT_ARRAY_DEFAULT_SIZE,
+		.count = 0,
+		.commits = malloc(COMMIT_ARRAY_DEFAULT_SIZE * sizeof(commit_t))
+	};
+	
+	if (!history->commit_arr.commits) {
+		fprintf(stderr, "[get_commit_history] cannot allocate commits array. Capacity: %zu; count: %zu\n",
+				history->commit_arr.capacity, history->commit_arr.count);
+		goto cleanup;
+	}
+
+	responsability_t res;
 
 	while (git_revwalk_next(&oid, walker) == 0) {
 
@@ -124,8 +138,6 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 
 		if (!author) { continue; }
 
-		responsability_t res;
-
 		if (is_author(author, settings.emails, settings.n_emails)) {
 			res = AUTHORED;
 			n_authored++;
@@ -135,16 +147,26 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 		} else {
 			goto free_commit;
 		}
+
+		if (history->commit_arr.count >= history->commit_arr.capacity) {
+			size_t new_capacity = history->commit_arr.capacity + COMMIT_ARRAY_DEFAULT_SIZE;
+			commit_t *new_commits = realloc(history->commit_arr.commits, new_capacity * sizeof(commit_t));
+			if (!new_commits) {
+				fprintf(stderr, "[get_commit_history] memory allocation failed while expanding repository array\n");
+				goto cleanup;
+			}
+			history->commit_arr.commits = new_commits;
+			history->commit_arr.capacity = new_capacity;
+		}
 		
-		current->parent = malloc(sizeof(commit_list_t));
-		current = current->parent;
-		current->commit = (commit_t) {
+		const size_t index = n_authored + n_co_authored - 1;
+		history->commit_arr.commits[index] = (commit_t) {
 			.hash = str_init(hash, GIT_HASH_LEN),
 			.date = (time_t) author->when.time,
 			.msg = str_init(msg, strlen(msg)),
 			.responsability = res,
 		};
-		current->parent = NULL;
+		history->commit_arr.count++;
 
 	free_commit:
 		git_commit_free(raw_commit);
@@ -153,7 +175,6 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 	git_revwalk_free(walker);
 	git_libgit2_shutdown();
 
-	current->parent = NULL;
 	history->n_authored = n_authored;
 	history->n_co_authored = n_co_authored;
 	history->authored = NULL;
