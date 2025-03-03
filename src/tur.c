@@ -81,7 +81,8 @@ void print_help(void)
 		);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	repository_array_t repos;
 	return_code_t ret;
 	int ch, n_emails, option_index = 0;
