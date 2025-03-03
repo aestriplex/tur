@@ -30,13 +30,11 @@
 
 static int compare_commits(const void* a, const void* b)
 {
-	commit_t *first = (commit_t *)a;
-	commit_t *second = (commit_t *)b;
+	commit_t **first = (commit_t **)a;
+	commit_t **second = (commit_t **)b;
 
-	if (!first || !second) { return 0; }
-	if (first->date == second->date) { return 0; }
-
-	return first->date < second->date ? -1 : 1;
+	if ((*first)->date == (*second)->date) { return 0; }
+	return (*first)->date < (*second)->date ? -1 : 1;
 }
 
 static commit_refs_t *init_commit_refs(size_t n_commits)
@@ -58,7 +56,7 @@ static commit_refs_t *get_commit_refs(const commit_arr_t *commit_arr, size_t com
 		}
 	}
 	if (settings.sorted) {
-		qsort(commits_with_resp->commits, commit_with_resp, sizeof(commit_t), &compare_commits);
+		qsort(commits_with_resp->commits, commit_with_resp, sizeof(commit_t**), &compare_commits);
 	}
 
 	return commits_with_resp;
