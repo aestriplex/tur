@@ -42,11 +42,6 @@ typedef struct {
 	str_t msg;
 } commit_t;
 
-typedef struct _commit_list {
-	commit_t commit;
-	struct _commit_list *parent;
-} commit_list_t;
-
 typedef struct {
 	commit_t *commits;
 	size_t count;
