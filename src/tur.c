@@ -74,8 +74,8 @@ void print_help(void)
 		   "                          Default: .rlist in the current folder\n"
 		   "\n"
 		   "Examples:\n"
-		   "  tur --verbose --email user@example.com\n"
-		   "  tur --mail-list user1@example.com,user2@example.com --out commits.tex\n"
+		   "  tur -v -e user@example.com\n"
+		   "  tur -m user1@example.com,user2@example.com --o commits.tex\n"
 		   "\n"
 		   "\n"
 		);

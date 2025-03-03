@@ -56,7 +56,8 @@ static commit_refs_t *get_commit_refs(const commit_arr_t *commit_arr, size_t com
 		}
 	}
 	if (settings.sorted) {
-		qsort(commits_with_resp->commits, commit_with_resp, sizeof(commit_t**), &compare_commits);
+		qsort(commits_with_resp->commits, commit_with_resp,
+			  sizeof(commit_t **), &compare_commits);
 	}
 
 	return commits_with_resp;
@@ -90,8 +91,12 @@ return_code_t walk_through_repos(const repository_array_t *repos, settings_t set
 	for (size_t i = 0; i < repos->count; i++) {
 		repo = repos->repositories + i;
 		repo->history = get_commit_history(repo->path, settings);
-		repo->history->authored = get_commit_refs(&repo->history->commit_arr, repo->history->n_authored, AUTHORED, settings);
-		repo->history->co_authored = get_commit_refs(&repo->history->commit_arr, repo->history->n_co_authored, CO_AUTHORED, settings);
+		repo->history->authored = get_commit_refs(&repo->history->commit_arr,
+												  repo->history->n_authored,
+												  AUTHORED, settings);
+		repo->history->co_authored = get_commit_refs(&repo->history->commit_arr,
+													 repo->history->n_co_authored,
+													 CO_AUTHORED, settings);
 	}
 	
 	print_output(repos, settings);
