@@ -59,6 +59,7 @@ void test_str(void)
 		str_free(s2);
 		str_free(s3);
 		str_free(s4);
+		str_free(empty);
 	}
 
 	{

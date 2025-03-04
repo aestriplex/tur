@@ -31,7 +31,7 @@ settings_t default_settings(void)
 {
 	return (settings_t) {
 		.output_mode = STDOUT,
-		.output = EMPTY_STR,
+		.output = empty_str(),
 		.format_cache = false,
 		.verbose = false,
 		.repos_path = str_init(DEFAULT_REPOS_LIST_PATH, DEFAULT_REPOS_LIST_PATH_SIZE),

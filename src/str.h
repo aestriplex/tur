@@ -31,9 +31,8 @@ typedef struct {
 	uint16_t len;
 } str_t;
 
-#define EMPTY_STR (str_t) { .val="", .len=0 }
-
 str_t str_init(const char *str, uint16_t len);
+str_t empty_str(void);
 bool str_equals(str_t str1, str_t str2);
 bool str_arr_equals(str_t str, const char *expected);
 char get_char(str_t str, uint16_t i);

@@ -53,7 +53,7 @@ repository_t parse_repository(const char *line, ssize_t len)
 	const char *bracket_open = strchr(line, '[');
 	
 	if (bracket_open == NULL) {
-		return init_repo(str_init(line, len), EMPTY_STR);
+		return init_repo(str_init(line, len), empty_str());
 	}
 	
 	size_t path_len = bracket_open - line;
@@ -74,13 +74,16 @@ repository_t parse_repository(const char *line, ssize_t len)
 		}
 	}
 	
+	size_t url_len;
 	if (!bracket_close) {
-		size_t url_len = len - path_len - 1;
-		repo.url = str_init(bracket_open + 1, url_len);
+		url_len = len - path_len - 1;
 	} else {
-		size_t url_len = bracket_close - bracket_open - 1;
-		repo.url = str_init(bracket_open + 1, url_len);
+		url_len = bracket_close - bracket_open - 1;
 	}
+
+	repo.url = url_len == 0
+			   ? empty_str()
+			   : str_init(bracket_open + 1, url_len);
 
 	if (repo.url.len != 0 && get_char(repo.url, repo.url.len - 1) != '/') {
 		str_t postfix = str_init("/", 1);

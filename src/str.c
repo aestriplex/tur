@@ -27,12 +27,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define EMPTY_STR (str_t) { .val="", .len=0 }
+
+str_t empty_str(void)
+{
+	return str_init(EMPTY_STR.val, EMPTY_STR.len);
+}
+
 str_t str_init(const char *str, uint16_t len)
 {
 	char *copy = malloc(len + 1);
 	if (!copy) {
 		fprintf(stderr, "str_init: memory allocation failed\n");
-		return EMPTY_STR;
+		return empty_str();
 	}
 	strncpy(copy, str, len);
 	copy[len] = '\0';
@@ -73,7 +80,7 @@ str_t str_concat(str_t str1, str_t str2)
 						"    \"%s\"\n"
 						"    \"%s\"\n",
 						str1.val, str2.val);
-		return EMPTY_STR;
+		return empty_str();
 	}
 	memcpy(new_val, str1.val, str1.len);
 	memcpy(new_val + str1.len, str2.val, str2.len);
