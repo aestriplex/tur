@@ -28,5 +28,6 @@
 void generate_latex_file(const repository_array_t *repos, settings_t settings);
 void print_stdout(const repository_array_t *repos, settings_t settings);
 void generate_html_file(const repository_array_t *repos, settings_t settings);
+void generate_markdown_file(const repository_array_t *repos, settings_t settings);
 
 #endif /* __VIEW_H__ */

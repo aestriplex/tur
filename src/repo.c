@@ -84,10 +84,10 @@ repository_t parse_repository(const char *line, ssize_t len)
 
 	if (repo.url.len != 0 && get_char(repo.url, repo.url.len - 1) != '/') {
 		str_t postfix = str_init("/", 1);
-		str_t *old_url = &repo.url;
-		repo.url = str_concat(repo.url, postfix);
+		str_t new_url = str_concat(repo.url, postfix);
+		str_free(repo.url);
 		str_free(postfix);
-		str_free(*old_url);
+		repo.url = new_url;
 	}
 	
 	return repo;

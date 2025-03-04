@@ -76,7 +76,7 @@ static void print_output(const repository_array_t *repos, settings_t settings)
 		generate_html_file(repos, settings);
 		break;
 	case JEKYLL:
-		fprintf(stderr, "Output mode not implemented yet...\n");
+		generate_markdown_file(repos, settings);
 		break;
 	default:
 		fprintf(stderr, "corrupted output mode [%d]... stdout selected", settings.output_mode);
