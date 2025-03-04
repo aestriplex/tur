@@ -18,9 +18,9 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-all: adf test
+all: tur test
 
-adf:
+tur:
 	@echo "*****************************\n  Building tur\n*****************************"
 	@$(MAKE) -C src/
 
