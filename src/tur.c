@@ -73,8 +73,8 @@ void print_help(void)
 		   "                          Default: .rlist in the current folder\n"
 		   "\n"
 		   "Examples:\n"
-		   "  tur -v -e user@example.com\n"
-		   "  tur -m user1@example.com,user2@example.com --o commits.tex\n"
+		   "  tur -e user@example.com\n"
+		   "  tur -m user1@example.com,user2@example.com -o commits.tex\n"
 		   "\n"
 		   "\n",
 		   __TUR_VERSION__);

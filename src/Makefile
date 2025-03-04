@@ -20,6 +20,7 @@
 
 CC = gcc
 CFLAGS = -Wall -pedantic -O3 -std=c2x
+CVARS = -D_GNU_SOURCE
 DEBUG_FLAGS = -Wall -pedantic -g -std=c2x
 INCLUDE_PATH = /usr/local/include
 INSTALL_PATH = /usr/local/bin
@@ -31,21 +32,29 @@ OUT = tur
 UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
 ifeq ($(UNAME_S), Darwin)
-    ifeq ($(UNAME_M), arm64)
-        INCLUDE_PATH = /opt/homebrew/include
-        LIB_PATH = /opt/homebrew/lib
-    endif
+	ifeq ($(UNAME_M), arm64)
+		INCLUDE_PATH = /opt/homebrew/include
+		LIB_PATH = /opt/homebrew/lib
+	endif
+endif
+ifeq ($(UNAME_S), Linux)
+	INCLUDE_PATH = /usr/include
+	ifeq ($(UNAME_M), arm64)
+		LIB_PATH = /usr/lib/aarch64-linux-gnu
+	else
+		LIB_PATH = /usr/lib/x86_64-linux-gnu
+	endif
 endif
 
 all: *.o
-	$(CC) $(CFLAGS) -I$(INCLUDE_PATH) -L$(LIB_PATH) $(LIB) -o $(OUT) $^
+	$(CC) $(CFLAGS) -I$(INCLUDE_PATH) -o $(OUT) $^ -L$(LIB_PATH) $(LIB)
 
 *.o: *.c
-	$(CC) -I$(INCLUDE_PATH) $(CFLAGS) -c $^
+	$(CC) $(CVARS) -I$(INCLUDE_PATH) $(CFLAGS) -c $^
 
 .PHONY: debug
 debug: *.c
-	$(CC) $(DEBUG_FLAGS) $(LIB) -I$(INCLUDE_PATH) -L$(LIB_PATH) -o $(OUT) $^
+	$(CC) $(CVARS) $(DEBUG_FLAGS) -I$(INCLUDE_PATH) -o $(OUT) $^ -L$(LIB_PATH) $(LIB)
 
 .PHONY:clean
 clean:

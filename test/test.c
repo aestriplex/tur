@@ -20,11 +20,8 @@
  */
 
 #include "test.h"
+
 #include <stdlib.h>
-#include <time.h>
-#ifdef __linux__
-#include <linux/time.h>
-#endif
 
 void assert_true(bool condition, const char *label)
 {
@@ -35,16 +32,4 @@ void assert_true(bool condition, const char *label)
 
 	printf(RED "FAILED (" CROSS "): %s\n" RESET, label);
 	exit(1);
-}
-
-uint64_t get_nanos(void)
-{
-	tick_t start;
-	clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-	return (uint64_t) start.tv_sec*1e9 + (uint64_t) start.tv_nsec;
-}
-
-double get_time_diff(uint64_t prev_tick)
-{
-	return (get_nanos() - prev_tick)*1e-9;
 }

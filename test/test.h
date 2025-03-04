@@ -36,9 +36,4 @@
 /* assertions */
 void assert_true(bool condition, const char *message);
 
-/* Performances */
-typedef struct timespec tick_t;
-uint64_t get_nanos(void);
-double get_time_diff(uint64_t start);
-
 #endif /* __TEST_H__ */
