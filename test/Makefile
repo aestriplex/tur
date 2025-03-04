@@ -19,7 +19,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 CC = gcc
-$(CVARS)  = -D_GNU_SOURCE
+CVARS = -D_GNU_SOURCE
 CFLAGS = -Wall -pedantic -O3 -std=c2x
 TEST_BINS = test_parse_repository test_parse_email_list test_str
 
