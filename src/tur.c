@@ -19,6 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "codes.h"
 #include "opts_args.h"
 #include "repo.h"
 #include "settings.h"
@@ -35,7 +36,7 @@
 static settings_t settings;
 static struct option long_options[] = {
 	{ "help",      no_argument,       0, 'h' },
-	{ "verbose",   no_argument,       0, 'v' },
+	{ "version",   no_argument,       0, 'v' },
 	{ "group",     no_argument,       0, 'g' },
 	{ "sort",      no_argument,       0, 's' },
 	{ "email",     required_argument, 0, 'e' },
@@ -47,15 +48,15 @@ static struct option long_options[] = {
 
 void print_help(void)
 {
-	printf("\n"
-		   "T U R\n"
+	printf("T U R\n"
 		   "---------------------------------\n"
 		   "Developed by aestriplex, (c) 2025\n"
+		   "version %s\n"
 		   "\n"
 		   "Usage: tur [OPTIONS]\n"
-		   "\nOptions:\n"
+		   "Options:\n"
 		   "  -h, --help              Show this help message and exit\n"
-		   "  -v, --verbose           Enable verbose output\n"
+		   "  -v, --version           Prints the verison on tur\n"
 		   "                          Default: false\n"
 		   "  -g, --group             Group commit by repository\n"
 		   "                          Default: false\n"
@@ -75,8 +76,8 @@ void print_help(void)
 		   "  tur -v -e user@example.com\n"
 		   "  tur -m user1@example.com,user2@example.com --o commits.tex\n"
 		   "\n"
-		   "\n"
-		);
+		   "\n",
+		   __TUR_VERSION__);
 }
 
 int main(int argc, char *argv[])
@@ -98,8 +99,8 @@ int main(int argc, char *argv[])
 			print_help();
 			goto end;
 		case 'v':
-			settings.verbose = true;
-			break;
+			printf("TUR version %s\n", __TUR_VERSION__);
+			goto end;
 		case 'e':
 			settings.emails = malloc(sizeof(str_t));
 			*(settings.emails)  = str_init(optarg, (uint16_t) strlen(optarg));

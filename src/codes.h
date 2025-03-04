@@ -22,6 +22,8 @@
 #ifndef __CODES_H__
 #define __CODES_H__
 
+#define __TUR_VERSION__ "0.9.0"
+
 typedef enum {
 	OK = 0x00,
 	INVALID_REPOS_LIST_PATH = 0x01,

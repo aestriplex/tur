@@ -35,7 +35,7 @@ static void generate_md_file_grouped(FILE *out,
 		
 	if(repo->history->n_authored == 0) { goto co_authored; }
 
-	fprintf(out, "### Authored\n");
+	fprintf(out, "#### Authored\n");
 	
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(out, "%zu. [%s](%s) %s",
@@ -49,7 +49,7 @@ co_authored:
 	
 	if(repo->history->n_co_authored == 0) { return; }
 
-	fprintf(out, "### Coauthored\n");
+	fprintf(out, "#### Coauthored\n");
 	
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
 		fprintf(out, "%zu. [%s](%s) %s",

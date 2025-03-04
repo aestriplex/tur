@@ -33,7 +33,6 @@ settings_t default_settings(void)
 		.output_mode = STDOUT,
 		.output = empty_str(),
 		.format_cache = false,
-		.verbose = false,
 		.repos_path = str_init(DEFAULT_REPOS_LIST_PATH, DEFAULT_REPOS_LIST_PATH_SIZE),
 		.emails = NULL,
 		.n_emails = 0,

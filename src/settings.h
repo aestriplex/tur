@@ -34,7 +34,6 @@ typedef enum {
 } tur_output_t;
 
 typedef struct {
-	bool verbose;
 	bool format_cache;
 	bool grouped;
 	bool sorted;
