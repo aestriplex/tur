@@ -24,12 +24,16 @@ adf:
 	@echo "*****************************\n  Building tur\n*****************************"
 	@$(MAKE) -C src/
 
-.PHONY : test
+.PHONY: test
 test:
 	@echo "*****************************\n  TESTS\n*****************************"
 	@$(MAKE) -C test/
 
-.PHONY : clean
+.PHONY: clean
 clean:
 	@$(MAKE) -C src clean
 	@$(MAKE) -C test clean
+
+.PHONY: install
+install:
+	@$(MAKE) -C src install
