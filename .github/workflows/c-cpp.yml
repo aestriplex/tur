@@ -14,6 +14,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: prepare environment for C compiling
-      run: sudo apt-get install build-essential 
+      run: sudo apt-get install build-essential libgit2-dev
     - name: build tur and execute tests
       run: make
