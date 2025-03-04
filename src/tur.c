@@ -36,7 +36,6 @@ static settings_t settings;
 static struct option long_options[] = {
 	{ "help",      no_argument,       0, 'h' },
 	{ "verbose",   no_argument,       0, 'v' },
-	{ "format",    no_argument,       0, 'f' },
 	{ "group",     no_argument,       0, 'g' },
 	{ "sort",      no_argument,       0, 's' },
 	{ "email",     required_argument, 0, 'e' },
@@ -58,7 +57,6 @@ void print_help(void)
 		   "  -h, --help              Show this help message and exit\n"
 		   "  -v, --verbose           Enable verbose output\n"
 		   "                          Default: false\n"
-		   "  -f, --format            Enable formatting\n"
 		   "  -g, --group             Group commit by repository\n"
 		   "                          Default: false\n"
 		   "  -s, --sort              Sort commit by date\n"
@@ -94,16 +92,13 @@ int main(int argc, char *argv[])
 
 	settings = default_settings();
 
-	while ((ch = getopt_long(argc, argv, "hvgsfo:r:e:m:", long_options, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "hvgso:r:e:m:", long_options, &option_index)) != -1) {
 		switch (ch) {
 		case 'h':
 			print_help();
 			goto end;
 		case 'v':
 			settings.verbose = true;
-			break;
-		case 'f':
-			settings.format_cache = true;
 			break;
 		case 'e':
 			settings.emails = malloc(sizeof(str_t));
