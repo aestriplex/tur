@@ -42,6 +42,10 @@ void test_parse_emails(void)
 					"First email is 'email1@example.com'");
 		assert_true(result[1].len == 18 && str_arr_equals(result[1], "email2@example.com"),
 					"Second email is 'email2@example.com'");
+
+		str_free(result[0]);
+		str_free(result[1]);
+		free(result);
 	}
 
 	{
@@ -51,6 +55,9 @@ void test_parse_emails(void)
 		assert_true(count == 1, "Count of emails should be 1");
 		assert_true(result[0].len == 24 && str_arr_equals(result[0], "single.email@example.com"),
 					"Email 'single.email@example.com'");
+		
+		str_free(result[0]);
+		free(result);
 	}
 
 	{
@@ -73,6 +80,9 @@ void test_parse_emails(void)
 		assert_true(count == 1, "Count of emails should be 1");
 		assert_true(result[0].len == 18 && str_arr_equals(result[0], "email1@example.com"),
 					"The emails should be 'email1@example.com'");
+
+		str_free(result[0]);
+		free(result);
 	}
 
 	{
@@ -99,6 +109,7 @@ void test_parse_emails(void)
 			free((char *)result[i].val);
 		}
 		assert_true(condition, "All the emails are correct");
+		free(result);
 	}
 }
 
