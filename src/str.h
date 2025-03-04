@@ -36,5 +36,8 @@ typedef struct {
 str_t str_init(const char *str, uint16_t len);
 bool str_equals(str_t str1, str_t str2);
 bool str_arr_equals(str_t str, const char *expected);
+char get_char(str_t str, uint16_t i);
+str_t str_concat(str_t str1, str_t str2);
+void str_free(str_t str);
 
 #endif /* __STR_H__ */ 

@@ -20,16 +20,20 @@
 
 CC = gcc
 CFLAGS = -Wall -pedantic -O3 -std=c2x
-TEST_BINS = test_parse_repository test_parse_email_list
+TEST_BINS = test_parse_repository test_parse_email_list test_str
 
 all: $(TEST_BINS)
 	./test_parse_repository
 	./test_parse_email_list
+	./test_str
 
 test_parse_repository: test.c test_parse_repository.c repo.o str.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 test_parse_email_list: test.c test_parse_email_list.c opts_args.o str.o utils.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+test_str: test.c test_str.c str.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 repo.o: ../src/repo.c
