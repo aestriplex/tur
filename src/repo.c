@@ -37,7 +37,7 @@ static str_t get_repo_name(str_t repo_path)
 	return str_init(repo_name, (uint16_t) strlen(repo_name));
 }
 
-repository_t init_repo(str_t path, str_t url)
+static repository_t init_repo(str_t path, str_t url)
 {
 	return (repository_t) {
 		.path = path,
@@ -80,6 +80,14 @@ repository_t parse_repository(const char *line, ssize_t len)
 	} else {
 		size_t url_len = bracket_close - bracket_open - 1;
 		repo.url = str_init(bracket_open + 1, url_len);
+	}
+
+	if (repo.url.len != 0 && get_char(repo.url, repo.url.len - 1) != '/') {
+		str_t postfix = str_init("/", 1);
+		str_t *old_url = &repo.url;
+		repo.url = str_concat(repo.url, postfix);
+		str_free(postfix);
+		str_free(*old_url);
 	}
 	
 	return repo;

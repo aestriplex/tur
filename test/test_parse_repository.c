@@ -25,13 +25,14 @@
 
 #include <string.h>
 
-void test_parse_repository() {
+void test_parse_repository()
+{
 	{
-		const char *line = "repo/path[https://example.com]";
+		const char *line = "repo/path[https://example.com/]";
 		repository_t repo = parse_repository(line, strlen(line));
 		
 		assert_true(str_arr_equals(repo.path, "repo/path"), "Path should be 'repo/path'");
-		assert_true(str_arr_equals(repo.url, "https://example.com"), "URL should be 'https://example.com'");
+		assert_true(str_arr_equals(repo.url, "https://example.com/"), "URL should be 'https://example.com/'");
 	}
 	
 	{
@@ -47,7 +48,7 @@ void test_parse_repository() {
 		repository_t repo = parse_repository(line, strlen(line));
 		
 		assert_true(str_arr_equals(repo.path, "repo/path"), "Path should be 'repo/path'");
-		assert_true(str_arr_equals(repo.url, "https://example.com"), "URL should be 'https://example.com'");
+		assert_true(str_arr_equals(repo.url, "https://example.com/"), "URL should be 'https://example.com/'");
 	}
 	
 	{
@@ -55,7 +56,7 @@ void test_parse_repository() {
 		repository_t repo = parse_repository(line, strlen(line));
 		
 		assert_true(repo.path.len == 0, "Path should be empty");
-		assert_true(str_arr_equals(repo.url, "https://example.com"), "URL should be 'https://example.com'");
+		assert_true(str_arr_equals(repo.url, "https://example.com/"), "URL should be 'https://example.com/'");
 	}
 	
 	{
@@ -71,7 +72,7 @@ void test_parse_repository() {
 		repository_t repo = parse_repository(line, strlen(line));
 		
 		assert_true(str_arr_equals(repo.path, "repo/path"), "Path should be 'repo/path'");
-		assert_true(str_arr_equals(repo.url, "https://example.com/repo[name]"), "URL should be 'https://example.com/repo[name]'");
+		assert_true(str_arr_equals(repo.url, "https://example.com/repo[name]/"), "URL should be 'https://example.com/repo[name]/'");
 	}
 	
 	{
@@ -83,11 +84,11 @@ void test_parse_repository() {
 	}
 	
 	{
-		const char *line = "repo/path with spaces[https://example.com]";
+		const char *line = "repo/path with spaces[https://example.com/]";
 		repository_t repo = parse_repository(line, strlen(line));
 		
 		assert_true(str_arr_equals(repo.path, "repo/path with spaces"), "Path should be 'repo/path with spaces'");
-		assert_true(str_arr_equals(repo.url, "https://example.com"), "URL should be 'https://example.com'");
+		assert_true(str_arr_equals(repo.url, "https://example.com/"), "URL should be 'https://example.com/'");
 	}
 	
 	{
@@ -95,7 +96,7 @@ void test_parse_repository() {
 		repository_t repo = parse_repository(line, strlen(line));
 		
 		assert_true(str_arr_equals(repo.path, "repo/path"), "Path should be 'repo/path'");
-		assert_true(str_arr_equals(repo.url, "git@github.com:user/repo.git"), "URL should be 'git@github.com:user/repo.git'");
+		assert_true(str_arr_equals(repo.url, "git@github.com:user/repo.git/"), "URL should be 'git@github.com:user/repo.git/'");
 	}
 }
 
