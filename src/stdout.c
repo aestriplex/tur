@@ -24,10 +24,11 @@
 
 #include <stdio.h>
 
-static void print_stdout_grouped(const repository_t *repo,
-								 const commit_refs_t *authored,
-								 const commit_refs_t *co_authored)
+static void print_stdout_grouped(const repository_t *repo, const indexes_t *indexes)
 {
+	commit_t **const authored = indexes->authored;
+	commit_t **const co_authored = indexes->co_authored;
+
 	fprintf(stdout, "Repository: %s\n", repo->name.val);
 
 	if(repo->history->n_authored == 0) { goto co_authored; }
@@ -35,8 +36,8 @@ static void print_stdout_grouped(const repository_t *repo,
 	fprintf(stdout, "Authored commits:\n");
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(stdout, "\t%s %s",
-				authored->commits[n_c]->hash.val,
-				time_to_string(authored->commits[n_c]->date).val);
+				authored[n_c]->hash.val,
+				time_to_string(authored[n_c]->date).val);
 	}
 
 co_authored:
@@ -46,27 +47,28 @@ co_authored:
 	fprintf(stdout, "Co-authored commits:\n");
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
 		fprintf(stdout, "\t%s %s",
-				co_authored->commits[n_c]->hash.val,
-				time_to_string(co_authored->commits[n_c]->date).val);
+				co_authored[n_c]->hash.val,
+				time_to_string(co_authored[n_c]->date).val);
 	}
 }
 
-static void print_stdout_list(const repository_t *repo,
-							  const commit_refs_t *authored,
-							  const commit_refs_t *co_authored)
+static void print_stdout_list(const repository_t *repo, const indexes_t *indexes)
 {
+	commit_t **const authored = indexes->authored;
+	commit_t **const co_authored = indexes->co_authored;
+
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(stdout, "[%s,A] %s %s",
 				repo->name.val,
-				authored->commits[n_c]->hash.val,
-				time_to_string(authored->commits[n_c]->date).val);
+				authored[n_c]->hash.val,
+				time_to_string(authored[n_c]->date).val);
 	}
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
 		fprintf(stdout, "[%s,C] %s %s",
 				repo->name.val,
-				co_authored->commits[n_c]->hash.val,
-				time_to_string(co_authored->commits[n_c]->date).val);
+				co_authored[n_c]->hash.val,
+				time_to_string(co_authored[n_c]->date).val);
 	}
 }
 
@@ -74,13 +76,11 @@ void print_stdout(const repository_array_t *repos, settings_t settings)
 {
 	for (size_t i = 0; i < repos->count; i++) {
 		const repository_t repo = repos->repositories[i];
-		const commit_refs_t *authored = repo.history->authored;
-		const commit_refs_t *co_authored = repo.history->co_authored;
 
 		if (settings.grouped) {
-			print_stdout_grouped(&repo, authored, co_authored);
+			print_stdout_grouped(&repo, &repo.history->indexes);
 		} else {
-			print_stdout_list(&repo, authored, co_authored);
+			print_stdout_list(&repo, &repo.history->indexes);
 		}
 	}
 

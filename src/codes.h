@@ -25,9 +25,10 @@
 #define __TUR_VERSION__ "0.9.0"
 
 typedef enum {
-	OK = 0x00,
-	INVALID_REPOS_LIST_PATH = 0x01,
-	ARRAY_RESIZE_ALLOCATION_ERROR = 0x02
+	OK                            = 0x00,
+	INVALID_REPOS_LIST_PATH       = 0x01,
+	ARRAY_RESIZE_ALLOCATION_ERROR = 0x02,
+	INDEX_ALLOCATION_ERROR        = 0x03,
 } return_code_t;
 
 #endif /* __CODES_H__ */

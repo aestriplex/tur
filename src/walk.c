@@ -37,30 +37,37 @@ static int compare_commits(const void* a, const void* b)
 	return (*first)->date < (*second)->date ? -1 : 1;
 }
 
-static commit_refs_t *init_commit_refs(size_t n_commits)
+static commit_t **get_commit_refs(const commit_arr_t *commit_arr, size_t commit_with_resp,
+								  responsability_t resp, settings_t settings)
 {
-	commit_refs_t *c_r = malloc(sizeof(commit_refs_t));
-	c_r->commits = malloc(n_commits * sizeof(commit_t *));
-	c_r->n_commits = n_commits;
-	return c_r;
-}
-
-static commit_refs_t *get_commit_refs(const commit_arr_t *commit_arr, size_t commit_with_resp,
-									  responsability_t resp, settings_t settings)
-{
-	commit_refs_t *commits_with_resp = init_commit_refs(commit_with_resp);
+	commit_t **commits_with_resp = malloc(commit_with_resp * sizeof(commit_t *));
 	for (size_t i = 0, n_resp = 0; i < commit_arr->count; i++) {
 		if (commit_arr->commits[i].responsability == resp) {
-			commits_with_resp->commits[n_resp] = commit_arr->commits + i;
+			commits_with_resp[n_resp] = commit_arr->commits + i;
 			n_resp++;
 		}
 	}
 	if (settings.sorted) {
-		qsort(commits_with_resp->commits, commit_with_resp,
+		qsort(commits_with_resp, commit_with_resp,
 			  sizeof(commit_t **), &compare_commits);
 	}
 
 	return commits_with_resp;
+}
+
+static uint16_t build_indexes(repository_t *repo, settings_t settings)
+{
+	repo->history->indexes.authored = get_commit_refs(&repo->history->commit_arr,
+													  repo->history->n_authored,
+													  AUTHORED, settings);
+	repo->history->indexes.co_authored = get_commit_refs(&repo->history->commit_arr,
+														 repo->history->n_co_authored,
+														 CO_AUTHORED, settings);
+	
+	if (!repo->history->indexes.authored
+		|| !repo->history->indexes.co_authored) { return INDEX_ALLOCATION_ERROR; }
+
+	return OK;
 }
 
 static void print_output(const repository_array_t *repos, settings_t settings)
@@ -87,16 +94,13 @@ static void print_output(const repository_array_t *repos, settings_t settings)
 return_code_t walk_through_repos(const repository_array_t *repos, settings_t settings)
 {
 	repository_t *repo;
+	uint16_t ret;
 
 	for (size_t i = 0; i < repos->count; i++) {
 		repo = repos->repositories + i;
 		repo->history = get_commit_history(repo->path, settings);
-		repo->history->authored = get_commit_refs(&repo->history->commit_arr,
-												  repo->history->n_authored,
-												  AUTHORED, settings);
-		repo->history->co_authored = get_commit_refs(&repo->history->commit_arr,
-													 repo->history->n_co_authored,
-													 CO_AUTHORED, settings);
+		ret = build_indexes(repo, settings);
+		if (ret != OK) { return ret; }
 	}
 	
 	print_output(repos, settings);

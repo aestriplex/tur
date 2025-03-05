@@ -177,8 +177,12 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 
 	history->n_authored = n_authored;
 	history->n_co_authored = n_co_authored;
-	history->authored = NULL;
-	history->co_authored = NULL;
+
+	/* Indexes are built in walk procedure (see walk.c) */
+	history->indexes = (indexes_t) {
+		.authored = NULL,
+		.co_authored = NULL
+	};
 
 cleanup:
 	git_repository_free(git_repo);

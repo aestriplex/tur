@@ -28,9 +28,11 @@
 
 static void generate_html_file_grouped(FILE *out, const
 									   repository_t *repo,
-									   const commit_refs_t *authored,
-									   const commit_refs_t *co_authored)
+									   const indexes_t *indexes)
 {
+	commit_t **const authored = indexes->authored;
+	commit_t **const co_authored = indexes->co_authored;
+
 	fprintf(out, "<h2>%s</h2>\n\n", repo->name.val);
 	
 	if(repo->history->n_authored == 0) { goto co_authored; }
@@ -39,9 +41,9 @@ static void generate_html_file_grouped(FILE *out, const
 	
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(out, "\t<li><a href='%s' target='_blank'>%s</a> %s</li>",
-				get_github_url(repo->url, authored->commits[n_c]->hash).val,
-				authored->commits[n_c]->hash.val,
-				time_to_string(authored->commits[n_c]->date).val);
+				get_github_url(repo->url, authored[n_c]->hash).val,
+				authored[n_c]->hash.val,
+				time_to_string(authored[n_c]->date).val);
 	}
 
 	fprintf(out, "</ul>\n");
@@ -54,9 +56,9 @@ co_authored:
 	
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
 		fprintf(out, "\t<li><a href='%s' target='_blank'>%s</a> %s</li>",
-				get_github_url(repo->url, co_authored->commits[n_c]->hash).val,
-				co_authored->commits[n_c]->hash.val,
-				time_to_string(co_authored->commits[n_c]->date).val);
+				get_github_url(repo->url, co_authored[n_c]->hash).val,
+				co_authored[n_c]->hash.val,
+				time_to_string(co_authored[n_c]->date).val);
 	}
 
 	fprintf(out, "</ul>\n");
@@ -64,23 +66,25 @@ co_authored:
 
 static void generate_html_file_list(FILE *out, const
 									repository_t *repo,
-									const commit_refs_t *authored,
-									const commit_refs_t *co_authored)
+									const indexes_t *indexes)
 {
+	commit_t **const authored = indexes->authored;
+	commit_t **const co_authored = indexes->co_authored;
+
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(out, "\t<li>[%s,A] <a href='%s' target='_blank'>%s</a> %s</li>",
 				repo->name.val,
-				get_github_url(repo->url, authored->commits[n_c]->hash).val,
-				authored->commits[n_c]->hash.val,
-				time_to_string(authored->commits[n_c]->date).val);
+				get_github_url(repo->url, authored[n_c]->hash).val,
+				authored[n_c]->hash.val,
+				time_to_string(authored[n_c]->date).val);
 	}
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
 		fprintf(out, "\t<li>[%s,C] <a href='%s' target='_blank'>%s</a> %s</li>",
 				repo->name.val,
-				get_github_url(repo->url, co_authored->commits[n_c]->hash).val,
-				co_authored->commits[n_c]->hash.val,
-				time_to_string(co_authored->commits[n_c]->date).val);
+				get_github_url(repo->url, co_authored[n_c]->hash).val,
+				co_authored[n_c]->hash.val,
+				time_to_string(co_authored[n_c]->date).val);
 	}
 }
 
@@ -98,13 +102,11 @@ void generate_html_file(const repository_array_t *repos, settings_t settings)
 
 	for (size_t i = 0; i < repos->count; i++) {
 		const repository_t repo = repos->repositories[i];
-		const commit_refs_t *authored = repo.history->authored;
-		const commit_refs_t *co_authored = repo.history->co_authored;
 
 		if (settings.grouped) {
-			generate_html_file_grouped(out, &repo, authored, co_authored);
+			generate_html_file_grouped(out, &repo, &repo.history->indexes);
 		} else {
-			generate_html_file_list(out, &repo, authored, co_authored);
+			generate_html_file_list(out, &repo, &repo.history->indexes);
 		}
 	}
 

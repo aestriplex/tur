@@ -49,16 +49,15 @@ typedef struct {
 } commit_arr_t;
 
 typedef struct {
-	size_t n_commits;
-	commit_t **commits;
-} commit_refs_t;
+	commit_t **authored;
+	commit_t **co_authored;
+} indexes_t;
 
 typedef struct {
 	commit_arr_t commit_arr;
 	size_t n_authored;
 	size_t n_co_authored;
-	commit_refs_t *authored;
-	commit_refs_t *co_authored;
+	indexes_t indexes;
 } work_history_t;
 
 work_history_t *get_commit_history(str_t repo_path, settings_t settings);
