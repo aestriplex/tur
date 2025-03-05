@@ -33,6 +33,8 @@ static void generate_html_file_grouped(FILE *out, const
 	commit_t **const authored = indexes->authored;
 	commit_t **const co_authored = indexes->co_authored;
 
+	if(repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
+
 	fprintf(out, "<h2>%s</h2>\n\n", repo->name.val);
 	
 	if(repo->history->n_authored == 0) { goto co_authored; }
