@@ -35,7 +35,7 @@
 str_t time_to_string(time_t timestamp)
 {
 	const char *date = ctime(&timestamp);
-	return str_init(date, (uint16_t) strlen(date));
+	return str_init(date, (uint16_t) strlen(date) - 1);
 }
 
 str_t get_github_url(str_t repo_url, str_t commit_hash)

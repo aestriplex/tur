@@ -26,9 +26,21 @@
 
 #include <stdio.h>
 
+static void print_commit_diffs(FILE *out, const commit_t *commit)
+{
+	fprintf(out, "%zu file%c changed "
+				 "<span style='color:green;'>+%zu</span> "
+				 "| <span style='color:red;'>-%zu</span>\n",
+			commit->stats.files_changed,
+			(commit->stats.files_changed > 1 ? 's': ASCII_SPACE),
+			commit->stats.lines_added,
+			commit->stats.lines_removed);
+}
+
 static void generate_md_file_grouped(FILE *out,
 									 const repository_t *repo,
-									 const indexes_t *indexes)
+									 const indexes_t *indexes,
+									 const settings_t *settings)
 {
 	commit_t **const authored = indexes->authored;
 	commit_t **const co_authored = indexes->co_authored;
@@ -42,11 +54,14 @@ static void generate_md_file_grouped(FILE *out,
 	fprintf(out, "#### Authored\n");
 	
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "%zu. [%s](%s) %s",
+		fprintf(out, "%zu. [%s](%s) %s\n",
 				n_c + 1,
 				authored[n_c]->hash.val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				time_to_string(authored[n_c]->date).val);
+		if (settings->show_diffs) {
+			print_commit_diffs(out, authored[n_c]);
+		}
 	}
 
 co_authored:
@@ -56,17 +71,21 @@ co_authored:
 	fprintf(out, "#### Coauthored\n");
 	
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(out, "%zu. [%s](%s) %s",
+		fprintf(out, "%zu. [%s](%s) %s\n",
 				n_c + 1,
 				co_authored[n_c]->hash.val,
 				get_github_url(repo->url, co_authored[n_c]->hash).val,
 				time_to_string(co_authored[n_c]->date).val);
+		if (settings->show_diffs) {
+			print_commit_diffs(out, co_authored[n_c]);
+		}
 	}
 }
 
 static void generate_md_file_list(FILE *out,
 								  const repository_t *repo,
-								  const indexes_t *indexes)
+								  const indexes_t *indexes,
+								  const settings_t *settings)
 {
 	commit_t **const authored = indexes->authored;
 	commit_t **const co_authored = indexes->co_authored;
@@ -77,6 +96,9 @@ static void generate_md_file_list(FILE *out,
 				authored[n_c]->hash.val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				time_to_string(authored[n_c]->date).val);
+		if (settings->show_diffs) {
+			print_commit_diffs(out, authored[n_c]);
+		}
 	}
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
@@ -85,6 +107,9 @@ static void generate_md_file_list(FILE *out,
 				co_authored[n_c]->hash.val,
 				get_github_url(repo->url, co_authored[n_c]->hash).val,
 				time_to_string(co_authored[n_c]->date).val);
+		if (settings->show_diffs) {
+			print_commit_diffs(out, co_authored[n_c]);
+		}
 	}
 }
 
@@ -102,9 +127,9 @@ void generate_markdown_file(const repository_array_t *repos, settings_t settings
 		const repository_t repo = repos->repositories[i];
 
 		if (settings.grouped) {
-			generate_md_file_grouped(out, &repo, &repo.history->indexes);
+			generate_md_file_grouped(out, &repo, &repo.history->indexes, &settings);
 		} else {
-			generate_md_file_list(out, &repo, &repo.history->indexes);
+			generate_md_file_list(out, &repo, &repo.history->indexes, &settings);
 		}
 	}
 
