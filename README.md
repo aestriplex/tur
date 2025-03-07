@@ -60,10 +60,15 @@ By default, TUR looks for a file called `.rlist` in the current path. The file s
 /path/to/local/repo1[origin/repo1/url]
 /path/to/local/repo2[origin/repo2/url]
 ``` 
-If you want to rename that file (or put it in another directory) you should specify its path via the option `-f`
+If you’d like to rename that file (or put it in another directory), you should specify its path via the option `-r`
 
 #### Example of usage
 
+The following command produce a LaTeX file with the grouped commit list, sorted by date, in which `example@provider.com` is either the main author or the co-author.
 ```
 % tur -f repository_list.txt -e example@provider.com -o commits.tex -sg
+```
+To specify more email adrresses, you just have to use the option `-m` with the *comma-separated* list of emails
+```
+% tur -f repository_list.txt -m example1@provider1.com,example2@provider2.com -o commits.tex -sg
 ```
