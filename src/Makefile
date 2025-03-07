@@ -58,7 +58,7 @@ debug: *.c
 
 .PHONY:clean
 clean:
-	rm -f *.o $(OUT)
+	rm -rf *.o *.dSYM $(OUT)
 
 .PHONY: install
 install:
