@@ -43,6 +43,7 @@ sudo make install
 | Option | Description |
 |--------|-------------|
 | `-h`, `--help` | Show help message |
+| `-d`, `--diffs` | Shows the commit stats (line added, removed and file changed) |
 | `-v`, `--version` | Display version |
 | `-g`, `--group` | Group commits by repository |
 | `-s`, `--sort` | Sort commits by date |
