@@ -36,9 +36,10 @@
 static settings_t settings;
 static struct option long_options[] = {
 	{ "help",      no_argument,       0, 'h' },
-	{ "version",   no_argument,       0, 'v' },
+	{ "diffs",      no_argument,       0, 'd' },
 	{ "group",     no_argument,       0, 'g' },
 	{ "sort",      no_argument,       0, 's' },
+	{ "version",   no_argument,       0, 'v' },
 	{ "email",     required_argument, 0, 'e' },
 	{ "mail-list", required_argument, 0, 'm' },
 	{ "out",       required_argument, 0, 'o' },
@@ -56,11 +57,12 @@ void print_help(void)
 		   "Usage: tur [OPTIONS]\n"
 		   "Options:\n"
 		   "  -h, --help              Show this help message and exit\n"
-		   "  -v, --version           Prints the verison on tur\n"
-		   "                          Default: false\n"
+		   "  -d, --diffs             Show diffs stats (rows added and removed, file changed)\n"
 		   "  -g, --group             Group commit by repository\n"
 		   "                          Default: false\n"
 		   "  -s, --sort              Sort commit by date\n"
+		   "                          Default: false\n"
+		   "  -v, --version           Prints the verison on tur\n"
 		   "                          Default: false\n"
 		   "  -e, --email EMAIL       Specify a single email address\n"
 		   "  -m, --mail-list FILE    Specify a comma separated email addresses\n"
@@ -93,11 +95,20 @@ int main(int argc, char *argv[])
 
 	settings = default_settings();
 
-	while ((ch = getopt_long(argc, argv, "hvgso:r:e:m:", long_options, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "hdgsve:m:o:r:", long_options, &option_index)) != -1) {
 		switch (ch) {
 		case 'h':
 			print_help();
 			goto end;
+		case 'd':
+			settings.show_diffs = true;
+			break;
+		case 'g' :
+			settings.grouped = true;
+			break;
+		case 's':
+			settings.sorted = true;
+			break;
 		case 'v':
 			printf("TUR version %s\n", __TUR_VERSION__);
 			goto end;
@@ -106,11 +117,9 @@ int main(int argc, char *argv[])
 			*(settings.emails)  = str_init(optarg, (uint16_t) strlen(optarg));
 			settings.n_emails = 1;
 			break;
-		case 'g' :
-			settings.grouped = true;
-			break;
-		case 's':
-			settings.sorted = true;
+		case 'm':
+			settings.emails = parse_emails(optarg, &n_emails);
+			settings.n_emails = n_emails;
 			break;
 		case 'o':
 			settings.output_mode = parse_output_file_ext(optarg);
@@ -118,10 +127,6 @@ int main(int argc, char *argv[])
 			break;
 		case 'r':
 			settings.repos_path = str_init(optarg, (uint16_t) strlen(optarg));
-			break;
-		case 'm':
-			settings.emails = parse_emails(optarg, &n_emails);
-			settings.n_emails = n_emails;
 			break;
 		default:
 			print_help();
