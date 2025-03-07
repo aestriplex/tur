@@ -36,10 +36,17 @@ typedef enum {
 } responsability_t;
 
 typedef struct {
+	size_t file_changed;
+	size_t lines_added;
+	size_t lines_removed;
+} commit_stats_t;
+
+typedef struct {
 	str_t hash;
 	responsability_t responsability;
 	time_t date;
 	str_t msg;
+	commit_stats_t stats;
 } commit_t;
 
 typedef struct {

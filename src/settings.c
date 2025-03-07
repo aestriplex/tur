@@ -37,6 +37,7 @@ settings_t default_settings(void)
 		.emails = NULL,
 		.n_emails = 0,
 		.grouped = false,
-		.sorted = false
+		.sorted = false,
+		.show_diffs = false
 	};
 }

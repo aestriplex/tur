@@ -34,6 +34,7 @@ typedef enum {
 } tur_output_t;
 
 typedef struct {
+	bool show_diffs;
 	bool format_cache;
 	bool grouped;
 	bool sorted;

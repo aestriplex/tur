@@ -89,6 +89,40 @@ static bool is_co_author(const git_commit *commit, str_t *emails, int n_emails)
 	return false;
 }
 
+static void get_commit_stats(commit_stats_t *stats, const git_commit *commit, const git_repository *repo)
+{
+	git_commit *parent_commit = NULL;
+	git_diff_stats *git_stats = NULL;
+	git_diff *diff = NULL;
+
+	if (git_commit_parentcount(commit) == 0) { return; }
+
+	if (git_commit_parent(&parent_commit, commit, 0) != 0) {
+		fprintf(stderr, "Failed to get parent commit.\n");
+		return;
+	}
+
+	git_tree *commit_tree = NULL, *parent_tree = NULL;
+	git_commit_tree(&commit_tree, commit);
+	git_commit_tree(&parent_tree, parent_commit);
+
+	if (git_diff_tree_to_tree(&diff, (git_repository *)repo, parent_tree, commit_tree, NULL) != 0) {
+		fprintf(stderr, "Failed to compute commit-to-commit diff.\n");
+		return;
+	}
+
+	if (git_diff_get_stats(&git_stats, diff) != 0) {
+		fprintf(stderr, "Failed to get diff stats.\n");
+		return;
+	}
+
+	*stats = (commit_stats_t) {
+		.file_changed = git_diff_stats_files_changed(git_stats),
+		.lines_added = git_diff_stats_insertions(git_stats),
+		.lines_removed = git_diff_stats_deletions(git_stats)
+	};
+}
+
 work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 {
 	git_repository *git_repo = NULL;
@@ -158,13 +192,17 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 			history->commit_arr.commits = new_commits;
 			history->commit_arr.capacity = new_capacity;
 		}
+
+		commit_stats_t stats = { 0 };
+		get_commit_stats(&stats, raw_commit, git_repo);
 		
 		const size_t index = n_authored + n_co_authored - 1;
 		history->commit_arr.commits[index] = (commit_t) {
 			.hash = str_init(hash, GIT_HASH_LEN),
 			.date = (time_t) author->when.time,
-			.msg = str_init(msg, strlen(msg)),
+			.msg = str_init(msg, (uint16_t)strlen(msg)),
 			.responsability = res,
+			.stats = stats
 		};
 		history->commit_arr.count++;
 
