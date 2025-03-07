@@ -19,6 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "codes.h"
 #include "commit.h"
 #include "str.h"
 
@@ -89,38 +90,55 @@ static bool is_co_author(const git_commit *commit, str_t *emails, int n_emails)
 	return false;
 }
 
-static void get_commit_stats(commit_stats_t *stats, const git_commit *commit, const git_repository *repo)
+static void print_error(uint16_t return_code, const char *hash)
 {
-	git_commit *parent_commit = NULL;
-	git_diff_stats *git_stats = NULL;
-	git_diff *diff = NULL;
-
-	if (git_commit_parentcount(commit) == 0) { return; }
-
-	if (git_commit_parent(&parent_commit, commit, 0) != 0) {
-		fprintf(stderr, "Failed to get parent commit.\n");
-		return;
+	switch (return_code) {
+	case PARENT_COMMIT_UNAVAILBLE:
+		fprintf(stderr, "cannot retrieve parent for commit %s. ERROR: %d\n", hash, return_code);
+		break;
+	case COMPARE_TREES_ERROR:
+		fprintf(stderr, "cannot compare trees for commit %s and its parent. ERROR: %d\n",
+				hash, return_code);
+		break;
+	case CANNOT_RETRIEVE_STATS:
+		fprintf(stderr, "cannot get stats for commit %s. ERROR: %d\n", hash, return_code);
+		break;
+	default:
+		fprintf(stderr, "an unknown error occurred while traversing commit "
+						"tree on commit %s. ERROR: %d\n", hash, return_code);
+		break;
 	}
+}
 
+static uint16_t get_commit_stats(commit_stats_t *stats, const git_commit *commit, const git_repository *repo)
+{
+	int res;
+	
+	if (git_commit_parentcount(commit) == 0) { return OK; }
+	
+	git_commit *parent_commit = NULL;
+	res = git_commit_parent(&parent_commit, commit, 0);
+	if (res != 0) { return PARENT_COMMIT_UNAVAILBLE; }
+	
 	git_tree *commit_tree = NULL, *parent_tree = NULL;
 	git_commit_tree(&commit_tree, commit);
 	git_commit_tree(&parent_tree, parent_commit);
-
-	if (git_diff_tree_to_tree(&diff, (git_repository *)repo, parent_tree, commit_tree, NULL) != 0) {
-		fprintf(stderr, "Failed to compute commit-to-commit diff.\n");
-		return;
-	}
-
-	if (git_diff_get_stats(&git_stats, diff) != 0) {
-		fprintf(stderr, "Failed to get diff stats.\n");
-		return;
-	}
+	
+	git_diff *diff = NULL;
+	res = git_diff_tree_to_tree(&diff, (git_repository *)repo, parent_tree, commit_tree, NULL); 
+	if (res != 0) { return COMPARE_TREES_ERROR; }
+	
+	git_diff_stats *git_stats = NULL;
+	res = git_diff_get_stats(&git_stats, diff);
+	if (res != 0) { return CANNOT_RETRIEVE_STATS; }
 
 	*stats = (commit_stats_t) {
-		.file_changed = git_diff_stats_files_changed(git_stats),
+		.files_changed = git_diff_stats_files_changed(git_stats),
 		.lines_added = git_diff_stats_insertions(git_stats),
 		.lines_removed = git_diff_stats_deletions(git_stats)
 	};
+
+	return OK;
 }
 
 work_history_t *get_commit_history(str_t repo_path, settings_t settings)
@@ -194,8 +212,11 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 		}
 
 		commit_stats_t stats = { 0 };
-		get_commit_stats(&stats, raw_commit, git_repo);
-		
+		const uint16_t return_code = get_commit_stats(&stats, raw_commit, git_repo);
+		if (return_code != OK) {
+			print_error(return_code, hash);
+			return NULL;
+		}
 		const size_t index = n_authored + n_co_authored - 1;
 		history->commit_arr.commits[index] = (commit_t) {
 			.hash = str_init(hash, GIT_HASH_LEN),

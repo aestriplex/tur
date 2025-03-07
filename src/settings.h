@@ -35,7 +35,7 @@ typedef enum {
 
 typedef struct {
 	bool show_diffs;
-	bool format_cache;
+	bool clear_cache;
 	bool grouped;
 	bool sorted;
 	str_t *emails;

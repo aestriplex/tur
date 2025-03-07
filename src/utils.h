@@ -26,6 +26,13 @@
 
 #include <time.h>
 
+#define RESET "\033[0m"
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define TICK "\u2713"
+#define CROSS "\u2A09"
+
 str_t time_to_string(time_t timestamp);
 str_t get_github_url(str_t repo_url, str_t commit_hash);
 char* trim_whitespace(char *str);

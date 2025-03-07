@@ -29,6 +29,9 @@ typedef enum {
 	INVALID_REPOS_LIST_PATH       = 0x01,
 	ARRAY_RESIZE_ALLOCATION_ERROR = 0x02,
 	INDEX_ALLOCATION_ERROR        = 0x03,
+	PARENT_COMMIT_UNAVAILBLE      = 0x04,
+	COMPARE_TREES_ERROR           = 0x05,
+	CANNOT_RETRIEVE_STATS         = 0x06
 } return_code_t;
 
 #endif /* __CODES_H__ */

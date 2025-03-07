@@ -24,7 +24,17 @@
 
 #include <stdio.h>
 
-static void print_stdout_grouped(const repository_t *repo, const indexes_t *indexes)
+static void print_commit_diffs(const commit_t * commit, const char *indent)
+{
+	fprintf(stdout, "%s%zu file%c changed\t" GREEN "+%zu" RESET " | " RED "-%zu" RESET "\n\n",
+		indent,
+		commit->stats.files_changed,
+		(commit->stats.files_changed > 1 ? 's': 0),
+		commit->stats.lines_added,
+		commit->stats.lines_removed);
+}
+
+static void print_stdout_grouped(const repository_t *repo, const indexes_t *indexes, const settings_t *settings)
 {
 	commit_t **const authored = indexes->authored;
 	commit_t **const co_authored = indexes->co_authored;
@@ -40,6 +50,10 @@ static void print_stdout_grouped(const repository_t *repo, const indexes_t *inde
 		fprintf(stdout, "\t%s %s",
 				authored[n_c]->hash.val,
 				time_to_string(authored[n_c]->date).val);
+		
+		if (settings->show_diffs) {
+			print_commit_diffs(authored[n_c], "\t");
+		}
 	}
 
 co_authored:
@@ -51,10 +65,14 @@ co_authored:
 		fprintf(stdout, "\t%s %s",
 				co_authored[n_c]->hash.val,
 				time_to_string(co_authored[n_c]->date).val);
+
+		if (settings->show_diffs) {
+			print_commit_diffs(co_authored[n_c], "\t");
+		}
 	}
 }
 
-static void print_stdout_list(const repository_t *repo, const indexes_t *indexes)
+static void print_stdout_list(const repository_t *repo, const indexes_t *indexes, const settings_t *settings)
 {
 	commit_t **const authored = indexes->authored;
 	commit_t **const co_authored = indexes->co_authored;
@@ -64,6 +82,10 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 				repo->name.val,
 				authored[n_c]->hash.val,
 				time_to_string(authored[n_c]->date).val);
+		
+		if (settings->show_diffs) {
+			print_commit_diffs(authored[n_c], "");
+		}
 	}
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
@@ -71,6 +93,10 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 				repo->name.val,
 				co_authored[n_c]->hash.val,
 				time_to_string(co_authored[n_c]->date).val);
+		
+		if (settings->show_diffs) {
+			print_commit_diffs(co_authored[n_c], "");
+		}
 	}
 }
 
@@ -80,9 +106,9 @@ void print_stdout(const repository_array_t *repos, settings_t settings)
 		const repository_t repo = repos->repositories[i];
 
 		if (settings.grouped) {
-			print_stdout_grouped(&repo, &repo.history->indexes);
+			print_stdout_grouped(&repo, &repo.history->indexes, &settings);
 		} else {
-			print_stdout_list(&repo, &repo.history->indexes);
+			print_stdout_list(&repo, &repo.history->indexes, &settings);
 		}
 	}
 
