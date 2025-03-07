@@ -36,7 +36,7 @@
 static settings_t settings;
 static struct option long_options[] = {
 	{ "help",      no_argument,       0, 'h' },
-	{ "diffs",      no_argument,       0, 'd' },
+	{ "diffs",     no_argument,       0, 'd' },
 	{ "group",     no_argument,       0, 'g' },
 	{ "sort",      no_argument,       0, 's' },
 	{ "version",   no_argument,       0, 'v' },

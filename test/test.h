@@ -22,16 +22,11 @@
 #ifndef __TEST_H__
 #define __TEST_H__
 
+#include "../src/utils.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-
-#define RESET "\033[0m"
-#define RED "\033[31m"
-#define GREEN "\033[32m"
-#define YELLOW "\033[33m"
-#define TICK "\u2713"
-#define CROSS "\u2A09"
 
 /* assertions */
 void assert_true(bool condition, const char *message);

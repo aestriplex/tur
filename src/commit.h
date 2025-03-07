@@ -36,7 +36,7 @@ typedef enum {
 } responsability_t;
 
 typedef struct {
-	size_t file_changed;
+	size_t files_changed;
 	size_t lines_added;
 	size_t lines_removed;
 } commit_stats_t;

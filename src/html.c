@@ -26,9 +26,20 @@
 
 #include <stdio.h>
 
-static void generate_html_file_grouped(FILE *out, const
-									   repository_t *repo,
-									   const indexes_t *indexes)
+static void print_commit_diffs(const commit_t * commit, const char *indent)
+{
+	fprintf(stdout, "%s%zu file%c changed\t" GREEN "+%zu" RESET " | " RED "-%zu" RESET "\n\n",
+		indent,
+		commit->stats.files_changed,
+		(commit->stats.files_changed > 1 ? 's': 0),
+		commit->stats.lines_added,
+		commit->stats.lines_removed);
+}
+
+static void generate_html_file_grouped(FILE *out,
+									   const repository_t *repo,
+									   const indexes_t *indexes,
+									   const settings_t *settings)
 {
 	commit_t **const authored = indexes->authored;
 	commit_t **const co_authored = indexes->co_authored;
@@ -42,7 +53,7 @@ static void generate_html_file_grouped(FILE *out, const
 	fprintf(out, "\n<h3>Authored</h3>\n\n<ul>\n");
 	
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "\t<li><a href='%s' target='_blank'>%s</a> %s</li>",
+		fprintf(out, "\t<li><a href='%s' target='_blank'>%s</a> %s</li>\n",
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val,
 				time_to_string(authored[n_c]->date).val);
@@ -66,9 +77,10 @@ co_authored:
 	fprintf(out, "</ul>\n");
 }
 
-static void generate_html_file_list(FILE *out, const
-									repository_t *repo,
-									const indexes_t *indexes)
+static void generate_html_file_list(FILE *out,
+									const repository_t *repo,
+									const indexes_t *indexes,
+									const settings_t *settings)
 {
 	commit_t **const authored = indexes->authored;
 	commit_t **const co_authored = indexes->co_authored;
@@ -106,9 +118,9 @@ void generate_html_file(const repository_array_t *repos, settings_t settings)
 		const repository_t repo = repos->repositories[i];
 
 		if (settings.grouped) {
-			generate_html_file_grouped(out, &repo, &repo.history->indexes);
+			generate_html_file_grouped(out, &repo, &repo.history->indexes, &settings);
 		} else {
-			generate_html_file_list(out, &repo, &repo.history->indexes);
+			generate_html_file_list(out, &repo, &repo.history->indexes, &settings);
 		}
 	}
 
