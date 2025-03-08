@@ -38,6 +38,18 @@ str_t time_to_string(time_t timestamp)
 	return str_init(date, (uint16_t) strlen(date) - 1);
 }
 
+str_t format_date(time_t timestamp)
+{
+	/* format: mm/dd/yyyy */
+	struct tm tm_info;
+	static char buffer[DATE_PATTERN_SIZE];
+
+	gmtime_r(&timestamp, &tm_info);
+	strftime(buffer, sizeof(buffer), DATE_PATTERN, &tm_info);
+
+	return str_init(buffer, strlen(buffer));
+}
+
 str_t get_github_url(str_t repo_url, str_t commit_hash)
 {
 	const size_t new_len = repo_url.len + GITHUB_URL_SIZE + GIT_HASH_LEN;
@@ -45,6 +57,23 @@ str_t get_github_url(str_t repo_url, str_t commit_hash)
 	sprintf(url, "%s%s%s", repo_url.val, GITHUB_URL, commit_hash.val);
 
 	return str_init(url, new_len);
+}
+
+str_t get_first_line(const char *input,  size_t text_len)
+{
+	char output[4096];
+
+	if (!input || text_len == 0) { return empty_str(); }
+	
+	size_t len = strcspn(input, "\n");
+	if (len >= text_len) {
+		len = text_len;
+	}
+	
+	memcpy(output, input, len);
+	output[len] = '\0';
+
+	return str_init(output, len);
 }
 
 char* trim_whitespace(char *str)
