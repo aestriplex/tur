@@ -34,10 +34,13 @@
 #define CROSS "\u2A09"
 
 #define ASCII_SPACE 32
-
+#define DATE_PATTERN "%m/%d/%Y"
+#define DATE_PATTERN_SIZE 11
 
 str_t time_to_string(time_t timestamp);
+str_t format_date(time_t timestamp);
 str_t get_github_url(str_t repo_url, str_t commit_hash);
+str_t get_first_line(const char *input,  size_t text_len);
 char* trim_whitespace(char *str);
 
 #endif /* __UTILS_H__ */
