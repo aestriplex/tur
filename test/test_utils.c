@@ -20,6 +20,7 @@
  */
 
 #include "test.h"
+#include "../src/codes.h"
 #include "../src/str.h"
 
 #include <string.h>
@@ -121,8 +122,34 @@ void test_format_date(void)
 	}
 }
 
+void test_parse_optarg_to_int(void) {
+	unsigned value;
+	
+	assert_true(parse_optarg_to_int("42", &value) == OK && value == 42,
+				"parsed value is 42");
+	assert_true(parse_optarg_to_int("0", &value) == OK && value == 0,
+				"parsed value is 0");
+	assert_true(parse_optarg_to_int("4294967295", &value) == 0 && value == 4294967295,
+				"parsed value is 4294967295");
+	assert_true(parse_optarg_to_int("4294967296", &value) == INT_OVERFLOW,
+				"uint overflow (value 4294967296)");
+	assert_true(parse_optarg_to_int("-100", &value) == USUPPORTED_NEGATIVE_VALUE,
+				"negative values should return 'USUPPORTED_NEGATIVE_VALUE'");
+	assert_true(parse_optarg_to_int("abc", &value) == UNSUPPORTED_VALUE,
+				"unsupported alphanumeric string");
+	assert_true(parse_optarg_to_int("42abc", &value) == UNSUPPORTED_VALUE,
+				"unsupported alphanumeric suffix");
+	assert_true(parse_optarg_to_int("abc42", &value) == UNSUPPORTED_VALUE,
+				"unsupported alphanumeric prefix");
+	assert_true(parse_optarg_to_int("", &value) == UNSUPPORTED_VALUE,
+				"unsupported empty stringx");
+	assert_true(parse_optarg_to_int(NULL, &value) == REQUIRED_ARG_NULL,
+				"null string should return 'REQUIRED_ARG_NULL'");
+}
+
 int main(void)
 {
 	test_header_of_text();
 	test_format_date();
+	test_parse_optarg_to_int();
 }

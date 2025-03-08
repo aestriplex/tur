@@ -51,11 +51,11 @@ static void generate_html_file_grouped(FILE *out,
 	commit_t **const authored = indexes->authored;
 	commit_t **const co_authored = indexes->co_authored;
 
-	if(repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
+	if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
 
 	fprintf(out, H2, repo->name.val);
 	
-	if(repo->history->n_authored == 0) { goto co_authored; }
+	if (repo->history->n_authored == 0) { goto co_authored; }
 
 	fprintf(out, H3 "\n\n<div style=" COMMITS_DIV_STYLE ">\n",
 			"Authored");
@@ -76,7 +76,7 @@ static void generate_html_file_grouped(FILE *out,
 
 co_authored:
 	
-	if(repo->history->n_co_authored == 0) { return; }
+	if (repo->history->n_co_authored == 0) { return; }
 
 	fprintf(out, H3 "\n\n<div style=" COMMITS_DIV_STYLE ">\n",
 			"Co-authored");

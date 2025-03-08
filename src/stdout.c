@@ -39,11 +39,11 @@ static void print_stdout_grouped(const repository_t *repo, const indexes_t *inde
 	commit_t **const authored = indexes->authored;
 	commit_t **const co_authored = indexes->co_authored;
 
-	if(repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
+	if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
 
 	fprintf(stdout, "Repository: %s\n", repo->name.val);
 
-	if(repo->history->n_authored == 0) { goto co_authored; }
+	if (repo->history->n_authored == 0) { goto co_authored; }
 
 	fprintf(stdout, "Authored commits:\n");
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
@@ -59,7 +59,7 @@ static void print_stdout_grouped(const repository_t *repo, const indexes_t *inde
 
 co_authored:
 
-	if(repo->history->n_co_authored == 0) { return; }
+	if (repo->history->n_co_authored == 0) { return; }
 
 	fprintf(stdout, "Co-authored commits:\n");
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {

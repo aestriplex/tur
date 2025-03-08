@@ -27,6 +27,7 @@
 #include "utils.h"
 #include "walk.h"
 
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,10 +44,11 @@ static struct option long_options[] = {
 	{ "emails",    required_argument, 0, 'e' },
 	{ "out",       required_argument, 0, 'o' },
 	{ "repos",     required_argument, 0, 'r' },
+	{ "text",      required_argument, 0, 't' },
 	{ 0, 0, 0, 0 }
 };
 
-void print_help(void)
+static void print_help(void)
 {
 	printf("T U R\n"
 		   "---------------------------------\n"
@@ -82,6 +84,23 @@ void print_help(void)
 		   __TUR_VERSION__);
 }
 
+static void print_n_msg_error(const char *arg, return_code_t error_code)
+{
+	switch (error_code) {
+	case REQUIRED_ARG_NULL:
+		fprintf(stderr, "argument for option '-t' not provided\n");
+		break;
+	case INT_OVERFLOW:
+	case UNSUPPORTED_VALUE:
+	case USUPPORTED_NEGATIVE_VALUE:
+		fprintf(stderr, "argument for option '-t' invalid. Should be an integer between 0 and %u\n",
+				UINT_MAX);
+		break;
+	default:
+		return;
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	repository_array_t repos;
@@ -95,7 +114,7 @@ int main(int argc, char *argv[])
 
 	settings = default_settings();
 
-	while ((ch = getopt_long(argc, argv, "hdgsve:m:o:r:", long_options, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "hdgsve:o:r:t:", long_options, &option_index)) != -1) {
 		switch (ch) {
 		case 'h':
 			print_help();
@@ -123,6 +142,12 @@ int main(int argc, char *argv[])
 		case 'r':
 			settings.repos_path = str_init(optarg, (uint16_t) strlen(optarg));
 			break;
+		case 't':
+			ret = parse_optarg_to_int(optarg, &settings.n_msg_lines);
+			if (ret != OK) {
+				print_n_msg_error(optarg, ret);
+				return -1;
+			}
 		default:
 			print_help();
 			return -1;

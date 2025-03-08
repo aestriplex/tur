@@ -19,12 +19,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "codes.h"
 #include "commit.h"
 #include "repo.h"
 #include "str.h"
 #include "utils.h"
 
 #include <ctype.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -92,4 +94,18 @@ char* trim_whitespace(char *str)
 	*(end + 1) = '\0';
 
 	return str;
+}
+
+uint16_t parse_optarg_to_int(const char *optarg, unsigned *out_value)
+{
+	if (!optarg) { return REQUIRED_ARG_NULL; }
+
+	char *endptr;
+	long val = strtol(optarg, &endptr, 10);
+	if (val > UINT_MAX) { return INT_OVERFLOW; }
+	if (val < 0) { return USUPPORTED_NEGATIVE_VALUE; }
+	if (endptr == optarg || *endptr != '\0') { return UNSUPPORTED_VALUE; }
+
+	*out_value = (int)val;
+	return OK;
 }
