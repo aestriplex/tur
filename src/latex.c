@@ -45,11 +45,11 @@ static void generate_latex_file_grouped(FILE *out,
 	commit_t **const authored = indexes->authored;
 	commit_t **const co_authored = indexes->co_authored;
 
-	if(repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
+	if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
 
 	fprintf(out, "\n\n\\section{%s}\n\\label{sec:%s}\n", repo->name.val, repo->name.val);
 		
-	if(repo->history->n_authored == 0) { goto co_authored; }
+	if (repo->history->n_authored == 0) { goto co_authored; }
 
 	fprintf(out, "\n\\subsection{Authored}\n\\label{subsec:%s-authored}\n\n"
 					"\\begin{enumerate}\n", repo->name.val);
@@ -70,7 +70,7 @@ static void generate_latex_file_grouped(FILE *out,
 
 co_authored:
 	
-	if(repo->history->n_co_authored == 0) { return; }
+	if (repo->history->n_co_authored == 0) { return; }
 
 	fprintf(out, "\n\\subsection{Co-authored}\n\\label{subsec:%s-co-authored}\n\n"
 					"\\begin{enumerate}\n", repo->name.val);

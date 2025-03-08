@@ -22,7 +22,7 @@
 #ifndef __CODES_H__
 #define __CODES_H__
 
-#define __TUR_VERSION__ "0.9.1"
+#define __TUR_VERSION__ "0.9.2"
 
 typedef enum {
 	OK                            = 0x00,
@@ -31,7 +31,11 @@ typedef enum {
 	INDEX_ALLOCATION_ERROR        = 0x03,
 	PARENT_COMMIT_UNAVAILBLE      = 0x04,
 	COMPARE_TREES_ERROR           = 0x05,
-	CANNOT_RETRIEVE_STATS         = 0x06
+	CANNOT_RETRIEVE_STATS         = 0x06,
+	REQUIRED_ARG_NULL             = 0x07,
+	INT_OVERFLOW                  = 0x08,
+	USUPPORTED_NEGATIVE_VALUE     = 0x09,
+	UNSUPPORTED_VALUE             = 0x0A
 } return_code_t;
 
 #endif /* __CODES_H__ */

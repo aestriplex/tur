@@ -43,6 +43,7 @@ typedef struct {
 	tur_output_t output_mode;
 	str_t output;
 	str_t repos_path;
+	unsigned n_msg_lines;
 } settings_t;
 
 settings_t default_settings(void);
