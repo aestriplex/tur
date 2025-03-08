@@ -40,8 +40,7 @@ static struct option long_options[] = {
 	{ "group",     no_argument,       0, 'g' },
 	{ "sort",      no_argument,       0, 's' },
 	{ "version",   no_argument,       0, 'v' },
-	{ "email",     required_argument, 0, 'e' },
-	{ "mail-list", required_argument, 0, 'm' },
+	{ "emails",    required_argument, 0, 'e' },
 	{ "out",       required_argument, 0, 'o' },
 	{ "repos",     required_argument, 0, 'r' },
 	{ 0, 0, 0, 0 }
@@ -56,23 +55,24 @@ void print_help(void)
 		   "\n"
 		   "Usage: tur [OPTIONS]\n"
 		   "Options:\n"
-		   "  -h, --help              Show this help message and exit\n"
-		   "  -d, --diffs             Show diffs stats (rows added and removed, file changed)\n"
-		   "  -g, --group             Group commit by repository\n"
-		   "                          Default: false\n"
-		   "  -s, --sort              Sort commit by date\n"
-		   "                          Default: false\n"
-		   "  -v, --version           Prints the verison on tur\n"
-		   "                          Default: false\n"
-		   "  -e, --email EMAIL       Specify a single email address\n"
-		   "  -m, --mail-list FILE    Specify a comma separated email addresses\n"
-		   "  -o, --out FILE          Specify an output file. Allowed extensions are:\n"
-		   "                              .tex          (LaTeX)\n"
-		   "                              .html / .html (HTML)\n"
-		   "                              .md           (Markdown)\n"
-		   "                          Default: stdout\n"
-		   "  -r, --repos REPOS       Specify the file containing the list of repositories.\n"
-		   "                          Default: .rlist in the current folder\n"
+		   "  -h, --help               Show this help message and exit\n"
+		   "  -d, --diffs              Show diffs stats (rows added and removed, file changed)\n"
+		   "  -g, --group              Group commit by repository\n"
+		   "                           Default: false\n"
+		   "  -s, --sort               Sort commit by date\n"
+		   "                           Default: false\n"
+		   "  -v, --version            Prints the verison on tur\n"
+		   "                           Default: false\n"
+		   "  -e, --emails <email_1,\n"
+		   "                ...,\n"
+		   "                email_n>   Specify a single email address\n"
+		   "  -o, --out FILE           Specify an output file. Allowed extensions are:\n"
+		   "                               .tex          (LaTeX)\n"
+		   "                               .html / .html (HTML)\n"
+		   "                               .md           (Markdown)\n"
+		   "                           Default: stdout\n"
+		   "  -r, --repos REPOS        Specify the file containing the list of repositories.\n"
+		   "                           Default: .rlist in the current folder\n"
 		   "\n"
 		   "Examples:\n"
 		   "  tur -e user@example.com\n"
@@ -113,11 +113,6 @@ int main(int argc, char *argv[])
 			printf("TUR version %s\n", __TUR_VERSION__);
 			goto end;
 		case 'e':
-			settings.emails = malloc(sizeof(str_t));
-			*(settings.emails)  = str_init(optarg, (uint16_t) strlen(optarg));
-			settings.n_emails = 1;
-			break;
-		case 'm':
 			settings.emails = parse_emails(optarg, &n_emails);
 			settings.n_emails = n_emails;
 			break;
