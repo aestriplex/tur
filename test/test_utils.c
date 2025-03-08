@@ -86,97 +86,39 @@ void test_format_date(void)
 		time_t now = time(NULL);
 		str_t result = format_date(now);
 
-		assert_true(result.len == 10, "mm/dd/yyyy has 10 characters");  // "MM/DD/YYYY" ha 10 caratteri
+		assert_true(result.len == 10, "mm/dd/yyyy has 10 characters");
 		assert_true(result.val[2] == '/', "there should be 2 chars for month");
 		assert_true(result.val[5] == '/', "there should be 2 chars for day");
 	}
 
 	{
-		struct tm tm_info = {0};
-		tm_info.tm_year = 120;
-		tm_info.tm_mon = 0;
-		tm_info.tm_mday = 1;
-		time_t timestamp = mktime(&tm_info);
+		time_t timestamp = 1732838400;
 		str_t result = format_date(timestamp);
-		printf("%s\n", result.val);
-		fflush(stdout);
-		assert_true(str_arr_equals(result, "01/01/2020"), "date should be '01/01/2020'");
+		assert_true(result.len == 10, "11/29/2024 has 10 characters");
+		assert_true(str_arr_equals(result, "11/29/2024"), "date should be '11/29/2024'");
 	}
 
-	// // Test 3: Data con giorno e mese a un solo carattere - 9 gennaio 2020
-	// {
-	//     struct tm tm_info = {0};
-	//     tm_info.tm_year = 120; // 2020 - 1900
-	//     tm_info.tm_mon = 0;    // Gennaio
-	//     tm_info.tm_mday = 9;   // 9 gennaio
-	//     time_t timestamp = mktime(&tm_info);
+	{
+		time_t timestamp = 1578528000;
+		str_t result = format_date(timestamp);
+		assert_true(result.len == 10, "01/09/2020 has 10 characters");
+		assert_true(str_arr_equals(result, "01/09/2020"), "date should be '01/09/2020'");
+	}
 
-	//     str_t result = format_date(timestamp);
+	{
+		time_t timestamp = 4101840000;
+		str_t result = format_date(timestamp);
+		assert_true(result.len == 10, "12/25/2099 has 10 characters");
+		assert_true(str_arr_equals(result, "12/25/2099"), "date should be '12/25/2099'");
+	}
 
-	//     assert(result.len == 10);
-	//     assert(strcmp(result.val, "01/09/2020") == 0);
-	//     printf("Test 3 passato\n");
-	// }
-
-	// // Test 4: Una data futura - 25 dicembre 2099
-	// {
-	//     struct tm tm_info = {0};
-	//     tm_info.tm_year = 199; // 2099 - 1900
-	//     tm_info.tm_mon = 11;   // Dicembre
-	//     tm_info.tm_mday = 25;  // 25 dicembre
-	//     time_t timestamp = mktime(&tm_info);
-
-	//     str_t result = format_date(timestamp);
-
-	//     assert(result.len == 10);
-	//     assert(strcmp(result.val, "12/25/2099") == 0);
-	//     printf("Test 4 passato\n");
-	// }
-
-	// // Test 5: Data con anno a 2 cifre - 1 gennaio 1999
-	// {
-	//     struct tm tm_info = {0};
-	//     tm_info.tm_year = 99;  // 1999 - 1900
-	//     tm_info.tm_mon = 0;    // Gennaio
-	//     tm_info.tm_mday = 1;   // Primo giorno
-	//     time_t timestamp = mktime(&tm_info);
-
-	//     str_t result = format_date(timestamp);
-
-	//     assert(result.len == 10);
-	//     assert(strcmp(result.val, "01/01/1999") == 0);
-	//     printf("Test 5 passato\n");
-	// }
-
-	// // Test 6: Data con ora legale (inverno) - 1 novembre 2025
-	// {
-	//     struct tm tm_info = {0};
-	//     tm_info.tm_year = 125; // 2025 - 1900
-	//     tm_info.tm_mon = 10;   // Novembre
-	//     tm_info.tm_mday = 1;   // 1 novembre
-	//     time_t timestamp = mktime(&tm_info);
-
-	//     str_t result = format_date(timestamp);
-
-	//     assert(result.len == 10);
-	//     assert(strcmp(result.val, "11/01/2025") == 0);
-	//     printf("Test 6 passato\n");
-	// }
-
-	// // Test 7: Data con anno bisestile - 29 febbraio 2024
-	// {
-	//     struct tm tm_info = {0};
-	//     tm_info.tm_year = 124; // 2024 - 1900
-	//     tm_info.tm_mon = 1;    // Febbraio
-	//     tm_info.tm_mday = 29;  // 29 febbraio
-	//     time_t timestamp = mktime(&tm_info);
-
-	//     str_t result = format_date(timestamp);
-
-	//     assert(result.len == 10);
-	//     assert(strcmp(result.val, "02/29/2024") == 0);
-	//     printf("Test 7 passato\n");
-	// }
+	{
+		time_t timestamp = 1709164800;
+		str_t result = format_date(timestamp);
+		assert_true(result.len == 10, "02/29/2024 has 10 characters");
+		assert_true(str_arr_equals(result, "02/29/2024"),
+					"Leap year (2024), date should be '02/29/2024'");
+	}
 }
 
 int main(void)
