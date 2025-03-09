@@ -36,15 +36,15 @@
 
 static settings_t settings;
 static struct option long_options[] = {
-	{ "help",        no_argument,       0, 'h' },
-	{ "diffs",       no_argument,       0, 'd' },
-	{ "group",       no_argument,       0, 'g' },
-	{ "sort",        no_argument,       0, 's' },
-	{ "version",     no_argument,       0, 'v' },
-	{ "header-only", no_argument,       0,  1  },
-	{ "emails",      required_argument, 0, 'e' },
-	{ "out",         required_argument, 0, 'o' },
-	{ "repos",       required_argument, 0, 'r' },
+	{ "help",    no_argument,       0, 'h' },
+	{ "diffs",   no_argument,       0, 'd' },
+	{ "group",   no_argument,       0, 'g' },
+	{ "sort",    no_argument,       0, 's' },
+	{ "version", no_argument,       0, 'v' },
+	{ "message", no_argument,       0, 'm' },
+	{ "emails",  required_argument, 0, 'e' },
+	{ "out",     required_argument, 0, 'o' },
+	{ "repos",   required_argument, 0, 'r' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -97,14 +97,11 @@ int main(int argc, char *argv[])
 
 	settings = default_settings();
 
-	while ((ch = getopt_long(argc, argv, "hdgsve:o:r:t:", long_options, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "hdgmsve:o:r:t:", long_options, &option_index)) != -1) {
 		switch (ch) {
 		case 'h':
 			print_help();
 			goto end;
-		case 1:
-			settings.print_header = true;
-			break;
 		case 'd':
 			settings.show_diffs = true;
 			break;
@@ -113,6 +110,9 @@ int main(int argc, char *argv[])
 			break;
 		case 's':
 			settings.sorted = true;
+			break;
+		case 'm':
+			settings.print_msg = true;
 			break;
 		case 'v':
 			printf("TUR version %s\n", __TUR_VERSION__);
