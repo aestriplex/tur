@@ -37,6 +37,11 @@ static void print_commit_diffs(FILE *out, const commit_t *commit)
 			commit->stats.lines_removed);
 }
 
+static void print_commit_message(FILE *out, const commit_t * commit)
+{
+	fprintf(out, "%s\n", get_first_line(commit->msg).val);
+}
+
 static void generate_md_file_grouped(FILE *out,
 									 const repository_t *repo,
 									 const indexes_t *indexes,
@@ -54,8 +59,11 @@ static void generate_md_file_grouped(FILE *out,
 	fprintf(out, "#### Authored\n");
 	
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "%zu. [%s](%s) %s\n",
-				n_c + 1,
+		fprintf(out, "%zu. ", n_c + 1);
+		if (settings->print_header) {
+			print_commit_message(out, authored[n_c]);
+		}
+		fprintf(out, "[%s](%s) %s\n",
 				authored[n_c]->hash.val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				time_to_string(authored[n_c]->date).val);
@@ -71,8 +79,11 @@ co_authored:
 	fprintf(out, "#### Coauthored\n");
 	
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(out, "%zu. [%s](%s) %s\n",
-				n_c + 1,
+		fprintf(out, "%zu. ", n_c + 1);
+		if (settings->print_header) {
+			print_commit_message(out, co_authored[n_c]);
+		}
+		fprintf(out, "[%s](%s) %s\n",
 				co_authored[n_c]->hash.val,
 				get_github_url(repo->url, co_authored[n_c]->hash).val,
 				time_to_string(co_authored[n_c]->date).val);
@@ -90,8 +101,13 @@ static void generate_md_file_list(FILE *out,
 	commit_t **const authored = indexes->authored;
 	commit_t **const co_authored = indexes->co_authored;
 
+	size_t n_commit = 1;
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "[%s,A] [%s](%s) %s",
+		fprintf(out, "%zu. ", n_commit);
+		if (settings->print_header) {
+			print_commit_message(out, authored[n_c]);
+		}
+		fprintf(out, "%s: [%s](%s) [A] %s\n",
 				repo->name.val,
 				authored[n_c]->hash.val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
@@ -99,10 +115,17 @@ static void generate_md_file_list(FILE *out,
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
+		fprintf(out, "\n");
+		n_commit++;
 	}
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(out, "[%s,C] [%s](%s) %s",
+		fprintf(out, "%zu. ", n_commit);
+		if (settings->print_header) {
+			print_commit_message(out, co_authored[n_c]);
+		}
+		fprintf(out, "%zu. %s: [%s](%s) [C] %s\n",
+				n_commit,
 				repo->name.val,
 				co_authored[n_c]->hash.val,
 				get_github_url(repo->url, co_authored[n_c]->hash).val,
@@ -110,6 +133,8 @@ static void generate_md_file_list(FILE *out,
 		if (settings->show_diffs) {
 			print_commit_diffs(out, co_authored[n_c]);
 		}
+		fprintf(out, "\n");
+		n_commit++;
 	}
 }
 
