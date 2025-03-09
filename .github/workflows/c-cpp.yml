@@ -17,3 +17,5 @@ jobs:
       run: sudo apt-get install build-essential libgit2-dev
     - name: build tur
       run: make tur
+    - name: build and run tests
+      run: make test

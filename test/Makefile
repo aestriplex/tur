@@ -30,10 +30,10 @@ all: $(TEST_BINS)
 	./test_utils
 
 test_parse_repository: test.c test_parse_repository.c repo.o str.o
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
 test_parse_email_list: test.c test_parse_email_list.c opts_args.o str.o utils.o
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
 test_str: test.c test_str.c str.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
