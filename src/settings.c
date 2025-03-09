@@ -38,6 +38,7 @@ settings_t default_settings(void)
 		.n_emails = 0,
 		.grouped = false,
 		.sorted = false,
-		.show_diffs = false
+		.show_diffs = false,
+		.print_header = false,
 	};
 }

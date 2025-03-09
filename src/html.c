@@ -28,19 +28,27 @@
 
 #define COMMITS_DIV_STYLE "'display: flex; flex-direction: column; " \
 						  "row-gap: 10px; padding-left: 2em;'"
+#define COMMIT_ITEM_BORDER_STYLE "'border-left: black; "      \
+								 "border-left-style: solid; " \
+								 "border-left-width: 1px; "   \
+								 "padding-left: 5px;'"
 #define H3 "<h3 style='margin: 5px 0px;'><i>%s</i></h3>\n"
 #define H2 "<h2 style='margin-bottom: 0px;'>%s</h2>\n"
 
 static void print_commit_diffs(FILE *out, const commit_t * commit)
 {
-	fprintf(out, "<div>%zu file%c changed "
+	fprintf(out, "%zu file%c changed "
 				 "<span style='color:green;'>+%zu</span> "
-				 "|  <span style='color:red;'>-%zu</span>"
-				 "</div>\n",
+				 "|  <span style='color:red;'>-%zu</span>\n",
 			commit->stats.files_changed,
 			(commit->stats.files_changed > 1 ? 's': 0),
 			commit->stats.lines_added,
 			commit->stats.lines_removed);
+}
+
+static void print_commit_message(FILE *out, const commit_t * commit)
+{
+	fprintf(out, "<span>%s</span>\n", get_first_line(commit->msg).val);
 }
 
 static void generate_html_file_grouped(FILE *out,
@@ -62,13 +70,18 @@ static void generate_html_file_grouped(FILE *out,
 	
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(out, "<div>\n");
-		fprintf(out, "<div><a href='%s' target='_blank'>%s</a> (%s)</div>\n",
+		if (settings->print_header) {
+			print_commit_message(out, authored[n_c]);
+		}
+		fprintf(out, "<div style='font-size: %s;'>(%s) <a href='%s' target='_blank'>%s</a> ",
+				settings->print_header ? "11pt" : "unset",
+				time_to_string(authored[n_c]->date).val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
-				authored[n_c]->hash.val,
-				time_to_string(authored[n_c]->date).val);
+				authored[n_c]->hash.val);
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
+		fprintf(out, "</div>");
 		fprintf(out, "</div>\n");
 	}
 
@@ -83,13 +96,18 @@ co_authored:
 	
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
 		fprintf(out, "<div>\n");
-		fprintf(out, "\t<div><a href='%s' target='_blank'>%s</a> (%s)</div>\n",
+		if (settings->print_header) {
+			print_commit_message(out, co_authored[n_c]);
+		}
+		fprintf(out, "<div style='font-size: %s;'>(%s) <a href='%s' target='_blank'>%s</a> ",
+				settings->print_header ? "11pt" : "unset",
+				time_to_string(co_authored[n_c]->date).val,
 				get_github_url(repo->url, co_authored[n_c]->hash).val,
-				co_authored[n_c]->hash.val,
-				time_to_string(co_authored[n_c]->date).val);
+				co_authored[n_c]->hash.val);
 		if (settings->show_diffs) {
 			print_commit_diffs(out, co_authored[n_c]);
 		}
+		fprintf(out, "</div>");
 		fprintf(out, "</div>\n");
 	}
 
@@ -105,8 +123,11 @@ static void generate_html_file_list(FILE *out,
 	commit_t **const co_authored = indexes->co_authored;
 
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "<div>\n");
-		fprintf(out, "<div>[%s,A] <a href='%s' target='_blank'>%s</a> %s</div>",
+		fprintf(out, "<div style=" COMMIT_ITEM_BORDER_STYLE ">\n");
+		if (settings->print_header) {
+			print_commit_message(out, authored[n_c]);
+		}
+		fprintf(out, "<div>%s: <a href='%s' target='_blank'>%s</a> (%s) [A] ",
 				repo->name.val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val,
@@ -114,12 +135,16 @@ static void generate_html_file_list(FILE *out,
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
+		fprintf(out, "</div>");
 		fprintf(out, "</div>\n");
 	}
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(out, "<div>\n");
-		fprintf(out, "<div>[%s,C] <a href='%s' target='_blank'>%s</a> %s</div>",
+		fprintf(out, "<div style=" COMMIT_ITEM_BORDER_STYLE ">\n");
+		if (settings->print_header) {
+			print_commit_message(out, co_authored[n_c]);
+		}
+		fprintf(out, "<div>%s: <a href='%s' target='_blank'>%s</a> (%s) [C] ",
 				repo->name.val,
 				get_github_url(repo->url, co_authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val,
@@ -127,6 +152,7 @@ static void generate_html_file_list(FILE *out,
 		if (settings->show_diffs) {
 			print_commit_diffs(out, co_authored[n_c]);
 		}
+		fprintf(out, "</div>");
 		fprintf(out, "</div>\n");
 	}
 }

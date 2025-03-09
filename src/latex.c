@@ -37,6 +37,11 @@ static void print_commit_diffs(FILE *out, const commit_t * commit)
 			commit->stats.lines_removed);
 }
 
+static void print_commit_message(FILE *out, const commit_t * commit)
+{
+	fprintf(out, "%s\\\\ \n", escape_special_chars(get_first_line(commit->msg)).val);
+}
+
 static void generate_latex_file_grouped(FILE *out,
 										const repository_t *repo,
 										const indexes_t *indexes,
@@ -55,9 +60,13 @@ static void generate_latex_file_grouped(FILE *out,
 					"\\begin{enumerate}\n", repo->name.val);
 	
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "\t\\item \\label{%s:item:%s} \\href{%s}{%s} %s",
+		fprintf(out, "\t\\item \\label{%s:item:%s} ",
 				repo->name.val,
-				authored[n_c]->hash.val,
+				authored[n_c]->hash.val);
+		if (settings->print_header) {
+			print_commit_message(out, authored[n_c]);
+		}
+		fprintf(out, "\\href{%s}{%s} (%s) ",
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val,
 				time_to_string(authored[n_c]->date).val);
@@ -76,9 +85,13 @@ co_authored:
 					"\\begin{enumerate}\n", repo->name.val);
 	
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(out, "\t\\item \\label{%s:item:%s} \\href{%s}{%s} %s",
+		fprintf(out, "\t\\item \\label{%s:item:%s} ",
 				repo->name.val,
-				co_authored[n_c]->hash.val,
+				authored[n_c]->hash.val);
+		if (settings->print_header) {
+			print_commit_message(out, co_authored[n_c]);
+		}
+		fprintf(out, "\\href{%s}{%s} (%s) ",
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val,
 				time_to_string(co_authored[n_c]->date).val);
@@ -99,9 +112,13 @@ static void generate_latex_file_list(FILE *out, const
 	commit_t **const co_authored = indexes->co_authored;
 
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "\t\\item \\label{%s:item:%s} [%s,A] \\href{%s}{%s} %s\n",
+		fprintf(out, "\t\\item \\label{%s:item:%s}",
 				repo->name.val,
-				authored[n_c]->hash.val,
+				authored[n_c]->hash.val);
+		if (settings->print_header) {
+			print_commit_message(out, authored[n_c]);
+		}
+		fprintf(out, "%s: [A] \\href{%s}{%s} %s\n",
 				repo->name.val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val,
@@ -112,9 +129,13 @@ static void generate_latex_file_list(FILE *out, const
 	}
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(out, "\t\\item \\label{%s:item:%s} [%s,C] \\href{%s}{%s} %s\n",
+		fprintf(out, "\t\\item \\label{%s:item:%s} ",
 				repo->name.val,
-				co_authored[n_c]->hash.val,
+				authored[n_c]->hash.val);
+		if (settings->print_header) {
+			print_commit_message(out, co_authored[n_c]);
+		}
+		fprintf(out, "%s: [C] \\href{%s}{%s} %s\n",
 				repo->name.val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val,

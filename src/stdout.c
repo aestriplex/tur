@@ -24,14 +24,18 @@
 
 #include <stdio.h>
 
-static void print_commit_diffs(const commit_t * commit, const char *indent)
+static void print_commit_diffs(const commit_t * commit)
 {
-	fprintf(stdout, "\t%s%zu file%c changed; " GREEN "+%zu" RESET " | " RED "-%zu" RESET,
-			indent,
+	fprintf(stdout, "\t%zu file%c changed; " GREEN "+%zu" RESET " | " RED "-%zu" RESET "\n",
 			commit->stats.files_changed,
 			(commit->stats.files_changed > 1 ? 's': 0),
 			commit->stats.lines_added,
 			commit->stats.lines_removed);
+}
+
+static void print_commit_message(const commit_t * commit, const char *indent)
+{
+	fprintf(stdout, "%s| %s\n", indent, get_first_line(commit->msg).val);
 }
 
 static void print_stdout_grouped(const repository_t *repo, const indexes_t *indexes, const settings_t *settings)
@@ -47,12 +51,14 @@ static void print_stdout_grouped(const repository_t *repo, const indexes_t *inde
 
 	fprintf(stdout, "Authored commits:\n");
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(stdout, "\t%s %s",
+		if (settings->print_header) {
+			print_commit_message(authored[n_c], "\t");
+		}
+		fprintf(stdout, "\t| %s %s",
 				authored[n_c]->hash.val,
 				time_to_string(authored[n_c]->date).val);
-		
 		if (settings->show_diffs) {
-			print_commit_diffs(authored[n_c], "\t");
+			print_commit_diffs(authored[n_c]);
 		}
 		fprintf(stdout, "\n");
 	}
@@ -63,12 +69,15 @@ co_authored:
 
 	fprintf(stdout, "Co-authored commits:\n");
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(stdout, "\t%s %s",
+		if (settings->print_header) {
+			print_commit_message(co_authored[n_c], "\t");
+		}
+		fprintf(stdout, "\t| %s %s",
 				co_authored[n_c]->hash.val,
 				time_to_string(co_authored[n_c]->date).val);
 
 		if (settings->show_diffs) {
-			print_commit_diffs(co_authored[n_c], "\t");
+			print_commit_diffs(co_authored[n_c]);
 		}
 		fprintf(stdout, "\n");
 	}
@@ -80,25 +89,31 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 	commit_t **const co_authored = indexes->co_authored;
 
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(stdout, "[%s,A] %s %s",
+		if (settings->print_header) {
+			print_commit_message(authored[n_c], "");
+		}
+		fprintf(stdout, "| %s: %s %s [A]",
 				repo->name.val,
 				authored[n_c]->hash.val,
 				time_to_string(authored[n_c]->date).val);
 		
 		if (settings->show_diffs) {
-			print_commit_diffs(authored[n_c], "");
+			print_commit_diffs(authored[n_c]);
 		}
 		fprintf(stdout, "\n");
 	}
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(stdout, "[%s,C] %s %s",
+		if (settings->print_header) {
+			print_commit_message(co_authored[n_c], "");
+		}
+		fprintf(stdout, "| %s: %s %s [C]",
 				repo->name.val,
 				co_authored[n_c]->hash.val,
 				time_to_string(co_authored[n_c]->date).val);
 		
 		if (settings->show_diffs) {
-			print_commit_diffs(co_authored[n_c], "");
+			print_commit_diffs(co_authored[n_c]);
 		}
 		fprintf(stdout, "\n");
 	}

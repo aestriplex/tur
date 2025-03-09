@@ -23,13 +23,14 @@
 #include "../src/codes.h"
 #include "../src/str.h"
 
+#include <stdlib.h>
 #include <string.h>
  
 void test_header_of_text(void)
 {
 	{
 		const char *text = "First row\nSecond row\nThird row";
-		str_t result = get_first_line(text, strlen(text));
+		str_t result = get_first_line(str_init(text, strlen(text)));
 
 		assert_true(result.len == 9, "first line of text should have length 10");
 		assert_true(str_arr_equals(result, "First row"), "first line is 'First row'");
@@ -37,7 +38,7 @@ void test_header_of_text(void)
 
 	{
 		const char *text = "A row without a newline";
-		str_t result = get_first_line(text, strlen(text));
+		str_t result = get_first_line(str_init(text, strlen(text)));
 		assert_true(result.len == strlen(text),
 					"the first line has the same length of to the text itself");
 		assert_true(str_arr_equals(result, text),
@@ -46,7 +47,7 @@ void test_header_of_text(void)
 
 	{
 		const char *text = "";
-		str_t result = get_first_line(text, strlen(text));
+		str_t result = get_first_line(str_init(text, strlen(text)));
 
 		assert_true(result.len == 0, "empty text has length 0");
 		assert_true(str_equals(result, empty_str()),
@@ -55,29 +56,11 @@ void test_header_of_text(void)
 
 	{
 		const char *text = "\nSecond row";
-		str_t result = get_first_line(text, strlen(text));
+		str_t result = get_first_line(str_init(text, strlen(text)));
 
 		assert_true(result.len == 0, "the first line should have length 0");
 		assert_true(str_equals(result, empty_str()),
 					"the first line is the empty string");
-	}
-
-	{
-		str_t result = get_first_line(NULL, 10);
-
-		assert_true(result.len == 0, "NULL text should produce a string of length 0");
-		assert_true(str_equals(result, empty_str()),
-					"NULL text should produce the empty string");
-	}
-
-	{
-		const char *text = "This is a test string";
-		str_t result = get_first_line(text, 0);
-
-		assert_true(result.len == 0,
-					"If I copy 0 chars, I should get a string of length 0");
-		assert_true(str_equals(result, empty_str()),
-					"If I copy 0 chars, I should get the empty string");
 	}
 }
 
@@ -147,9 +130,68 @@ void test_parse_optarg_to_int(void) {
 				"null string should return 'REQUIRED_ARG_NULL'");
 }
 
+void test_escape_special_chars(void) 
+{
+	{
+		str_t input = str_init("hello_world", 11);
+		str_t result = escape_special_chars(input);
+		assert_true(str_arr_equals(result, "hello\\_world"),
+					"single underscore escaped correctly");
+		free((void*)result.val);
+	}
+	
+	{
+		str_t input = str_init("__test__", 8);
+		str_t result = escape_special_chars(input);
+		assert_true(str_arr_equals(result, "\\_\\_test\\_\\_"),
+					"double underscore escaped correctly");
+		free((void*)result.val);
+	}
+	
+	{
+		str_t input = str_init("normal", 6);
+		str_t result = escape_special_chars(input);
+		assert_true(str_arr_equals(result, "normal"), "nothing to escape");
+		free((void*)result.val);
+	}
+	
+	{
+		str_t input = str_init("#delete#", 8);
+		str_t result = escape_special_chars(input);
+		assert_true(str_arr_equals(result, "\\#delete\\#"),
+					"single hash escaped");
+		free((void*)result.val);
+	}
+   
+	{
+		str_t input = str_init("## Markdown subtitle", 20);
+		str_t result = escape_special_chars(input);
+		assert_true(str_arr_equals(result, "\\#\\# Markdown subtitle"),
+					"double hash escaped");
+		free((void*)result.val);
+	}
+	
+	{
+		str_t input = str_init("mixed_#chars", 12);
+		str_t result = escape_special_chars(input);
+		assert_true(str_arr_equals(result, "mixed\\_\\#chars"),
+					"combo of hash and underscore escaped");
+		free((void*)result.val);
+	}
+	
+	{
+		str_t input = str_init("", 0);
+		str_t result = escape_special_chars(input);
+		assert_true(str_arr_equals(result, ""),
+					"empty string, nothing to escape");
+		free((void*)result.val);
+	}
+}
+
 int main(void)
 {
 	test_header_of_text();
 	test_format_date();
 	test_parse_optarg_to_int();
+	test_escape_special_chars();
 }
