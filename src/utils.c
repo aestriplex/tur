@@ -61,18 +61,18 @@ str_t get_github_url(str_t repo_url, str_t commit_hash)
 	return str_init(url, new_len);
 }
 
-str_t get_first_line(const char *input,  size_t text_len)
+str_t get_first_line(str_t input)
 {
 	char output[4096];
 
-	if (!input || text_len == 0) { return empty_str(); }
+	if (input.len == 0) { return empty_str(); }
 	
-	size_t len = strcspn(input, "\n");
-	if (len >= text_len) {
-		len = text_len;
+	size_t len = strcspn(input.val, "\n");
+	if (len >= input.len) {
+		len = input.len;
 	}
 	
-	memcpy(output, input, len);
+	memcpy(output, input.val, len);
 	output[len] = '\0';
 
 	return str_init(output, len);
@@ -108,4 +108,32 @@ uint16_t parse_optarg_to_int(const char *optarg, unsigned *out_value)
 
 	*out_value = (int)val;
 	return OK;
+}
+
+str_t escape_special_chars(str_t input)
+{
+	uint16_t extra_chars = 0;
+	for (uint16_t i = 0; i < input.len; i++) {
+		if (input.val[i] == '_' || input.val[i] == '#') {
+			extra_chars++;
+		}
+	}
+	
+	uint16_t new_len = input.len + extra_chars;
+	char *escaped_str = malloc(new_len + 1);
+	if (!escaped_str) {
+		fprintf(stderr, "escape_special_chars: memory allocation failed\n");
+		return empty_str();
+	}
+	
+	uint16_t j = 0;
+	for (uint16_t i = 0; i < input.len; i++) {
+		if (input.val[i] == '_' || input.val[i] == '#') {
+			escaped_str[j++] = '\\';
+		}
+		escaped_str[j++] = input.val[i];
+	}
+	escaped_str[j] = '\0';
+	
+	return str_init(escaped_str, new_len);
 }

@@ -50,12 +50,14 @@ str_t str_init(const char *str, uint16_t len)
 	};
 }
 
-bool str_equals(str_t str1, str_t str2) {
+bool str_equals(str_t str1, str_t str2)
+{
 	if (str1.len != str2.len) { return false; }
 	return strncmp(str1.val, str2.val, str1.len) == 0;
 }
 
-bool str_arr_equals(str_t str, const char *expected) {
+bool str_arr_equals(str_t str, const char *expected)
+{
 	if (str.len != strlen(expected)) return false;
 	return strncmp(str.val, expected, str.len) == 0;
 }
@@ -90,6 +92,11 @@ str_t str_concat(str_t str1, str_t str2)
 		.val = new_val,
 		.len = new_len
 	};
+}
+
+str_t str_copy(str_t source)
+{
+	return str_init(source.val, source.len);
 }
 
 void str_free(str_t str)

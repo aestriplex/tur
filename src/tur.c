@@ -36,15 +36,15 @@
 
 static settings_t settings;
 static struct option long_options[] = {
-	{ "help",      no_argument,       0, 'h' },
-	{ "diffs",     no_argument,       0, 'd' },
-	{ "group",     no_argument,       0, 'g' },
-	{ "sort",      no_argument,       0, 's' },
-	{ "version",   no_argument,       0, 'v' },
-	{ "emails",    required_argument, 0, 'e' },
-	{ "out",       required_argument, 0, 'o' },
-	{ "repos",     required_argument, 0, 'r' },
-	{ "text",      required_argument, 0, 't' },
+	{ "help",        no_argument,       0, 'h' },
+	{ "diffs",       no_argument,       0, 'd' },
+	{ "group",       no_argument,       0, 'g' },
+	{ "sort",        no_argument,       0, 's' },
+	{ "version",     no_argument,       0, 'v' },
+	{ "header-only", no_argument,       0,  1  },
+	{ "emails",      required_argument, 0, 'e' },
+	{ "out",         required_argument, 0, 'o' },
+	{ "repos",       required_argument, 0, 'r' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -75,6 +75,7 @@ static void print_help(void)
 		   "                           Default: stdout\n"
 		   "  -r, --repos REPOS        Specify the file containing the list of repositories.\n"
 		   "                           Default: .rlist in the current folder\n"
+		   "  --header-only            \n"
 		   "\n"
 		   "Examples:\n"
 		   "  tur -e user@example.com\n"
@@ -82,23 +83,6 @@ static void print_help(void)
 		   "\n"
 		   "\n",
 		   __TUR_VERSION__);
-}
-
-static void print_n_msg_error(const char *arg, return_code_t error_code)
-{
-	switch (error_code) {
-	case REQUIRED_ARG_NULL:
-		fprintf(stderr, "argument for option '-t' not provided\n");
-		break;
-	case INT_OVERFLOW:
-	case UNSUPPORTED_VALUE:
-	case USUPPORTED_NEGATIVE_VALUE:
-		fprintf(stderr, "argument for option '-t' invalid. Should be an integer between 0 and %u\n",
-				UINT_MAX);
-		break;
-	default:
-		return;
-	}
 }
 
 int main(int argc, char *argv[])
@@ -119,6 +103,9 @@ int main(int argc, char *argv[])
 		case 'h':
 			print_help();
 			goto end;
+		case 1:
+			settings.print_header = true;
+			break;
 		case 'd':
 			settings.show_diffs = true;
 			break;
@@ -142,12 +129,6 @@ int main(int argc, char *argv[])
 		case 'r':
 			settings.repos_path = str_init(optarg, (uint16_t) strlen(optarg));
 			break;
-		case 't':
-			ret = parse_optarg_to_int(optarg, &settings.n_msg_lines);
-			if (ret != OK) {
-				print_n_msg_error(optarg, ret);
-				return -1;
-			}
 		default:
 			print_help();
 			return -1;
