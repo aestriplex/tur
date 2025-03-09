@@ -47,10 +47,10 @@ sudo make install
 | `-v`, `--version` | Display version |
 | `-g`, `--group` | Group commits by repository |
 | `-s`, `--sort` | Sort commits by date |
-| `-e <email>`, `--email <email>` | Specify a single email address |
-| `-m <email_1,...,email_n>`, `--mail-list <email_1,...,email_n>` | Provide a comma-separated list of emails |
+| `-e <e_1,...,e_n>`, `--emails <e_1,...,e_n>` | Provide a comma-separated list of emails |
 | `-o <FILE>`, `--out <FILE>` | Specify an output file format (e.g., `.tex`, `.html`, `.md`) |
 | `-r <FILE>`, `--repos <FILE>` | Specify a file containing repository paths |
+| `--header-only` | Shows the first line of the commit message|
 
 Either option `m` or `e` is required. If you don't specify any output file, it prints in `stdout`.
 
