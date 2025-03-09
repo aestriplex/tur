@@ -51,7 +51,7 @@ static void print_stdout_grouped(const repository_t *repo, const indexes_t *inde
 
 	fprintf(stdout, "Authored commits:\n");
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(authored[n_c], "\t");
 		}
 		fprintf(stdout, "\t| %s %s",
@@ -69,7 +69,7 @@ co_authored:
 
 	fprintf(stdout, "Co-authored commits:\n");
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(co_authored[n_c], "\t");
 		}
 		fprintf(stdout, "\t| %s %s",
@@ -89,7 +89,7 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 	commit_t **const co_authored = indexes->co_authored;
 
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(authored[n_c], "");
 		}
 		fprintf(stdout, "| %s: %s %s [A]",
@@ -104,7 +104,7 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 	}
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(co_authored[n_c], "");
 		}
 		fprintf(stdout, "| %s: %s %s [C]",

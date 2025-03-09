@@ -39,6 +39,6 @@ settings_t default_settings(void)
 		.grouped = false,
 		.sorted = false,
 		.show_diffs = false,
-		.print_header = false,
+		.print_msg = false,
 	};
 }

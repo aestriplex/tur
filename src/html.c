@@ -70,11 +70,11 @@ static void generate_html_file_grouped(FILE *out,
 	
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(out, "<div>\n");
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(out, authored[n_c]);
 		}
 		fprintf(out, "<div style='font-size: %s;'>(%s) <a href='%s' target='_blank'>%s</a> ",
-				settings->print_header ? "11pt" : "unset",
+				settings->print_msg ? "11pt" : "unset",
 				time_to_string(authored[n_c]->date).val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val);
@@ -96,11 +96,11 @@ co_authored:
 	
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
 		fprintf(out, "<div>\n");
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(out, co_authored[n_c]);
 		}
 		fprintf(out, "<div style='font-size: %s;'>(%s) <a href='%s' target='_blank'>%s</a> ",
-				settings->print_header ? "11pt" : "unset",
+				settings->print_msg ? "11pt" : "unset",
 				time_to_string(co_authored[n_c]->date).val,
 				get_github_url(repo->url, co_authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val);
@@ -124,7 +124,7 @@ static void generate_html_file_list(FILE *out,
 
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(out, "<div style=" COMMIT_ITEM_BORDER_STYLE ">\n");
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(out, authored[n_c]);
 		}
 		fprintf(out, "<div>%s: <a href='%s' target='_blank'>%s</a> (%s) [A] ",
@@ -141,7 +141,7 @@ static void generate_html_file_list(FILE *out,
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
 		fprintf(out, "<div style=" COMMIT_ITEM_BORDER_STYLE ">\n");
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(out, co_authored[n_c]);
 		}
 		fprintf(out, "<div>%s: <a href='%s' target='_blank'>%s</a> (%s) [C] ",

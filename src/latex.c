@@ -66,7 +66,7 @@ static void generate_latex_file_grouped(FILE *out,
 		fprintf(out, "\t\\item \\label{%s:item:%s} ",
 				repo->name.val,
 				authored[n_c]->hash.val);
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(out, authored[n_c]);
 		}
 		fprintf(out, "\\href{%s}{%s} (%s) ",
@@ -92,7 +92,7 @@ co_authored:
 		fprintf(out, "\t\\item \\label{%s:item:%s} ",
 				repo->name.val,
 				authored[n_c]->hash.val);
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(out, co_authored[n_c]);
 		}
 		fprintf(out, "\\href{%s}{%s} (%s) ",
@@ -119,7 +119,7 @@ static void generate_latex_file_list(FILE *out, const
 		fprintf(out, "\t\\item \\label{%s:item:%s}",
 				repo->name.val,
 				authored[n_c]->hash.val);
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(out, authored[n_c]);
 		}
 		fprintf(out, "%s: [A] \\href{%s}{%s} %s\n",
@@ -136,7 +136,7 @@ static void generate_latex_file_list(FILE *out, const
 		fprintf(out, "\t\\item \\label{%s:item:%s} ",
 				repo->name.val,
 				authored[n_c]->hash.val);
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(out, co_authored[n_c]);
 		}
 		fprintf(out, "%s: [C] \\href{%s}{%s} %s\n",

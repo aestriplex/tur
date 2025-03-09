@@ -60,7 +60,7 @@ static void generate_md_file_grouped(FILE *out,
 	
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(out, "%zu. ", n_c + 1);
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(out, authored[n_c]);
 		}
 		fprintf(out, "[%s](%s) %s\n",
@@ -80,7 +80,7 @@ co_authored:
 	
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
 		fprintf(out, "%zu. ", n_c + 1);
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(out, co_authored[n_c]);
 		}
 		fprintf(out, "[%s](%s) %s\n",
@@ -104,7 +104,7 @@ static void generate_md_file_list(FILE *out,
 	size_t n_commit = 1;
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(out, "%zu. ", n_commit);
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(out, authored[n_c]);
 		}
 		fprintf(out, "%s: [%s](%s) [A] %s\n",
@@ -121,7 +121,7 @@ static void generate_md_file_list(FILE *out,
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
 		fprintf(out, "%zu. ", n_commit);
-		if (settings->print_header) {
+		if (settings->print_msg) {
 			print_commit_message(out, co_authored[n_c]);
 		}
 		fprintf(out, "%zu. %s: [%s](%s) [C] %s\n",
