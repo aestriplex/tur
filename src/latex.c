@@ -26,6 +26,8 @@
 
 #include <stdio.h>
 
+#define LIST_ITEMS_SPACING "\\setlength\\itemsep{1em}"
+
 static void print_commit_diffs(FILE *out, const commit_t * commit)
 {
 	fprintf(out, "\\\\%zu file%c changed "
@@ -57,7 +59,8 @@ static void generate_latex_file_grouped(FILE *out,
 	if (repo->history->n_authored == 0) { goto co_authored; }
 
 	fprintf(out, "\n\\subsection{Authored}\n\\label{subsec:%s-authored}\n\n"
-					"\\begin{enumerate}\n", repo->name.val);
+				 "\\begin{enumerate}\n" LIST_ITEMS_SPACING "\n",
+				 repo->name.val);
 	
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(out, "\t\\item \\label{%s:item:%s} ",
@@ -82,7 +85,8 @@ co_authored:
 	if (repo->history->n_co_authored == 0) { return; }
 
 	fprintf(out, "\n\\subsection{Co-authored}\n\\label{subsec:%s-co-authored}\n\n"
-					"\\begin{enumerate}\n", repo->name.val);
+				 "\\begin{enumerate}\n" LIST_ITEMS_SPACING "\n",
+				 repo->name.val);
 	
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
 		fprintf(out, "\t\\item \\label{%s:item:%s} ",
@@ -156,7 +160,7 @@ void generate_latex_file(const repository_array_t *repos, settings_t settings)
 				 "*xcolor* and *hyperref* packages.");
 
 	if (!settings.grouped) {
-		fprintf(out, "\n\n\\begin{enumerate}\n");
+		fprintf(out, "\n\n\\begin{enumerate}\n" LIST_ITEMS_SPACING "\n");
 	}
 
 	for (size_t i = 0; i < repos->count; i++) {
