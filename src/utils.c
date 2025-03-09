@@ -135,5 +135,8 @@ str_t escape_special_chars(str_t input)
 	}
 	escaped_str[j] = '\0';
 	
-	return str_init(escaped_str, new_len);
+	str_t escaped_string = str_init(escaped_str, new_len);
+	free(escaped_str);
+
+	return escaped_string;
 }

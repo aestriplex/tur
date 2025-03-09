@@ -29,38 +29,55 @@
 void test_header_of_text(void)
 {
 	{
-		const char *text = "First row\nSecond row\nThird row";
-		str_t result = get_first_line(str_init(text, strlen(text)));
+		str_t text = str_init("First row\nSecond row\nThird row",
+							  strlen("First row\nSecond row\nThird row"));
+		str_t result = get_first_line(text);
 
 		assert_true(result.len == 9, "first line of text should have length 10");
 		assert_true(str_arr_equals(result, "First row"), "first line is 'First row'");
+
+		str_free(text);
+		str_free(result);
 	}
 
 	{
-		const char *text = "A row without a newline";
-		str_t result = get_first_line(str_init(text, strlen(text)));
-		assert_true(result.len == strlen(text),
+		str_t text = str_init("A row without a newline",
+							  strlen("A row without a newline"));
+		str_t result = get_first_line(text);
+
+		assert_true(result.len == text.len,
 					"the first line has the same length of to the text itself");
-		assert_true(str_arr_equals(result, text),
+		assert_true(str_equals(result, text),
 					"the first line is equal to the text itself");
+		
+		str_free(text);
+		str_free(result);
 	}
 
 	{
-		const char *text = "";
-		str_t result = get_first_line(str_init(text, strlen(text)));
+		str_t text = empty_str();
+		str_t result = get_first_line(text);
 
 		assert_true(result.len == 0, "empty text has length 0");
-		assert_true(str_equals(result, empty_str()),
+		assert_true(str_equals(result, text),
 					"empty text is equal to the empty string");
+
+		str_free(text);
+		str_free(result);
 	}
 
 	{
-		const char *text = "\nSecond row";
-		str_t result = get_first_line(str_init(text, strlen(text)));
+		str_t text = str_init("\nSecond row", strlen("\nSecond row"));
+		str_t result = get_first_line(text);
+		str_t empty = empty_str();
 
 		assert_true(result.len == 0, "the first line should have length 0");
-		assert_true(str_equals(result, empty_str()),
+		assert_true(str_equals(result, empty),
 					"the first line is the empty string");
+
+		str_free(text);
+		str_free(result);
+		str_free(empty);
 	}
 }
 
@@ -73,6 +90,8 @@ void test_format_date(void)
 		assert_true(result.len == 10, "mm/dd/yyyy has 10 characters");
 		assert_true(result.val[2] == '/', "there should be 2 chars for month");
 		assert_true(result.val[5] == '/', "there should be 2 chars for day");
+
+		str_free(result);
 	}
 
 	{
@@ -80,6 +99,8 @@ void test_format_date(void)
 		str_t result = format_date(timestamp);
 		assert_true(result.len == 10, "11/29/2024 has 10 characters");
 		assert_true(str_arr_equals(result, "11/29/2024"), "date should be '11/29/2024'");
+
+		str_free(result);
 	}
 
 	{
@@ -87,6 +108,8 @@ void test_format_date(void)
 		str_t result = format_date(timestamp);
 		assert_true(result.len == 10, "01/09/2020 has 10 characters");
 		assert_true(str_arr_equals(result, "01/09/2020"), "date should be '01/09/2020'");
+
+		str_free(result);
 	}
 
 	{
@@ -94,6 +117,8 @@ void test_format_date(void)
 		str_t result = format_date(timestamp);
 		assert_true(result.len == 10, "12/25/2099 has 10 characters");
 		assert_true(str_arr_equals(result, "12/25/2099"), "date should be '12/25/2099'");
+
+		str_free(result);
 	}
 
 	{
@@ -102,6 +127,8 @@ void test_format_date(void)
 		assert_true(result.len == 10, "02/29/2024 has 10 characters");
 		assert_true(str_arr_equals(result, "02/29/2024"),
 					"Leap year (2024), date should be '02/29/2024'");
+
+		str_free(result);
 	}
 }
 
@@ -137,7 +164,9 @@ void test_escape_special_chars(void)
 		str_t result = escape_special_chars(input);
 		assert_true(str_arr_equals(result, "hello\\_world"),
 					"single underscore escaped correctly");
-		free((void*)result.val);
+		
+		str_free(input);
+		str_free(result);
 	}
 	
 	{
@@ -145,14 +174,18 @@ void test_escape_special_chars(void)
 		str_t result = escape_special_chars(input);
 		assert_true(str_arr_equals(result, "\\_\\_test\\_\\_"),
 					"double underscore escaped correctly");
-		free((void*)result.val);
+		
+		str_free(input);
+		str_free(result);
 	}
 	
 	{
 		str_t input = str_init("normal", 6);
 		str_t result = escape_special_chars(input);
 		assert_true(str_arr_equals(result, "normal"), "nothing to escape");
-		free((void*)result.val);
+		
+		str_free(input);
+		str_free(result);
 	}
 	
 	{
@@ -160,7 +193,9 @@ void test_escape_special_chars(void)
 		str_t result = escape_special_chars(input);
 		assert_true(str_arr_equals(result, "\\#delete\\#"),
 					"single hash escaped");
-		free((void*)result.val);
+		
+		str_free(input);
+		str_free(result);
 	}
    
 	{
@@ -168,7 +203,9 @@ void test_escape_special_chars(void)
 		str_t result = escape_special_chars(input);
 		assert_true(str_arr_equals(result, "\\#\\# Markdown subtitle"),
 					"double hash escaped");
-		free((void*)result.val);
+		
+		str_free(input);
+		str_free(result);
 	}
 	
 	{
@@ -176,7 +213,9 @@ void test_escape_special_chars(void)
 		str_t result = escape_special_chars(input);
 		assert_true(str_arr_equals(result, "mixed\\_\\#chars"),
 					"combo of hash and underscore escaped");
-		free((void*)result.val);
+		
+		str_free(input);
+		str_free(result);
 	}
 	
 	{
@@ -184,7 +223,9 @@ void test_escape_special_chars(void)
 		str_t result = escape_special_chars(input);
 		assert_true(str_arr_equals(result, ""),
 					"empty string, nothing to escape");
-		free((void*)result.val);
+		
+		str_free(input);
+		str_free(result);
 	}
 }
 
