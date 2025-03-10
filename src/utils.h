@@ -34,11 +34,10 @@
 #define CROSS "\u2A09"
 
 #define ASCII_SPACE 32
-#define DATE_PATTERN "%m/%d/%Y"
-#define DATE_PATTERN_SIZE 11
+#define DATE_PATTERN "%b %d, %Y"
+#define DATE_PATTERN_SIZE 13 /* Mar 10, 2025 */
 
-str_t time_to_string(time_t timestamp);
-str_t format_date(time_t timestamp);
+str_t format_date(time_t timestamp, bool date_only);
 str_t get_github_url(str_t repo_url, str_t commit_hash);
 str_t get_first_line(str_t input);
 char* trim_whitespace(char *str);

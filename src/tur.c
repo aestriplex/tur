@@ -67,6 +67,8 @@ static void print_help(void)
 		   "                         Default: false\n"
 		   "  -v, --version          Prints the verison on tur\n"
 		   "                         Default: false\n"
+		   "  --date-only            Each commit will be printed without time information\n"
+		   "                         Format: Dec 28, 1994\n"
 		   "  -e, --emails <e_1,...> Specify a list of email addresses\n"
 		   "                         This list expects the emails separated by a comma."
 		   "  -o, --out FILE         Specify an output file. Allowed extensions are:\n"

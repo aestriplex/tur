@@ -85,48 +85,52 @@ void test_format_date(void)
 {
 	{
 		time_t now = time(NULL);
-		str_t result = format_date(now);
-
-		assert_true(result.len == 10, "mm/dd/yyyy has 10 characters");
-		assert_true(result.val[2] == '/', "there should be 2 chars for month");
-		assert_true(result.val[5] == '/', "there should be 2 chars for day");
+		str_t result = format_date(now, true);
+		
+		assert_true(result.len == 12, DATE_PATTERN "has 10 characters");
+		assert_true(result.val[3] == ASCII_SPACE, "there should be 3 chars for month");
+		assert_true(result.val[6] == ',', "there should be 7 chars for month and day");
 
 		str_free(result);
 	}
 
 	{
 		time_t timestamp = 1732838400;
-		str_t result = format_date(timestamp);
-		assert_true(result.len == 10, "11/29/2024 has 10 characters");
-		assert_true(str_arr_equals(result, "11/29/2024"), "date should be '11/29/2024'");
+		str_t result = format_date(timestamp, true);
+		
+		assert_true(result.len == 12, "'Nov 29, 2024' has 12 characters");
+		assert_true(str_arr_equals(result, "Nov 29, 2024"), "date should be 'Nov 29, 2024'");
 
 		str_free(result);
 	}
 
 	{
 		time_t timestamp = 1578528000;
-		str_t result = format_date(timestamp);
-		assert_true(result.len == 10, "01/09/2020 has 10 characters");
-		assert_true(str_arr_equals(result, "01/09/2020"), "date should be '01/09/2020'");
+		str_t result = format_date(timestamp, true);
+		
+		assert_true(result.len == 12, "'Jan 09, 2020' has 12 characters");
+		assert_true(str_arr_equals(result, "Jan 09, 2020"), "date should be 'Jan 09, 2020'");
 
 		str_free(result);
 	}
 
 	{
 		time_t timestamp = 4101840000;
-		str_t result = format_date(timestamp);
-		assert_true(result.len == 10, "12/25/2099 has 10 characters");
-		assert_true(str_arr_equals(result, "12/25/2099"), "date should be '12/25/2099'");
+		str_t result = format_date(timestamp, true);
+		
+		assert_true(result.len == 12, "'Dec 25, 2099' has 12 characters");
+		assert_true(str_arr_equals(result, "Dec 25, 2099"), "date should be 'Dec 25, 2099'");
 
 		str_free(result);
 	}
 
 	{
 		time_t timestamp = 1709164800;
-		str_t result = format_date(timestamp);
-		assert_true(result.len == 10, "02/29/2024 has 10 characters");
-		assert_true(str_arr_equals(result, "02/29/2024"),
-					"Leap year (2024), date should be '02/29/2024'");
+		str_t result = format_date(timestamp, true);
+
+		assert_true(result.len == 12, "'Feb 29, 2024' has 12 characters");
+		assert_true(str_arr_equals(result, "Feb 29, 2024"),
+					"Leap year (2024), date should be 'Feb 29, 2024'");
 
 		str_free(result);
 	}

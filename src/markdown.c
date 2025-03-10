@@ -66,7 +66,7 @@ static void generate_md_file_grouped(FILE *out,
 		fprintf(out, "[%s](%s) %s\n",
 				authored[n_c]->hash.val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
-				time_to_string(authored[n_c]->date).val);
+				format_date(authored[n_c]->date, settings->date_only).val);
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -86,7 +86,7 @@ co_authored:
 		fprintf(out, "[%s](%s) %s\n",
 				co_authored[n_c]->hash.val,
 				get_github_url(repo->url, co_authored[n_c]->hash).val,
-				time_to_string(co_authored[n_c]->date).val);
+				format_date(co_authored[n_c]->date, settings->date_only).val);
 		if (settings->show_diffs) {
 			print_commit_diffs(out, co_authored[n_c]);
 		}
@@ -111,7 +111,7 @@ static void generate_md_file_list(FILE *out,
 				repo->name.val,
 				authored[n_c]->hash.val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
-				time_to_string(authored[n_c]->date).val);
+				format_date(authored[n_c]->date, settings->date_only).val);
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -129,7 +129,7 @@ static void generate_md_file_list(FILE *out,
 				repo->name.val,
 				co_authored[n_c]->hash.val,
 				get_github_url(repo->url, co_authored[n_c]->hash).val,
-				time_to_string(co_authored[n_c]->date).val);
+				format_date(co_authored[n_c]->date, settings->date_only).val);
 		if (settings->show_diffs) {
 			print_commit_diffs(out, co_authored[n_c]);
 		}

@@ -72,7 +72,7 @@ static void generate_latex_file_grouped(FILE *out,
 		fprintf(out, "\\href{%s}{%s} (%s) ",
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val,
-				time_to_string(authored[n_c]->date).val);
+				format_date(authored[n_c]->date, settings->date_only).val);
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -98,7 +98,7 @@ co_authored:
 		fprintf(out, "\\href{%s}{%s} (%s) ",
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val,
-				time_to_string(co_authored[n_c]->date).val);
+				format_date(co_authored[n_c]->date, settings->date_only).val);
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -126,7 +126,7 @@ static void generate_latex_file_list(FILE *out, const
 				repo->name.val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val,
-				time_to_string(authored[n_c]->date).val);
+				format_date(authored[n_c]->date, settings->date_only).val);
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -143,7 +143,7 @@ static void generate_latex_file_list(FILE *out, const
 				repo->name.val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val,
-				time_to_string(co_authored[n_c]->date).val);
+				format_date(co_authored[n_c]->date, settings->date_only).val);
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}

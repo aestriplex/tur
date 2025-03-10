@@ -34,15 +34,14 @@
 #define GITHUB_URL      "commit/"
 #define GITHUB_URL_SIZE 7
 
-str_t time_to_string(time_t timestamp)
+static str_t time_to_full_string(time_t timestamp)
 {
 	const char *date = ctime(&timestamp);
 	return str_init(date, (uint16_t) strlen(date) - 1);
 }
 
-str_t format_date(time_t timestamp)
+static str_t time_to_date_string(time_t timestamp)
 {
-	/* format: mm/dd/yyyy */
 	struct tm tm_info;
 	static char buffer[DATE_PATTERN_SIZE];
 
@@ -50,6 +49,13 @@ str_t format_date(time_t timestamp)
 	strftime(buffer, sizeof(buffer), DATE_PATTERN, &tm_info);
 
 	return str_init(buffer, strlen(buffer));
+}
+
+str_t format_date(time_t timestamp, bool date_only)
+{
+	return date_only
+		   ? time_to_date_string(timestamp)
+		   : time_to_full_string(timestamp);
 }
 
 str_t get_github_url(str_t repo_url, str_t commit_hash)
