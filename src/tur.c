@@ -36,15 +36,16 @@
 
 static settings_t settings;
 static struct option long_options[] = {
-	{ "help",    no_argument,       0, 'h' },
-	{ "diffs",   no_argument,       0, 'd' },
-	{ "group",   no_argument,       0, 'g' },
-	{ "sort",    no_argument,       0, 's' },
-	{ "version", no_argument,       0, 'v' },
-	{ "message", no_argument,       0, 'm' },
-	{ "emails",  required_argument, 0, 'e' },
-	{ "out",     required_argument, 0, 'o' },
-	{ "repos",   required_argument, 0, 'r' },
+	{ "help",      no_argument,       0, 'h' },
+	{ "diffs",     no_argument,       0, 'd' },
+	{ "group",     no_argument,       0, 'g' },
+	{ "sort",      no_argument,       0, 's' },
+	{ "version",   no_argument,       0, 'v' },
+	{ "message",   no_argument,       0, 'm' },
+	{ "date-only", no_argument,       0,  1  },
+	{ "emails",    required_argument, 0, 'e' },
+	{ "out",       required_argument, 0, 'o' },
+	{ "repos",     required_argument, 0, 'r' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -61,6 +62,7 @@ static void print_help(void)
 		   "  -d, --diffs            Show diffs stats (rows added and removed, file changed)\n"
 		   "  -g, --group            Group commit by repository\n"
 		   "                         Default: false\n"
+		   "  -m, --message          Shows the first line of the commit message\n"
 		   "  -s, --sort             Sort commit by date\n"
 		   "                         Default: false\n"
 		   "  -v, --version          Prints the verison on tur\n"
@@ -74,11 +76,10 @@ static void print_help(void)
 		   "                         Default: stdout\n"
 		   "  -r, --repos REPOS      Specify the file containing the list of repositories.\n"
 		   "                         Default: .rlist in the current folder\n"
-		   "  --header-only          Shows the first line of the commit message\n"
 		   "\n"
 		   "Examples:\n"
 		   "  tur -e user@example.com\n"
-		   "  tur -m user1@example.com,user2@example.com -o commits.tex\n"
+		   "  tur -e user1@example.com,user2@example.com -o commits.tex\n"
 		   "\n"
 		   "\n",
 		   __TUR_VERSION__);
@@ -117,6 +118,9 @@ int main(int argc, char *argv[])
 		case 'v':
 			printf("TUR version %s\n", __TUR_VERSION__);
 			goto end;
+		case 1:
+			settings.date_only = true;
+			break;
 		case 'e':
 			settings.emails = parse_emails(optarg, &n_emails);
 			settings.n_emails = n_emails;

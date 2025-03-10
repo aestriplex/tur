@@ -40,5 +40,6 @@ settings_t default_settings(void)
 		.sorted = false,
 		.show_diffs = false,
 		.print_msg = false,
+		.date_only = false,
 	};
 }

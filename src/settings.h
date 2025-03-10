@@ -44,6 +44,7 @@ typedef struct {
 	str_t output;
 	str_t repos_path;
 	bool print_msg;
+	bool date_only;
 } settings_t;
 
 settings_t default_settings(void);
