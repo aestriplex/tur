@@ -44,15 +44,17 @@ sudo make install
 |--------|-------------|
 | `-h`, `--help` | Show help message |
 | `-d`, `--diffs` | Shows the commit stats (line added, removed and file changed) |
-| `-v`, `--version` | Display version |
 | `-g`, `--group` | Group commits by repository |
+| `-m, --message` | Shows the first line of the commit message |
 | `-s`, `--sort` | Sort commits by date |
+| `-v`, `--version` | Display version |
+| `--date-only` | Each commit will be printed without time information |
 | `-e <e_1,...,e_n>`, `--emails <e_1,...,e_n>` | Provide a comma-separated list of emails |
 | `-o <FILE>`, `--out <FILE>` | Specify an output file format (e.g., `.tex`, `.html`, `.md`) |
 | `-r <FILE>`, `--repos <FILE>` | Specify a file containing repository paths |
 | `--header-only` | Shows the first line of the commit message|
 
-Either option `m` or `e` is required. If you don't specify any output file, it prints in `stdout`.
+Option `e` is required. If you don't specify any output file, it prints in `stdout`.
 
 #### Repository list
 
@@ -69,7 +71,7 @@ The following command produce a LaTeX file with the grouped commit list, sorted 
 ```
 % tur -f repository_list.txt -e example@provider.com -o commits.tex -sg
 ```
-To specify more email adrresses, you just have to use the option `-m` with the *comma-separated* list of emails
+To specify more email adrresses, you can still use the option `-e` with the *comma-separated* list of emails:
 ```
-% tur -f repository_list.txt -m example1@provider1.com,example2@provider2.com -o commits.tex -sg
+% tur -f repository_list.txt -e example1@provider1.com,example2@provider2.com -o commits.tex -sg
 ```

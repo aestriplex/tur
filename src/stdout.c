@@ -38,13 +38,6 @@ static void print_commit_message(const commit_t * commit, const char *indent)
 	fprintf(stdout, "%s| %s\n", indent, get_first_line(commit->msg).val);
 }
 
-static str_t format_commit_date(time_t timestamp, const settings_t *settings)
-{
-	return settings->date_only
-		   ? format_date(timestamp)
-		   : time_to_string(timestamp);
-}
-
 static void print_stdout_grouped(const repository_t *repo, const indexes_t *indexes, const settings_t *settings)
 {
 	commit_t **const authored = indexes->authored;
@@ -63,7 +56,7 @@ static void print_stdout_grouped(const repository_t *repo, const indexes_t *inde
 		}
 		fprintf(stdout, "\t| %s %s",
 				authored[n_c]->hash.val,
-				format_commit_date(authored[n_c]->date, settings).val);
+				format_date(authored[n_c]->date, settings->date_only).val);
 		if (settings->show_diffs) {
 			print_commit_diffs(authored[n_c]);
 		}
@@ -81,7 +74,7 @@ co_authored:
 		}
 		fprintf(stdout, "\t| %s %s",
 				co_authored[n_c]->hash.val,
-				format_commit_date(co_authored[n_c]->date, settings).val);
+				format_date(co_authored[n_c]->date, settings->date_only).val);
 
 		if (settings->show_diffs) {
 			print_commit_diffs(co_authored[n_c]);
@@ -102,7 +95,7 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 		fprintf(stdout, "| %s: %s %s [A]",
 				repo->name.val,
 				authored[n_c]->hash.val,
-				format_commit_date(authored[n_c]->date, settings).val);
+				format_date(authored[n_c]->date, settings->date_only).val);
 		
 		if (settings->show_diffs) {
 			print_commit_diffs(authored[n_c]);
@@ -117,7 +110,7 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 		fprintf(stdout, "| %s: %s %s [C]",
 				repo->name.val,
 				co_authored[n_c]->hash.val,
-				format_commit_date(co_authored[n_c]->date, settings).val);
+				format_date(co_authored[n_c]->date, settings->date_only).val);
 		
 		if (settings->show_diffs) {
 			print_commit_diffs(co_authored[n_c]);

@@ -75,7 +75,7 @@ static void generate_html_file_grouped(FILE *out,
 		}
 		fprintf(out, "<div style='font-size: %s;'>(%s) <a href='%s' target='_blank'>%s</a> ",
 				settings->print_msg ? "11pt" : "unset",
-				time_to_string(authored[n_c]->date).val,
+				format_date(authored[n_c]->date, settings->date_only).val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val);
 		if (settings->show_diffs) {
@@ -101,7 +101,7 @@ co_authored:
 		}
 		fprintf(out, "<div style='font-size: %s;'>(%s) <a href='%s' target='_blank'>%s</a> ",
 				settings->print_msg ? "11pt" : "unset",
-				time_to_string(co_authored[n_c]->date).val,
+				format_date(co_authored[n_c]->date, settings->date_only).val,
 				get_github_url(repo->url, co_authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val);
 		if (settings->show_diffs) {
@@ -131,7 +131,7 @@ static void generate_html_file_list(FILE *out,
 				repo->name.val,
 				get_github_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val,
-				time_to_string(authored[n_c]->date).val);
+				format_date(authored[n_c]->date, settings->date_only).val);
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -148,7 +148,7 @@ static void generate_html_file_list(FILE *out,
 				repo->name.val,
 				get_github_url(repo->url, co_authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val,
-				time_to_string(co_authored[n_c]->date).val);
+				format_date(co_authored[n_c]->date, settings->date_only).val);
 		if (settings->show_diffs) {
 			print_commit_diffs(out, co_authored[n_c]);
 		}
