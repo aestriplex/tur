@@ -35,7 +35,11 @@ typedef enum {
 	REQUIRED_ARG_NULL             = 0x07,
 	INT_OVERFLOW                  = 0x08,
 	USUPPORTED_NEGATIVE_VALUE     = 0x09,
-	UNSUPPORTED_VALUE             = 0x0A
+	UNSUPPORTED_VALUE             = 0x0A,
+	UNKONWN_SORT_ORDER            = 0x0B,
+	NULL_PARAMETER                = 0x0C,
+	
+	RUNTIME_MALLOC_ERROR          = 0xFF
 } return_code_t;
 
 #endif /* __CODES_H__ */

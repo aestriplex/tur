@@ -33,11 +33,17 @@ typedef enum {
 	JEKYLL
 } tur_output_t;
 
+typedef enum {
+	ASC = 0,
+	DESC
+} sort_ordering_t;
+
 typedef struct {
 	bool show_diffs;
 	bool clear_cache;
 	bool grouped;
 	bool sorted;
+	sort_ordering_t sort_order;
 	str_t *emails;
 	int n_emails;
 	tur_output_t output_mode;

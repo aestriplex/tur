@@ -29,6 +29,10 @@ test:
 	@echo "*****************************\n  TESTS\n*****************************"
 	@$(MAKE) -C test/
 
+.PHONY: debug
+debug:
+	@$(MAKE) -C src debug
+
 .PHONY: clean
 clean:
 	@$(MAKE) -C src clean

@@ -19,11 +19,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "codes.h"
 #include "opts_args.h"
 #include "settings.h"
 #include "str.h"
 #include "utils.h"
 
+#include <ctype.h>
+#include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,4 +145,59 @@ str_t *parse_emails(const char *input, int *count)
 
 	free(str);
 	return emails;
+}
+
+
+uint16_t parse_optarg_to_int(const char *optarg, unsigned *out_value)
+{
+	if (!optarg) { return REQUIRED_ARG_NULL; }
+
+	char *endptr;
+	long val = strtol(optarg, &endptr, 10);
+	if (val > UINT_MAX) { return INT_OVERFLOW; }
+	if (val < 0) { return USUPPORTED_NEGATIVE_VALUE; }
+	if (endptr == optarg || *endptr != '\0') { return UNSUPPORTED_VALUE; }
+
+	*out_value = (int)val;
+	return OK;
+}
+
+uint16_t parse_sort_order(const char *opt_str, size_t len, sort_ordering_t *order)
+{
+	char buffer[5];
+
+	if (!opt_str || !order) { return NULL_PARAMETER; }
+
+	if (len == 0) {
+		*order = ASC;
+		return OK;
+	}
+
+	char *str = strndup(opt_str, len);
+	if (!str) {
+		fprintf(stderr, "[parse_sort_order] cannot duplicate input string: malloc error\n");
+		return RUNTIME_MALLOC_ERROR;
+	}
+
+    str = trim_whitespace(str);
+	size_t trimmed_len = strlen(str);
+	
+	if (trimmed_len > 4) { return UNKONWN_SORT_ORDER; }
+	
+	for (size_t i = 0; i < trimmed_len; i++) {
+		buffer[i] = (char)toupper((int)str[i]);
+	}
+	buffer[trimmed_len] = '\0';
+	
+	if (strncmp(buffer, "ASC", 3) == 0) {
+		*order = ASC;
+		return OK;
+	}
+
+	if (strncmp(buffer, "DESC", 4) == 0) {
+		*order = DESC;
+		return OK;
+	}
+	
+	return UNKONWN_SORT_ORDER;
 }

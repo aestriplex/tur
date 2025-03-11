@@ -22,6 +22,7 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include "settings.h"
 #include "str.h"
 
 #include <time.h>
@@ -41,7 +42,6 @@ str_t format_date(time_t timestamp, bool date_only);
 str_t get_github_url(str_t repo_url, str_t commit_hash);
 str_t get_first_line(str_t input);
 char* trim_whitespace(char *str);
-uint16_t parse_optarg_to_int(const char *optarg, unsigned *out_value);
 str_t escape_special_chars(str_t input);
 
 #endif /* __UTILS_H__ */

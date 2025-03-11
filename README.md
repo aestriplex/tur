@@ -46,13 +46,12 @@ sudo make install
 | `-d`, `--diffs` | Shows the commit stats (line added, removed and file changed) |
 | `-g`, `--group` | Group commits by repository |
 | `-m, --message` | Shows the first line of the commit message |
-| `-s`, `--sort` | Sort commits by date |
 | `-v`, `--version` | Display version |
 | `--date-only` | Each commit will be printed without time information |
 | `-e <e_1,...,e_n>`, `--emails <e_1,...,e_n>` | Provide a comma-separated list of emails |
 | `-o <FILE>`, `--out <FILE>` | Specify an output file format (e.g., `.tex`, `.html`, `.md`) |
 | `-r <FILE>`, `--repos <FILE>` | Specify a file containing repository paths |
-| `--header-only` | Shows the first line of the commit message|
+| `-s`, `--sort` | Sort commits by date. You have to specify an order: ASC (Ascending order) or DESC (Descending order) |
 
 Option `e` is required. If you don't specify any output file, it prints in `stdout`.
 

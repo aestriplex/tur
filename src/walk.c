@@ -28,13 +28,18 @@
 
 #include <stdlib.h>
 
-static int compare_commits(const void* a, const void* b)
+int order_by_date_asc(const void* a, const void* b)
 {
 	commit_t **first = (commit_t **)a;
 	commit_t **second = (commit_t **)b;
 
 	if ((*first)->date == (*second)->date) { return 0; }
 	return (*first)->date < (*second)->date ? -1 : 1;
+}
+
+int order_by_date_desc(const void* a, const void* b)
+{
+	return -order_by_date_asc(a,b);
 }
 
 static commit_t **get_commit_refs(const commit_arr_t *commit_arr, size_t commit_with_resp,
@@ -48,8 +53,10 @@ static commit_t **get_commit_refs(const commit_arr_t *commit_arr, size_t commit_
 		}
 	}
 	if (settings.sorted) {
-		qsort(commits_with_resp, commit_with_resp,
-			  sizeof(commit_t **), &compare_commits);
+		qsort(commits_with_resp,
+			  commit_with_resp,
+			  sizeof(commit_t **),
+			  settings.sort_order == ASC ? order_by_date_asc : order_by_date_desc);
 	}
 
 	return commits_with_resp;

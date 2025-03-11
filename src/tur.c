@@ -39,13 +39,13 @@ static struct option long_options[] = {
 	{ "help",      no_argument,       0, 'h' },
 	{ "diffs",     no_argument,       0, 'd' },
 	{ "group",     no_argument,       0, 'g' },
-	{ "sort",      no_argument,       0, 's' },
 	{ "version",   no_argument,       0, 'v' },
 	{ "message",   no_argument,       0, 'm' },
 	{ "date-only", no_argument,       0,  1  },
 	{ "emails",    required_argument, 0, 'e' },
 	{ "out",       required_argument, 0, 'o' },
 	{ "repos",     required_argument, 0, 'r' },
+	{ "sort",      required_argument, 0, 's' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -63,8 +63,6 @@ static void print_help(void)
 		   "  -g, --group            Group commit by repository\n"
 		   "                         Default: false\n"
 		   "  -m, --message          Shows the first line of the commit message\n"
-		   "  -s, --sort             Sort commit by date\n"
-		   "                         Default: false\n"
 		   "  -v, --version          Prints the verison on tur\n"
 		   "                         Default: false\n"
 		   "  --date-only            Each commit will be printed without time information\n"
@@ -78,10 +76,16 @@ static void print_help(void)
 		   "                         Default: stdout\n"
 		   "  -r, --repos REPOS      Specify the file containing the list of repositories.\n"
 		   "                         Default: .rlist in the current folder\n"
+		   "  -s, --sort <order>     Sort commit by date.\n"
+		   "                         Order:\n"
+		   "                             ASC Ascending order;\n"
+		   "                             DESC Descending order.\n"
+		   "                         Default: false.\n"
 		   "\n"
 		   "Examples:\n"
 		   "  tur -e user@example.com\n"
 		   "  tur -e user1@example.com,user2@example.com -o commits.tex\n"
+		   "  tur -dgs -e user1@example.com,user2@example.com -o commits.html\n"
 		   "\n"
 		   "\n",
 		   __TUR_VERSION__);
@@ -100,7 +104,7 @@ int main(int argc, char *argv[])
 
 	settings = default_settings();
 
-	while ((ch = getopt_long(argc, argv, "hdgmsve:o:r:t:", long_options, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "hdgmve:o:r:s:", long_options, &option_index)) != -1) {
 		switch (ch) {
 		case 'h':
 			print_help();
@@ -110,9 +114,6 @@ int main(int argc, char *argv[])
 			break;
 		case 'g' :
 			settings.grouped = true;
-			break;
-		case 's':
-			settings.sorted = true;
 			break;
 		case 'm':
 			settings.print_msg = true;
@@ -133,6 +134,13 @@ int main(int argc, char *argv[])
 			break;
 		case 'r':
 			settings.repos_path = str_init(optarg, (uint16_t) strlen(optarg));
+			break;
+		case 's':
+			settings.sorted = true;
+			ret = parse_sort_order(optarg, strlen(optarg), &settings.sort_order); 
+			if (ret != OK) {
+				fprintf(stderr, "Unknown sort order '%s'. Set deafult: ASC\n", optarg);
+			}
 			break;
 		default:
 			print_help();

@@ -21,13 +21,14 @@
 CC = gcc
 CVARS = -D_GNU_SOURCE
 CFLAGS = -Wall -pedantic -O3 -std=c2x
-TEST_BINS = test_parse_repository test_parse_email_list test_str test_utils
+TEST_BINS = test_parse_repository test_parse_email_list test_str test_utils test_opts_args
 
 all: $(TEST_BINS)
 	./test_parse_repository
 	./test_parse_email_list
 	./test_str
 	./test_utils
+	./test_opts_args
 
 test_parse_repository: test.c test_parse_repository.c repo.o str.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
@@ -39,6 +40,9 @@ test_str: test.c test_str.c str.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
 test_utils: test.c test_utils.c str.o utils.o 
+	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
+
+test_opts_args: test.c test_opts_args.c opts_args.o utils.o str.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
 repo.o: ../src/repo.c

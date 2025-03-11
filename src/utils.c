@@ -26,7 +26,6 @@
 #include "utils.h"
 
 #include <ctype.h>
-#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -90,9 +89,7 @@ char* trim_whitespace(char *str)
 
 	while (isspace((unsigned char)*str)) str++;
 
-	if (*str == 0) {
-		return str;
-	}
+	if (*str == 0) { return str; }
 
 	end = str + strlen(str) - 1;
 	while (end > str && isspace((unsigned char)*end)) end--;
@@ -100,20 +97,6 @@ char* trim_whitespace(char *str)
 	*(end + 1) = '\0';
 
 	return str;
-}
-
-uint16_t parse_optarg_to_int(const char *optarg, unsigned *out_value)
-{
-	if (!optarg) { return REQUIRED_ARG_NULL; }
-
-	char *endptr;
-	long val = strtol(optarg, &endptr, 10);
-	if (val > UINT_MAX) { return INT_OVERFLOW; }
-	if (val < 0) { return USUPPORTED_NEGATIVE_VALUE; }
-	if (endptr == optarg || *endptr != '\0') { return UNSUPPORTED_VALUE; }
-
-	*out_value = (int)val;
-	return OK;
 }
 
 str_t escape_special_chars(str_t input)
