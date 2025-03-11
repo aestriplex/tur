@@ -22,7 +22,7 @@
 #ifndef __CODES_H__
 #define __CODES_H__
 
-#define __TUR_VERSION__ "0.9.4"
+#define __TUR_VERSION__ "0.9.5"
 
 typedef enum {
 	OK                            = 0x00,
@@ -38,7 +38,7 @@ typedef enum {
 	UNSUPPORTED_VALUE             = 0x0A,
 	UNKONWN_SORT_ORDER            = 0x0B,
 	NULL_PARAMETER                = 0x0C,
-	
+
 	RUNTIME_MALLOC_ERROR          = 0xFF
 } return_code_t;
 
