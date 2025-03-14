@@ -23,7 +23,15 @@
 #define __WALK_H__
 
 #include "commit.h"
+#include "repo.h"
+#include"settings.h"
 
-return_code_t walk_through_repos(const repository_array_t *repos, settings_t settings);
+typedef struct {
+	repository_t *repo;
+	settings_t *settings;
+	uint16_t ret;
+} thread_worker_t;
+
+return_code_t walk_through_repos(const repository_array_t *repos, settings_t *settings);
 
 #endif /* __WALK_H__ */

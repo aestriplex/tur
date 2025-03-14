@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 	ret = get_repos_array(settings, &repos);
 	if (ret != OK) { return ret; }
 
-	ret = walk_through_repos(&repos, settings);
+	ret = walk_through_repos(&repos, &settings);
 	if (ret != OK) { return ret; }
 
 end:

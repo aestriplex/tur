@@ -26,7 +26,9 @@
 #include "view.h"
 #include "walk.h"
 
+#include <pthread.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 int order_by_date_asc(const void* a, const void* b)
 {
@@ -43,7 +45,7 @@ int order_by_date_desc(const void* a, const void* b)
 }
 
 static commit_t **get_commit_refs(const commit_arr_t *commit_arr, size_t commit_with_resp,
-								  responsability_t resp, settings_t settings)
+								  responsability_t resp, settings_t *settings)
 {
 	commit_t **commits_with_resp = malloc(commit_with_resp * sizeof(commit_t *));
 	for (size_t i = 0, n_resp = 0; i < commit_arr->count; i++) {
@@ -52,17 +54,17 @@ static commit_t **get_commit_refs(const commit_arr_t *commit_arr, size_t commit_
 			n_resp++;
 		}
 	}
-	if (settings.sorted) {
+	if (settings->sorted) {
 		qsort(commits_with_resp,
 			  commit_with_resp,
 			  sizeof(commit_t **),
-			  settings.sort_order == ASC ? order_by_date_asc : order_by_date_desc);
+			  settings->sort_order == ASC ? order_by_date_asc : order_by_date_desc);
 	}
 
 	return commits_with_resp;
 }
 
-static uint16_t build_indexes(repository_t *repo, settings_t settings)
+static uint16_t build_indexes(repository_t *repo, settings_t *settings)
 {
 	repo->history->indexes.authored = get_commit_refs(&repo->history->commit_arr,
 													  repo->history->n_authored,
@@ -77,9 +79,9 @@ static uint16_t build_indexes(repository_t *repo, settings_t settings)
 	return OK;
 }
 
-static void print_output(const repository_array_t *repos, settings_t settings)
+static void print_output(const repository_array_t *repos, settings_t *settings)
 {
-	switch (settings.output_mode) {
+	switch (settings->output_mode) {
 	case STDOUT:
 		print_stdout(repos, settings);
 		break;
@@ -93,21 +95,46 @@ static void print_output(const repository_array_t *repos, settings_t settings)
 		generate_markdown_file(repos, settings);
 		break;
 	default:
-		fprintf(stderr, "corrupted output mode [%d]... stdout selected", settings.output_mode);
+		fprintf(stderr, "corrupted output mode [%d]... stdout selected", settings->output_mode);
 		break;
 	}
 }
 
-return_code_t walk_through_repos(const repository_array_t *repos, settings_t settings)
+static void *walk_repo(void* arg)
+{
+	thread_worker_t *data = (thread_worker_t *)arg;
+
+	data->repo->history = get_commit_history(data->repo->path, data->settings);
+	data->ret = build_indexes(data->repo, data->settings);
+
+	return NULL;
+}
+
+return_code_t walk_through_repos(const repository_array_t *repos, settings_t *settings)
 {
 	repository_t *repo;
 	uint16_t ret;
+	size_t num_cores = (size_t) sysconf(_SC_NPROCESSORS_ONLN);
+	pthread_t threads[num_cores];
+	thread_worker_t workers[num_cores];
 
 	for (size_t i = 0; i < repos->count; i++) {
+		if (pthread_create(threads + i, NULL, walk_repo, workers + i) != 0) {
+			perror("pthread_create");
+			exit(EXIT_FAILURE);
+		}
 		repo = repos->repositories + i;
 		repo->history = get_commit_history(repo->path, settings);
 		ret = build_indexes(repo, settings);
 		if (ret != OK) { return ret; }
+	}
+
+	for (size_t i = 0; i < num_cores; i++) {
+		pthread_join(threads[i], NULL);
+	}
+
+	for (size_t i = 0; i < num_cores; i++) {
+		if (workers[i].ret != OK) { return ret; }
 	}
 	
 	print_output(repos, settings);
