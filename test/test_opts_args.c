@@ -141,7 +141,7 @@ void test_parse_sort_order(void) {
 
 	{
 		int result = parse_sort_order("ASC", 0, NULL);
-		assert_true(result == NULL_PARAMETER, "oreder should not be null");
+		assert_true(result == NULL_PARAMETER, "order should not be null");
 	}
 
 	{
