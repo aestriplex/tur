@@ -157,7 +157,7 @@ static void generate_html_file_list(FILE *out,
 	}
 }
 
-void generate_html_file(const repository_array_t *repos, settings_t *settings)
+void generate_html_file(const repository_array_t *repos, const settings_t *settings)
 {
 	FILE *out = fopen(settings->output.val, "w");
 

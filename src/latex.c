@@ -150,7 +150,7 @@ static void generate_latex_file_list(FILE *out, const
 	}
 }
 
-void generate_latex_file(const repository_array_t *repos, settings_t *settings)
+void generate_latex_file(const repository_array_t *repos, const settings_t *settings)
 {
 	FILE *out = fopen(settings->output.val, "w");
 

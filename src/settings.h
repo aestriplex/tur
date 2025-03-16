@@ -51,6 +51,7 @@ typedef struct {
 	str_t repos_path;
 	bool print_msg;
 	bool date_only;
+	size_t n_threads;
 } settings_t;
 
 settings_t default_settings(void);

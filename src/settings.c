@@ -23,6 +23,7 @@
 #include "str.h"
 
 #include <stdlib.h>
+#include <unistd.h>
 
 #define DEFAULT_REPOS_LIST_PATH      ".rlist"
 #define DEFAULT_REPOS_LIST_PATH_SIZE 6
@@ -42,5 +43,6 @@ settings_t default_settings(void)
 		.print_msg = false,
 		.date_only = false,
 		.sort_order = ASC,
+		.n_threads = (size_t) sysconf(_SC_NPROCESSORS_ONLN),
 	};
 }

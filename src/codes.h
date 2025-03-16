@@ -39,6 +39,7 @@ typedef enum {
 	UNKONWN_SORT_ORDER            = 0x0B,
 	NULL_PARAMETER                = 0x0C,
 
+	RUNTIME_THREAD_CREATE_ERROR   = 0xFE,
 	RUNTIME_MALLOC_ERROR          = 0xFF
 } return_code_t;
 
