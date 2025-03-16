@@ -45,6 +45,6 @@ typedef struct {
 } repository_array_t;
 
 repository_t parse_repository(const char *line, ssize_t len);
-return_code_t get_repos_array(settings_t settings, repository_array_t *repos);
+return_code_t get_repos_array(repository_array_t *repos, const settings_t *settings);
 
 #endif /* __REPO_H__ */

@@ -96,14 +96,14 @@ repository_t parse_repository(const char *line, ssize_t len)
 	return repo;
 }
 
-return_code_t get_repos_array(settings_t settings, repository_array_t *repos)
+return_code_t get_repos_array(repository_array_t *repos, const settings_t *settings)
 {
 	size_t len = 0;
 	ssize_t read;
 	char *line = NULL;
 	FILE *repos_list;
 
-	repos_list = fopen(settings.repos_path.val, "r");
+	repos_list = fopen(settings->repos_path.val, "r");
 	if (!repos_list) { return INVALID_REPOS_LIST_PATH; }
 
 	repos->repositories = malloc(DEFAULT_N_REPOSITORY * sizeof(repository_t));
