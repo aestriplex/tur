@@ -22,6 +22,7 @@
 #include "settings.h"
 #include "str.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -30,6 +31,13 @@
 
 settings_t default_settings(void)
 {
+	long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
+
+	if (num_cores < 0) {
+		fprintf(stderr, "sysconf: cannot get number of cores\n");
+		exit(1);
+	}
+
 	return (settings_t) {
 		.output_mode = STDOUT,
 		.output = empty_str(),
@@ -43,6 +51,6 @@ settings_t default_settings(void)
 		.print_msg = false,
 		.date_only = false,
 		.sort_order = ASC,
-		.n_threads = (size_t) sysconf(_SC_NPROCESSORS_ONLN),
+		.n_threads = (size_t) num_cores,
 	};
 }
