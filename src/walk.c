@@ -26,9 +26,13 @@
 #include "view.h"
 #include "walk.h"
 
+#include <pthread.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-int order_by_date_asc(const void* a, const void* b)
+static thread_pool_t pool;
+
+static int order_by_date_asc(const void* a, const void* b)
 {
 	commit_t **first = (commit_t **)a;
 	commit_t **second = (commit_t **)b;
@@ -37,13 +41,13 @@ int order_by_date_asc(const void* a, const void* b)
 	return (*first)->date < (*second)->date ? -1 : 1;
 }
 
-int order_by_date_desc(const void* a, const void* b)
+static int order_by_date_desc(const void* a, const void* b)
 {
 	return -order_by_date_asc(a,b);
 }
 
 static commit_t **get_commit_refs(const commit_arr_t *commit_arr, size_t commit_with_resp,
-								  responsability_t resp, settings_t settings)
+								  responsability_t resp, const settings_t *settings)
 {
 	commit_t **commits_with_resp = malloc(commit_with_resp * sizeof(commit_t *));
 	for (size_t i = 0, n_resp = 0; i < commit_arr->count; i++) {
@@ -52,17 +56,17 @@ static commit_t **get_commit_refs(const commit_arr_t *commit_arr, size_t commit_
 			n_resp++;
 		}
 	}
-	if (settings.sorted) {
+	if (settings->sorted) {
 		qsort(commits_with_resp,
 			  commit_with_resp,
 			  sizeof(commit_t **),
-			  settings.sort_order == ASC ? order_by_date_asc : order_by_date_desc);
+			  settings->sort_order == ASC ? order_by_date_asc : order_by_date_desc);
 	}
 
 	return commits_with_resp;
 }
 
-static uint16_t build_indexes(repository_t *repo, settings_t settings)
+static uint16_t build_indexes(repository_t *repo, const settings_t *settings)
 {
 	repo->history->indexes.authored = get_commit_refs(&repo->history->commit_arr,
 													  repo->history->n_authored,
@@ -77,9 +81,9 @@ static uint16_t build_indexes(repository_t *repo, settings_t settings)
 	return OK;
 }
 
-static void print_output(const repository_array_t *repos, settings_t settings)
+static void print_output(const repository_array_t *repos, const settings_t *settings)
 {
-	switch (settings.output_mode) {
+	switch (settings->output_mode) {
 	case STDOUT:
 		print_stdout(repos, settings);
 		break;
@@ -93,21 +97,69 @@ static void print_output(const repository_array_t *repos, settings_t settings)
 		generate_markdown_file(repos, settings);
 		break;
 	default:
-		fprintf(stderr, "corrupted output mode [%d]... stdout selected", settings.output_mode);
+		fprintf(stderr, "corrupted output mode [%d]... stdout selected", settings->output_mode);
 		break;
 	}
 }
 
-return_code_t walk_through_repos(const repository_array_t *repos, settings_t settings)
+static void *walk_repo(void* arg)
 {
-	repository_t *repo;
-	uint16_t ret;
+	/* unused arg */
+	(void)arg;
+	thread_worker_t *worker;
+
+	while (1) {
+		pthread_mutex_lock(&pool.current_worker_lock);
+		if (pool.current_worker >= pool.n_workers) { break; }
+		worker = pool.workers + pool.current_worker;
+		pool.current_worker++;
+		pthread_mutex_unlock(&pool.current_worker_lock);
+		
+		worker->repo->history = get_commit_history(worker->repo->path, pool.settings);
+		worker->ret = build_indexes(worker->repo, pool.settings);
+	}
+	
+	return NULL;
+}
+
+static void init_thread_pool(const repository_array_t *repos, const settings_t *settings)
+{
+	pool.threads = malloc(settings->n_threads * sizeof(pthread_t));
+	pool.workers = malloc(repos->count * sizeof(thread_worker_t));
+	pool.settings = settings;
+	pool.n_threads = settings->n_threads;
+	pool.n_workers = repos->count;
+	pool.current_worker = 0;
+}
+
+return_code_t walk_through_repos(const repository_array_t *repos, const settings_t *settings)
+{
+	init_thread_pool(repos, settings);
 
 	for (size_t i = 0; i < repos->count; i++) {
-		repo = repos->repositories + i;
-		repo->history = get_commit_history(repo->path, settings);
-		ret = build_indexes(repo, settings);
-		if (ret != OK) { return ret; }
+		pool.workers[i] = (thread_worker_t) {
+			.repo = repos->repositories + i,
+			.ret = OK
+		};
+	}
+
+	for (size_t i = 0; i < pool.n_threads; i++) {
+		if (pthread_create(pool.threads + i, NULL, walk_repo, &i) != 0) {
+			fprintf(stderr, "walk_through_repos: cannot create thread #%zu\n", i);
+			return RUNTIME_THREAD_CREATE_ERROR;
+		}
+	}
+
+	for (size_t i = 0; i < pool.n_threads; i++) {
+		pthread_join(pool.threads[i], NULL);
+	}
+
+	for (size_t i = 0; i < pool.n_workers; i++) {
+		if (pool.workers[i].ret != OK) {
+			fprintf(stderr, "walk_through_repos: worker #%zu failed with error code %d",
+					i, pool.workers[i].ret);
+			return pool.workers[i].ret;
+		}
 	}
 	
 	print_output(repos, settings);

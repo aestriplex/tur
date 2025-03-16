@@ -23,7 +23,26 @@
 #define __WALK_H__
 
 #include "commit.h"
+#include "repo.h"
+#include"settings.h"
 
-return_code_t walk_through_repos(const repository_array_t *repos, settings_t settings);
+#include <pthread.h>
+
+typedef struct {
+	repository_t *repo;
+	uint16_t ret;
+} thread_worker_t;
+
+typedef struct {
+	size_t n_threads;
+	size_t n_workers;
+	pthread_t *threads;
+	thread_worker_t *workers;
+	size_t current_worker;
+	pthread_mutex_t current_worker_lock;
+	const settings_t *settings;
+} thread_pool_t;
+
+return_code_t walk_through_repos(const repository_array_t *repos, const settings_t *settings);
 
 #endif /* __WALK_H__ */

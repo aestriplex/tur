@@ -119,15 +119,15 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 	}
 }
 
-void print_stdout(const repository_array_t *repos, settings_t settings)
+void print_stdout(const repository_array_t *repos, const settings_t *settings)
 {
 	for (size_t i = 0; i < repos->count; i++) {
 		const repository_t repo = repos->repositories[i];
 
-		if (settings.grouped) {
-			print_stdout_grouped(&repo, &repo.history->indexes, &settings);
+		if (settings->grouped) {
+			print_stdout_grouped(&repo, &repo.history->indexes, settings);
 		} else {
-			print_stdout_list(&repo, &repo.history->indexes, &settings);
+			print_stdout_list(&repo, &repo.history->indexes, settings);
 		}
 	}
 

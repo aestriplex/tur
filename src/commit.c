@@ -141,7 +141,7 @@ static uint16_t get_commit_stats(commit_stats_t *stats, const git_commit *commit
 	return OK;
 }
 
-work_history_t *get_commit_history(str_t repo_path, settings_t settings)
+work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 {
 	git_repository *git_repo = NULL;
 	git_revwalk *walker = NULL;
@@ -190,10 +190,10 @@ work_history_t *get_commit_history(str_t repo_path, settings_t settings)
 
 		if (!author) { continue; }
 
-		if (is_author(author, settings.emails, settings.n_emails)) {
+		if (is_author(author, settings->emails, settings->n_emails)) {
 			res = AUTHORED;
 			n_authored++;
-		} else if (is_co_author(raw_commit, settings.emails, settings.n_emails)) {
+		} else if (is_co_author(raw_commit, settings->emails, settings->n_emails)) {
 			res = CO_AUTHORED;
 			n_co_authored++;
 		} else {
