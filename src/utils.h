@@ -27,15 +27,15 @@
 
 #include <time.h>
 
-#define RESET "\033[0m"
-#define RED "\033[31m"
-#define GREEN "\033[32m"
+#define RESET  "\033[0m"
+#define RED    "\033[31m"
+#define GREEN  "\033[32m"
 #define YELLOW "\033[33m"
-#define TICK "\u2713"
-#define CROSS "\u2A09"
+#define TICK   "\u2713"
+#define CROSS  "\u2A09"
 
-#define ASCII_SPACE 32
-#define DATE_PATTERN "%b %d, %Y"
+#define ASCII_SPACE       32
+#define DATE_PATTERN      "%b %d, %Y"
 #define DATE_PATTERN_SIZE 13 /* Mar 10, 2025 */
 
 str_t format_date(time_t timestamp, bool date_only);

@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	ret = get_repos_array(settings, &repos);
+	ret = get_repos_array(&repos, &settings);
 	if (ret != OK) { return ret; }
 
 	ret = walk_through_repos(&repos, &settings);
