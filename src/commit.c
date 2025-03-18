@@ -90,7 +90,7 @@ static bool is_co_author(const git_commit *commit, str_t *emails, int n_emails)
 	return false;
 }
 
-static void print_error(uint16_t return_code, const char *hash)
+static void print_stats_error(uint16_t return_code, const char *hash)
 {
 	switch (return_code) {
 	case PARENT_COMMIT_UNAVAILBLE:
@@ -141,6 +141,39 @@ static uint16_t get_commit_stats(commit_stats_t *stats, const git_commit *commit
 	return OK;
 }
 
+static uint16_t retrieve_tag_list(git_revwalk *walker, str_t *tags, size_t *length)
+{
+	git_revwalk_sorting(walker, GIT_SORT_TIME);
+	git_revwalk_push_glob(walker, "refs/tags/*");
+
+	while (git_revwalk_next(&tag_oid, walker) == 0) {
+		git_tag *tag;
+		git_object *tagged_object;
+
+		if (git_tag_lookup(&tag, repo, &tag_oid) < 0) { continue; }
+
+		if (git_tag_target(&tagged_object, tag) < 0) {
+			git_tag_free(tag);
+			continue;
+		}
+
+		const git_oid *target_oid = git_object_id(tagged_object);
+
+		if (git_graph_descendant_of(repo, target_oid, &commit_oid) == 1) {
+			printf("Primo tag contenente la commit: %s\n", git_tag_name(tag));
+			git_object_free(tagged_object);
+			git_tag_free(tag);
+			break;
+		}
+
+		git_object_free(tagged_object);
+		git_tag_free(tag);
+	}
+
+	git_commit_free(commit);
+	return 0;
+}
+
 work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 {
 	git_repository *git_repo = NULL;
@@ -162,6 +195,7 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 		goto cleanup;
 	}
 
+	git_revwalk_reset(walker);
 	git_revwalk_push_head(walker);
 	git_revwalk_sorting(walker, GIT_SORT_TIME);
 
@@ -214,7 +248,7 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 		commit_stats_t stats = { 0 };
 		const uint16_t return_code = get_commit_stats(&stats, raw_commit, git_repo);
 		if (return_code != OK) {
-			print_error(return_code, hash);
+			print_stats_error(return_code, hash);
 			return NULL;
 		}
 		const size_t index = n_authored + n_co_authored - 1;
@@ -223,7 +257,8 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 			.date = (time_t) author->when.time,
 			.msg = str_init(msg, (uint16_t)strlen(msg)),
 			.responsability = res,
-			.stats = stats
+			.stats = stats,
+			.available_in_tag = empty_str(),
 		};
 		history->commit_arr.count++;
 

@@ -47,6 +47,7 @@ typedef struct {
 	time_t date;
 	str_t msg;
 	commit_stats_t stats;
+	str_t available_in_tag;
 } commit_t;
 
 typedef struct {

@@ -27,6 +27,7 @@
 #include "walk.h"
 
 #include <pthread.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -108,7 +109,7 @@ static void *walk_repo(void* arg)
 	(void)arg;
 	thread_worker_t *worker;
 
-	while (1) {
+	while (true) {
 		pthread_mutex_lock(&pool.current_worker_lock);
 		if (pool.current_worker >= pool.n_workers) { break; }
 		worker = pool.workers + pool.current_worker;
@@ -118,7 +119,7 @@ static void *walk_repo(void* arg)
 		worker->repo->history = get_commit_history(worker->repo->path, pool.settings);
 		worker->ret = build_indexes(worker->repo, pool.settings);
 	}
-	
+
 	return NULL;
 }
 
@@ -156,12 +157,12 @@ return_code_t walk_through_repos(const repository_array_t *repos, const settings
 
 	for (size_t i = 0; i < pool.n_workers; i++) {
 		if (pool.workers[i].ret != OK) {
-			fprintf(stderr, "walk_through_repos: worker #%zu failed with error code %d",
+			fprintf(stderr, "walk_through_repos: worker #%zu failed with error code %d\n",
 					i, pool.workers[i].ret);
 			return pool.workers[i].ret;
 		}
 	}
-	
+
 	print_output(repos, settings);
 	
 	return OK;
