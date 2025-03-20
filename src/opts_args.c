@@ -57,24 +57,16 @@ default_ret:
 
 str_t *parse_emails(const char *input, int *count)
 {
-	size_t len = strlen(input);
-	char *str = strdup(input);
-	if (!str) {
+	char *trimmed_str = trim_whitespace(input);
+	if (!trimmed_str) {
 		fprintf(stderr, "[parse_emails] cannot duplicate input string: malloc error\n");
 		return NULL;
 	}
 
-	str = trim_whitespace(str);
-
-	if (len > 1 && str[0] == '[') str[0] = ' ';
-	if (len > 1 && str[len - 1] == ']') str[len - 1] = '\0';
-
-	char *trimmed_str = trim_whitespace(str);
-
 	if (strlen(trimmed_str) == 0) {
 		/* happy path, empty list */
 		*count = 0;
-		free(str);
+		free(trimmed_str);
 		return NULL;
 	}
 
@@ -82,8 +74,8 @@ str_t *parse_emails(const char *input, int *count)
 	str_t *emails = malloc(capacity * sizeof(str_t));
 	if (!emails) {
 		fprintf(stderr, "[parse_emails] cannot allocate email array memory: malloc error\n");
-		free(str);
-		return NULL;
+		emails = NULL;
+		goto cleanup_and_exit;
 	}
 
 	*count = 0;
@@ -94,17 +86,15 @@ str_t *parse_emails(const char *input, int *count)
 	while ((end = strstr(start, ",")) != NULL) {
 		*end = '\0';
 
-		char *trimmed_email = trim_whitespace(start);
-
-		emails[*count].val = strdup(trimmed_email);
+		emails[*count].val = strdup(start);
 		if (!emails[*count].val) {
 			fprintf(stderr, "[parse_emails] cannot duplicate email #%d: strdup error\n", *count);
 			for (int i = 0; i < *count; i++) {
 				free((char *)emails[i].val);
 			}
 			free(emails);
-			free(str);
-			return NULL;
+			emails = NULL;
+			goto cleanup_and_exit;
 		}
 		emails[*count].len = strlen(emails[*count].val);
 
@@ -118,8 +108,8 @@ str_t *parse_emails(const char *input, int *count)
 				for (int i = 0; i < *count; i++) {
 					free((char *)emails[i].val);
 				}
-				free(str);
-				return NULL;
+				emails = NULL;
+				goto cleanup_and_exit;
 			}
 		}
 
@@ -127,23 +117,22 @@ str_t *parse_emails(const char *input, int *count)
 	}
 
 	if (*start != '\0') {
-		char *trimmed_email = trim_whitespace(start);
-
-		emails[*count].val = strdup(trimmed_email);
+		emails[*count].val = strdup(start);
 		if (!emails[*count].val) {
 			fprintf(stderr, "[parse_emails] cannot duplicate email #%d: strdup error\n", *count);
 			for (int i = 0; i < *count; i++) {
 				free((char *)emails[i].val);
 			}
 			free(emails);
-			free(str);
-			return NULL;
+			emails = NULL;
+			goto cleanup_and_exit;
 		}
 		emails[*count].len = strlen(emails[*count].val);
 		(*count)++;
 	}
 
-	free(str);
+cleanup_and_exit:
+	free(trimmed_str);
 	return emails;
 }
 
@@ -164,6 +153,7 @@ uint16_t parse_optarg_to_int(const char *optarg, unsigned *out_value)
 
 uint16_t parse_sort_order(const char *opt_str, size_t len, sort_ordering_t *order)
 {
+	uint16_t ret;
 	char buffer[5];
 
 	if (!opt_str || !order) { return NULL_PARAMETER; }
@@ -173,16 +163,17 @@ uint16_t parse_sort_order(const char *opt_str, size_t len, sort_ordering_t *orde
 		return OK;
 	}
 
-	char *str = strndup(opt_str, len);
+	char *str = trim_whitespace(opt_str);
 	if (!str) {
-		fprintf(stderr, "[parse_sort_order] cannot duplicate input string: malloc error\n");
+		fprintf(stderr, "[parse_sort_order] cannot trim input string: malloc error\n");
 		return RUNTIME_MALLOC_ERROR;
 	}
-
-    str = trim_whitespace(str);
 	size_t trimmed_len = strlen(str);
 	
-	if (trimmed_len > 4) { return UNKONWN_SORT_ORDER; }
+	if (trimmed_len > 4) { 
+		ret = UNKONWN_SORT_ORDER;
+		goto cleanup_and_exit;
+	}
 	
 	for (size_t i = 0; i < trimmed_len; i++) {
 		buffer[i] = (char)toupper((int)str[i]);
@@ -191,13 +182,19 @@ uint16_t parse_sort_order(const char *opt_str, size_t len, sort_ordering_t *orde
 	
 	if (strncmp(buffer, "ASC", 3) == 0) {
 		*order = ASC;
-		return OK;
+		ret = OK;
+		goto cleanup_and_exit;
 	}
 
 	if (strncmp(buffer, "DESC", 4) == 0) {
 		*order = DESC;
-		return OK;
+		ret = OK;
+		goto cleanup_and_exit;
 	}
 	
-	return UNKONWN_SORT_ORDER;
+	ret = UNKONWN_SORT_ORDER;
+
+cleanup_and_exit:
+	free(str);
+	return ret;
 }
