@@ -99,6 +99,16 @@ str_t str_copy(str_t source)
 	return str_init(source.val, source.len);
 }
 
+bool str_contains(str_t str, str_t substr)
+{
+	return strstr(str.val, substr.val) != NULL;
+}
+
+bool str_contains_chars(str_t str, const char * substr)
+{
+	return strstr(str.val, substr) != NULL;
+}
+
 void str_free(str_t str)
 {
 	free((void *)str.val);

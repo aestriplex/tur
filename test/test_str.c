@@ -70,9 +70,42 @@ void test_str(void)
 	}
 
 	{
-		str_t empty = str_init("", 0);
+		str_t empty = empty_str();
 		assert_true(empty.len == 0, "Empty string length incorrect");
 		assert_true(empty.val[0] == '\0', "Empty string value incorrect");
+		str_free(empty);
+	}
+
+	{
+		str_t s = str_init("The first factor is computed once", 33);
+		char *cs_sub1 = "Th";
+		char *cs_sub2 = " once";
+		char *cs_sub3 = "r i";
+		char *cs_sub4 = "e fe";
+		char *cs_empty = "";
+		str_t s_sub1 = str_init(cs_sub1, 2);
+		str_t s_sub2 = str_init(cs_sub2, 5);
+		str_t s_sub3 = str_init(cs_sub3, 3);
+		str_t s_sub4 = str_init(cs_sub4, 4);
+		str_t empty = empty_str();
+
+		assert_true(str_contains_chars(s, cs_sub1), "string (char *) should contain 'Th' substring");
+		assert_true(str_contains_chars(s, cs_sub2), "string (char *) should contain ' once' substring");
+		assert_true(str_contains_chars(s, cs_sub3), "string (char *) should contain 'r i' substring");
+		assert_true(str_contains_chars(s, cs_empty), "string (char *) should contain the empty string");
+		assert_true(!str_contains_chars(s, cs_sub4), "string (char *) should NOT contain 'e fe' substring");
+		
+		assert_true(str_contains(s, s_sub1), "string (str_t) should contain 'Th' substring");
+		assert_true(str_contains(s, s_sub2), "string (str_t) should contain ' once' substring");
+		assert_true(str_contains(s, s_sub3), "string (str_t) should contain 'r i' substring");
+		assert_true(str_contains(s, empty), "string (str_t) should contain the empty string");
+		assert_true(!str_contains(s, s_sub4), "string (str_t) should NOT contain 'e fe' substring");
+
+		str_free(s);
+		str_free(s_sub1);
+		str_free(s_sub2);
+		str_free(s_sub3);
+		str_free(s_sub4);
 		str_free(empty);
 	}
 }
