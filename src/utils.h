@@ -41,7 +41,7 @@
 str_t format_date(time_t timestamp, bool date_only);
 str_t get_github_url(str_t repo_url, str_t commit_hash);
 str_t get_first_line(str_t input);
-char* trim_whitespace(char *str);
+char* trim_whitespace(const char *str);
 str_t escape_special_chars(str_t input);
 
 #endif /* __UTILS_H__ */

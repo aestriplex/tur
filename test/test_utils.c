@@ -208,9 +208,84 @@ void test_escape_special_chars(void)
 	}
 }
 
+void test_trim_whitespace(void)
+{
+	{
+		char *input = "\t\n  test string  \n\t";
+		char *expected = "test string";
+		char *result = trim_whitespace(input);
+
+		assert_true(strcmp(result, expected) == 0,
+					"new line and tabs should be trimmed");
+		free(result);
+	}
+
+	{
+		char *input = "nospaces";
+		char *expected = "nospaces";
+		char *result = trim_whitespace(input);
+
+		assert_true(strcmp(result, expected) == 0,
+					"'nospaces' should not be trimmed");
+		free(result);
+	}
+
+	{
+		char *input = "    ";
+		char *expected = "";
+		char *result = trim_whitespace(input);
+
+		assert_true(strcmp(result, expected) == 0,
+					"a space string should become the empty sring");
+		free(result);
+	}
+
+	{
+		char *input = "";
+		char *expected = "";
+		char *result = trim_whitespace(input);
+
+		assert_true(strcmp(result, expected) == 0,
+					"empty string should remain the empty string");
+		free(result);
+	}
+
+	{
+		char *input = "   leading";
+		char *expected = "leading";
+		char *result = trim_whitespace(input);
+
+		assert_true(strcmp(result, expected) == 0,
+					"should trim the leading whitespaces");
+		free(result);
+	}
+
+	{
+		char *input = "trailing   ";
+		char *expected = "trailing";
+		char *result = trim_whitespace(input);
+
+		assert_true(strcmp(result, expected) == 0,
+					"should trim the trailing whitespaces");
+		free(result);
+	}
+
+	{
+		char *input = "   hello   ";
+		char *expected = "hello";
+		char *result = trim_whitespace(input);
+
+		assert_true(strcmp(result, expected) == 0,
+					"should trim both the leading and the trailing whitespaces");
+		free(result);
+	}
+}
+
+
 int main(void)
 {
 	test_header_of_text();
 	test_format_date();
 	test_escape_special_chars();
+	test_trim_whitespace();
 }
