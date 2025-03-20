@@ -83,20 +83,23 @@ str_t get_first_line(str_t input)
 	return str_init(output, len);
 }
 
-char* trim_whitespace(char *str)
+char* trim_whitespace(const char *str)
 {
-	char *end;
-
 	while (isspace((unsigned char)*str)) str++;
-
-	if (*str == 0) { return str; }
-
-	end = str + strlen(str) - 1;
+	
+	if (*str == '\0') { return strdup(""); }
+	
+	const char *end = str + strlen(str) - 1;
 	while (end > str && isspace((unsigned char)*end)) end--;
-
-	*(end + 1) = '\0';
-
-	return str;
+	
+	size_t len = end - str + 1;
+	char *trimmed = (char*)malloc(len + 1);
+	if (!trimmed) { return NULL; }
+	
+	strncpy(trimmed, str, len);
+	trimmed[len] = 0;
+	
+	return trimmed;
 }
 
 str_t escape_special_chars(str_t input)
