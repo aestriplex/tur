@@ -38,6 +38,8 @@ bool str_equals(str_t str1, str_t str2);
 bool str_arr_equals(str_t str, const char *expected);
 char get_char(str_t str, uint16_t i);
 str_t str_concat(str_t str1, str_t str2);
+bool str_contains(str_t str, str_t substr);
+bool str_contains_chars(str_t str, const char * substr);
 void str_free(str_t str);
 
 #endif /* __STR_H__ */ 
