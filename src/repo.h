@@ -31,10 +31,17 @@
 
 #define DEFAULT_N_REPOSITORY 10
 
+typedef str_t (*fmt_commit_url) (str_t, str_t);
+
+typedef struct {
+	fmt_commit_url commit_url;
+} fmt_t;
+
 typedef struct {
 	str_t url;
 	str_t path;
 	str_t name;
+	fmt_t format;
 	work_history_t *history;
 } repository_t;
 

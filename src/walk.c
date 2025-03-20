@@ -27,6 +27,7 @@
 #include "walk.h"
 
 #include <pthread.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -59,7 +60,7 @@ static commit_t **get_commit_refs(const commit_arr_t *commit_arr, size_t commit_
 	if (settings->sorted) {
 		qsort(commits_with_resp,
 			  commit_with_resp,
-			  sizeof(commit_t **),
+			  sizeof(commit_t *),
 			  settings->sort_order == ASC ? order_by_date_asc : order_by_date_desc);
 	}
 
@@ -83,23 +84,33 @@ static uint16_t build_indexes(repository_t *repo, const settings_t *settings)
 
 static void print_output(const repository_array_t *repos, const settings_t *settings)
 {
-	switch (settings->output_mode) {
-	case STDOUT:
+	if (settings->output_mode == STDOUT) {
 		print_stdout(repos, settings);
-		break;
+		return;
+	}
+
+	FILE *out = fopen(settings->output.val, "w");
+	if (!out) {
+		fprintf(stderr, "[print_output] cannot open file: %s\n", settings->output.val);
+		return;
+	}
+
+	switch (settings->output_mode) {
 	case LATEX:
-		generate_latex_file(repos, settings);
+		generate_latex_file(out, repos, settings);
 		break;
 	case HTML:
-		generate_html_file(repos, settings);
+		generate_html_file(out, repos, settings);
 		break;
 	case JEKYLL:
-		generate_markdown_file(repos, settings);
+		generate_markdown_file(out, repos, settings);
 		break;
 	default:
 		fprintf(stderr, "corrupted output mode [%d]... stdout selected", settings->output_mode);
 		break;
 	}
+
+	fclose(out);
 }
 
 static void *walk_repo(void* arg)
