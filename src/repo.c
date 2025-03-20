@@ -23,6 +23,7 @@
 #include "repo.h"
 #include "settings.h"
 #include "str.h"
+#include "utils.h"
 
 #include <ctype.h>
 #include <libgen.h>
@@ -43,8 +44,16 @@ static repository_t init_repo(str_t path, str_t url)
 		.path = path,
 		.url = url,
 		.name = get_repo_name(path),
-		.history = NULL
+		.history = NULL,
+		.format = { 0 }
 	};
+}
+
+static fmt_commit_url select_function(str_t url)
+{
+	if (str_contains_chars(url, "github.com")) { return &get_github_commit_url; }
+	if (str_contains_chars(url, "gitlab.com")) { return &get_gitlab_commit_url; }
+	return &get_raw_url;
 }
 
 repository_t parse_repository(const char *line, ssize_t len)
@@ -92,7 +101,10 @@ repository_t parse_repository(const char *line, ssize_t len)
 		str_free(postfix);
 		repo.url = new_url;
 	}
-	
+	repo.format = (fmt_t) {
+		.commit_url = select_function(repo.url),
+	};
+
 	return repo;
 }
 
@@ -140,7 +152,9 @@ return_code_t get_repos_array(repository_array_t *repos, const settings_t *setti
 		repos->count++;
 	}
 
-	free(line);
+	if (line) {
+		free(line);
+	}
 	fclose(repos_list);
 
 	return OK;

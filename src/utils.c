@@ -32,6 +32,8 @@
 
 #define GITHUB_URL      "commit/"
 #define GITHUB_URL_SIZE 7
+#define GITLAB_URL      "-/commit/"
+#define GITLAB_URL_SIZE 9
 
 static str_t time_to_full_string(time_t timestamp)
 {
@@ -57,13 +59,28 @@ str_t format_date(time_t timestamp, bool date_only)
 		   : time_to_full_string(timestamp);
 }
 
-str_t get_github_url(str_t repo_url, str_t commit_hash)
+static str_t get_commit_url(str_t repo_url, str_t commit_hash, str_t provider_url)
 {
-	const size_t new_len = repo_url.len + GITHUB_URL_SIZE + GIT_HASH_LEN;
+	const size_t new_len = repo_url.len + provider_url.len + GIT_HASH_LEN;
 	char *url = malloc(new_len);
-	sprintf(url, "%s%s%s", repo_url.val, GITHUB_URL, commit_hash.val);
+	sprintf(url, "%s%s%s", repo_url.val, provider_url.val, commit_hash.val);
 
 	return str_init(url, new_len);
+}
+
+str_t get_github_commit_url(str_t repo_url, str_t commit_hash)
+{
+	return get_commit_url(repo_url, commit_hash, str_init(GITHUB_URL, GITHUB_URL_SIZE));
+}
+
+str_t get_gitlab_commit_url(str_t repo_url, str_t commit_hash)
+{
+	return get_commit_url(repo_url, commit_hash, str_init(GITLAB_URL, GITLAB_URL_SIZE));
+}
+
+str_t get_raw_url(str_t repo_url, str_t commit_hash)
+{
+	return get_commit_url(repo_url, commit_hash, empty_str());
 }
 
 str_t get_first_line(str_t input)
