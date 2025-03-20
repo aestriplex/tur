@@ -34,7 +34,7 @@ void test_parse_emails(void)
 	int count;
 
 	{
-		const char *test_input = "[email1@example.com,email2@example.com]";
+		const char *test_input = "email1@example.com,email2@example.com";
 		str_t *result = parse_emails(test_input, &count);
 
 		assert_true(count == 2, "Count of emails should be 2");
@@ -49,7 +49,7 @@ void test_parse_emails(void)
 	}
 
 	{
-		const char *test_input = "[single.email@example.com]";
+		const char *test_input = "single.email@example.com";
 		str_t *result = parse_emails(test_input, &count);
 
 		assert_true(count == 1, "Count of emails should be 1");
@@ -61,21 +61,21 @@ void test_parse_emails(void)
 	}
 
 	{
-		const char *test_input = "[]";
+		const char *test_input = "";
 		str_t *result = parse_emails(test_input, &count);
 		assert_true(count == 0, "Count of empty list should be 0");
 		(void)result;
 	}
 
 	{
-		const char *test_input = "[  ]";
+		const char *test_input = "     ";
 		str_t *result = parse_emails(test_input, &count);
 		assert_true(count == 0, "Count of empty list with spaces should be 0");
 		(void)result;
 	}
 
 	{
-		const char *test_input = "[email1@example.com,]";
+		const char *test_input = "email1@example.com,";
 		str_t *result = parse_emails(test_input, &count);
 		assert_true(count == 1, "Count of emails should be 1");
 		assert_true(result[0].len == 18 && str_arr_equals(result[0], "email1@example.com"),
@@ -87,7 +87,6 @@ void test_parse_emails(void)
 
 	{
 		char test_input[1024];
-		strcpy(test_input, "[");
 		for (int i = 0; i < 50; i++) {
 			strcat(test_input, "email");
 			char email[20];
@@ -97,7 +96,6 @@ void test_parse_emails(void)
 				strcat(test_input, ",");
 			}
 		}
-		strcat(test_input, "]");
 
 		str_t *result = parse_emails(test_input, &count);
 		assert_true(count == 50, "Count of emails should be 50");
