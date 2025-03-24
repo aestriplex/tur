@@ -85,7 +85,6 @@ str_t *parse_emails(const char *input, int *count)
 
 	while ((end = strstr(start, ",")) != NULL) {
 		*end = '\0';
-
 		emails[*count].val = strdup(start);
 		if (!emails[*count].val) {
 			fprintf(stderr, "[parse_emails] cannot duplicate email #%d: strdup error\n", *count);
