@@ -22,7 +22,7 @@
 #ifndef __CODES_H__
 #define __CODES_H__
 
-#define __TUR_VERSION__ "0.9.9"
+#define __TUR_VERSION__ "1.0.0"
 
 typedef enum {
 	OK                            = 0x00,
