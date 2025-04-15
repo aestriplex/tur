@@ -121,7 +121,10 @@ static void *walk_repo(void* arg)
 
 	while (1) {
 		pthread_mutex_lock(&pool.current_worker_lock);
-		if (pool.current_worker >= pool.n_workers) { break; }
+		if (pool.current_worker >= pool.n_workers) {
+			pthread_mutex_unlock(&pool.current_worker_lock);
+			break;
+		}
 		worker = pool.workers + pool.current_worker;
 		pool.current_worker++;
 		pthread_mutex_unlock(&pool.current_worker_lock);

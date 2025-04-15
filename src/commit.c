@@ -232,7 +232,6 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 	}
 
 	git_revwalk_free(walker);
-	git_libgit2_shutdown();
 
 	history->n_authored = n_authored;
 	history->n_co_authored = n_co_authored;
@@ -245,6 +244,7 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 
 cleanup:
 	git_repository_free(git_repo);
+	git_libgit2_shutdown();
 ret:
 	return history;
 }
