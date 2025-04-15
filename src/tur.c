@@ -27,6 +27,7 @@
 #include "utils.h"
 #include "walk.h"
 
+#include <git2.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -148,11 +149,15 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	git_libgit2_init();
+
 	ret = get_repos_array(&repos, &settings);
 	if (ret != OK) { return ret; }
 
 	ret = walk_through_repos(&repos, &settings);
 	if (ret != OK) { return ret; }
+
+	git_libgit2_shutdown();
 
 end:
 	return 0;

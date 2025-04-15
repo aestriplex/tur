@@ -150,8 +150,6 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 	size_t n_authored = 0, n_co_authored = 0;
 	git_oid oid;
 
-	git_libgit2_init();
-
 	if (git_repository_open(&git_repo, repo_path.val) != 0) {
 		fprintf(stderr, "Failed to open repository `%s`\n", repo_path.val);
 		goto ret;
@@ -244,7 +242,6 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 
 cleanup:
 	git_repository_free(git_repo);
-	git_libgit2_shutdown();
 ret:
 	return history;
 }
