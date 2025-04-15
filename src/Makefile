@@ -56,6 +56,10 @@ all: *.o
 debug: *.c
 	$(CC) $(CVARS) $(DEBUG_FLAGS) -I$(INCLUDE_PATH) -o $(OUT) $^ -L$(LIB_PATH) $(LIB)
 
+.PHONY: sanitize
+sanitize: *.c
+	$(CC) $(CVARS) -fsanitize=thread -I$(INCLUDE_PATH) -o $(OUT) $^ -L$(LIB_PATH) $(LIB)
+
 .PHONY:clean
 clean:
 	rm -rf *.o *.dSYM $(OUT)
