@@ -136,19 +136,33 @@ static void *walk_repo(void* arg)
 	return NULL;
 }
 
-static void init_thread_pool(const repository_array_t *repos, const settings_t *settings)
+static return_code_t init_thread_pool(const repository_array_t *repos, const settings_t *settings)
 {
 	pool.threads = malloc(settings->n_threads * sizeof(pthread_t));
+	if (!pool.threads) { goto err; }
 	pool.workers = malloc(repos->count * sizeof(thread_worker_t));
+	if (!pool.workers) { goto err; }
 	pool.settings = settings;
 	pool.n_threads = settings->n_threads;
 	pool.n_workers = repos->count;
 	pool.current_worker = 0;
+	pthread_mutex_init(&pool.current_worker_lock, NULL);
+
+	return OK;
+
+err:
+	fprintf(stderr, "");
+	return RUNTIME_MALLOC_ERROR;
 }
 
 return_code_t walk_through_repos(const repository_array_t *repos, const settings_t *settings)
 {
-	init_thread_pool(repos, settings);
+	return_code_t ret = OK;
+
+	ret = init_thread_pool(repos, settings);
+	if (ret != OK) {return RUNTIME_MALLOC_ERROR; }
+
+	__sync_synchronize();
 
 	for (size_t i = 0; i < repos->count; i++) {
 		pool.workers[i] = (thread_worker_t) {
@@ -175,8 +189,8 @@ return_code_t walk_through_repos(const repository_array_t *repos, const settings
 			return pool.workers[i].ret;
 		}
 	}
-	
+
 	print_output(repos, settings);
-	
-	return OK;
+
+	return ret;
 }

@@ -28,10 +28,12 @@
 
 #include <pthread.h>
 
+/* This structure is aligned to prevent the sanitize=thread to raise
+   a useless warning. */
 typedef struct {
 	repository_t *repo;
 	uint16_t ret;
-} thread_worker_t;
+} __attribute__((aligned(64))) thread_worker_t;
 
 typedef struct {
 	size_t n_threads;
