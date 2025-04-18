@@ -43,6 +43,7 @@ static struct option long_options[] = {
 	{ "version",   no_argument,       0, 'v' },
 	{ "message",   no_argument,       0, 'm' },
 	{ "date-only", no_argument,       0,  1  },
+	{ "no-ansi",   no_argument,       0,  2  },
 	{ "emails",    required_argument, 0, 'e' },
 	{ "out",       required_argument, 0, 'o' },
 	{ "repos",     required_argument, 0, 'r' },
@@ -68,8 +69,12 @@ static void print_help(void)
 		   "                         Default: false\n"
 		   "  --date-only            Each commit will be printed without time information\n"
 		   "                         Format: Dec 28, 1994\n"
+		   " --no-ansi               Avoid ANSI escape characters (e.g. escape characters\n"
+		   "                         for color handling in terminal)\n"
+		   "                         NOTE: this option is active only when printing to stdout.\n"
+		   "                               All other files ignore it.\n"
 		   "  -e, --emails <e_1,...> Specify a list of email addresses\n"
-		   "                         This list expects the emails separated by a comma."
+		   "                         This list expects the emails separated by a comma.\n"
 		   "  -o, --out FILE         Specify an output file. Allowed extensions are:\n"
 		   "                             .tex          (LaTeX)\n"
 		   "                             .html / .html (HTML)\n"
@@ -124,6 +129,9 @@ int main(int argc, char *argv[])
 			goto end;
 		case 1:
 			settings.date_only = true;
+			break;
+		case 2:
+			settings.no_ansi = true;
 			break;
 		case 'e':
 			settings.emails = parse_emails(optarg, &n_emails);
