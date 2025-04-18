@@ -151,7 +151,7 @@ static return_code_t init_thread_pool(const repository_array_t *repos, const set
 	return OK;
 
 err:
-	fprintf(stderr, "");
+	fprintf(stderr, "init_thread_pool: memory allocation for thread pool failed.");
 	return RUNTIME_MALLOC_ERROR;
 }
 
