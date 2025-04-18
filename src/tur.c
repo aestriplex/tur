@@ -91,7 +91,7 @@ static void print_help(void)
 		   "Examples:\n"
 		   "  tur -e user@example.com\n"
 		   "  tur -e user1@example.com,user2@example.com -o commits.tex\n"
-		   "  tur -dgs -e user1@example.com,user2@example.com -o commits.html\n"
+		   "  tur -dmg -e user1@example.com,user2@example.com -o commits.html -s DESC\n"
 		   "\n"
 		   "\n",
 		   __TUR_VERSION__);
