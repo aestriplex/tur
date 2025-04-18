@@ -24,11 +24,14 @@
 
 #include <stdio.h>
 
-static void print_commit_diffs(const commit_t * commit)
+static void print_commit_diffs(const commit_t * commit, const settings_t *settings)
 {
-	fprintf(stdout, "\t%zu file%c changed; " GREEN "+%zu" RESET " | " RED "-%zu" RESET "\n",
+	char *msg = settings->no_ansi
+						  ? "    (%zu file%s changed +%zu | -%zu)\n"
+						  : "\t%zu file%s changed; " GREEN "+%zu" RESET " | " RED "-%zu" RESET "\n";
+	fprintf(stdout, msg,
 			commit->stats.files_changed,
-			(commit->stats.files_changed > 1 ? 's': 0),
+			(commit->stats.files_changed > 1 ? "s": ""),
 			commit->stats.lines_added,
 			commit->stats.lines_removed);
 }
@@ -58,7 +61,7 @@ static void print_stdout_grouped(const repository_t *repo, const indexes_t *inde
 				authored[n_c]->hash.val,
 				format_date(authored[n_c]->date, settings->date_only).val);
 		if (settings->show_diffs) {
-			print_commit_diffs(authored[n_c]);
+			print_commit_diffs(authored[n_c], settings);
 		}
 		fprintf(stdout, "\n");
 	}
@@ -77,7 +80,7 @@ co_authored:
 				format_date(co_authored[n_c]->date, settings->date_only).val);
 
 		if (settings->show_diffs) {
-			print_commit_diffs(co_authored[n_c]);
+			print_commit_diffs(co_authored[n_c], settings);
 		}
 		fprintf(stdout, "\n");
 	}
@@ -98,7 +101,7 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 				format_date(authored[n_c]->date, settings->date_only).val);
 		
 		if (settings->show_diffs) {
-			print_commit_diffs(authored[n_c]);
+			print_commit_diffs(authored[n_c], settings);
 		}
 		fprintf(stdout, "\n");
 	}
@@ -113,7 +116,7 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 				format_date(co_authored[n_c]->date, settings->date_only).val);
 		
 		if (settings->show_diffs) {
-			print_commit_diffs(co_authored[n_c]);
+			print_commit_diffs(co_authored[n_c], settings);
 		}
 		fprintf(stdout, "\n");
 	}

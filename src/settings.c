@@ -52,5 +52,6 @@ settings_t default_settings(void)
 		.date_only = false,
 		.sort_order = ASC,
 		.n_threads = (size_t) num_cores,
+		.no_ansi = false,
 	};
 }

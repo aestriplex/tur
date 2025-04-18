@@ -52,6 +52,7 @@ typedef struct {
 	bool print_msg;
 	bool date_only;
 	size_t n_threads;
+	bool no_ansi;
 } settings_t;
 
 settings_t default_settings(void);
