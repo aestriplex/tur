@@ -170,6 +170,8 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 		.count = 0,
 		.commits = malloc(COMMIT_ARRAY_DEFAULT_SIZE * sizeof(commit_t))
 	};
+	history->tot_lines_added = 0;
+	history->tot_lines_removed = 0;
 	
 	if (!history->commit_arr.commits) {
 		(void)log_err("get_commit_history: cannot allocate commits array. "
@@ -226,6 +228,8 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 			.stats = stats
 		};
 		history->commit_arr.count++;
+		history->tot_lines_added += stats.lines_added;
+		history->tot_lines_removed += stats.lines_removed;
 
 	free_commit:
 		git_commit_free(raw_commit);
