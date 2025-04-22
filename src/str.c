@@ -19,6 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "log.h"
 #include "str.h"
 
 #include <stdbool.h>
@@ -38,7 +39,7 @@ str_t str_init(const char *str, uint16_t len)
 {
 	char *copy = malloc(len + 1);
 	if (!copy) {
-		fprintf(stderr, "str_init: memory allocation failed\n");
+		log_info("str_init: memory allocation failed\n");
 		return empty_str();
 	}
 	strncpy(copy, str, len);
@@ -65,7 +66,7 @@ bool str_arr_equals(str_t str, const char *expected)
 char get_char(str_t str, uint16_t i)
 {
 	if (i >= str.len) {
-		fprintf(stderr, "[get_char] trying to get char with index %d, but the string has length %d\n",
+		log_info("[get_char] trying to get char with index %d, but the string has length %d\n",
 				i, str.len);
 		exit(1);
 	}
@@ -78,7 +79,7 @@ str_t str_concat(str_t str1, str_t str2)
 	uint16_t new_len = str1.len + str2.len;
 	char *new_val = malloc(new_len + 1);
 	if (!new_val) {
-		fprintf(stderr, "[str_concat] memory allocation failed. Trying to concatenate:\n"
+		log_info("[str_concat] memory allocation failed. Trying to concatenate:\n"
 						"    \"%s\"\n"
 						"    \"%s\"\n",
 						str1.val, str2.val);

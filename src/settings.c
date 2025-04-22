@@ -19,6 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "log.h"
 #include "settings.h"
 #include "str.h"
 
@@ -34,7 +35,7 @@ settings_t default_settings(void)
 	long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
 
 	if (num_cores < 0) {
-		fprintf(stderr, "sysconf: cannot get number of cores\n");
+		log_info("sysconf: cannot get number of cores\n");
 		exit(1);
 	}
 

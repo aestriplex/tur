@@ -30,19 +30,19 @@ all: $(TEST_BINS)
 	./test_utils
 	./test_opts_args
 
-test_parse_repository: test.c test_parse_repository.c repo.o str.o utils.o
+test_parse_repository: test.c test_parse_repository.c repo.o str.o utils.o log.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
-test_parse_email_list: test.c test_parse_email_list.c opts_args.o str.o utils.o
+test_parse_email_list: test.c test_parse_email_list.c opts_args.o str.o utils.o log.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
-test_str: test.c test_str.c str.o
+test_str: test.c test_str.c str.o log.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
-test_utils: test.c test_utils.c str.o utils.o 
+test_utils: test.c test_utils.c str.o utils.o log.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
-test_opts_args: test.c test_opts_args.c opts_args.o utils.o str.o
+test_opts_args: test.c test_opts_args.c opts_args.o utils.o str.o log.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
 repo.o: ../src/repo.c
@@ -55,6 +55,9 @@ opts_args.o: ../src/opts_args.c
 	$(CC) $(CVARS) $(CFLAGS) -o $@ -c $^
 
 utils.o: ../src/utils.c
+	$(CC) $(CVARS) $(CFLAGS) -o $@ -c $^
+
+log.o: ../src/log.c
 	$(CC) $(CVARS) $(CFLAGS) -o $@ -c $^
 
 .PHONY: clean

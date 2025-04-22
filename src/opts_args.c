@@ -20,6 +20,7 @@
  */
 
 #include "codes.h"
+#include "log.h"
 #include "opts_args.h"
 #include "settings.h"
 #include "str.h"
@@ -51,7 +52,7 @@ tur_output_t parse_output_file_ext(const char *arg)
 	}
 
 default_ret:
-	fprintf(stderr, "Invalid file extension: .%s; output redirected on stdout.\n", dot);
+	log_info("Invalid file extension: .%s; output redirected on stdout.\n", dot);
 	return STDOUT;
 }
 
@@ -59,7 +60,7 @@ str_t *parse_emails(const char *input, int *count)
 {
 	char *trimmed_str = trim_whitespace(input);
 	if (!trimmed_str) {
-		fprintf(stderr, "[parse_emails] cannot duplicate input string: malloc error\n");
+		log_info("[parse_emails] cannot duplicate input string: malloc error\n");
 		return NULL;
 	}
 
@@ -73,7 +74,7 @@ str_t *parse_emails(const char *input, int *count)
 	size_t capacity = DEFAULT_EMAIL_ARR_SIZE;
 	str_t *emails = malloc(capacity * sizeof(str_t));
 	if (!emails) {
-		fprintf(stderr, "[parse_emails] cannot allocate email array memory: malloc error\n");
+		log_info("[parse_emails] cannot allocate email array memory: malloc error\n");
 		emails = NULL;
 		goto cleanup_and_exit;
 	}
@@ -87,7 +88,7 @@ str_t *parse_emails(const char *input, int *count)
 		*end = '\0';
 		emails[*count].val = strdup(start);
 		if (!emails[*count].val) {
-			fprintf(stderr, "[parse_emails] cannot duplicate email #%d: strdup error\n", *count);
+			log_info("[parse_emails] cannot duplicate email #%d: strdup error\n", *count);
 			for (int i = 0; i < *count; i++) {
 				free((char *)emails[i].val);
 			}
@@ -103,7 +104,7 @@ str_t *parse_emails(const char *input, int *count)
 			capacity += DEFAULT_EMAIL_ARR_SIZE;
 			emails = realloc(emails, capacity * sizeof(str_t));
 			if (!emails) {
-				fprintf(stderr, "[parse_emails] cannot resize email arrays #%d: realloc error\n", *count);
+				log_info("[parse_emails] cannot resize email arrays #%d: realloc error\n", *count);
 				for (int i = 0; i < *count; i++) {
 					free((char *)emails[i].val);
 				}
@@ -118,7 +119,7 @@ str_t *parse_emails(const char *input, int *count)
 	if (*start != '\0') {
 		emails[*count].val = strdup(start);
 		if (!emails[*count].val) {
-			fprintf(stderr, "[parse_emails] cannot duplicate email #%d: strdup error\n", *count);
+			log_info("[parse_emails] cannot duplicate email #%d: strdup error\n", *count);
 			for (int i = 0; i < *count; i++) {
 				free((char *)emails[i].val);
 			}
@@ -164,7 +165,7 @@ uint16_t parse_sort_order(const char *opt_str, size_t len, sort_ordering_t *orde
 
 	char *str = trim_whitespace(opt_str);
 	if (!str) {
-		fprintf(stderr, "[parse_sort_order] cannot trim input string: malloc error\n");
+		log_info("[parse_sort_order] cannot trim input string: malloc error\n");
 		return RUNTIME_MALLOC_ERROR;
 	}
 	size_t trimmed_len = strlen(str);

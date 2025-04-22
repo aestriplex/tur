@@ -21,6 +21,7 @@
 
 #include "codes.h"
 #include "commit.h"
+#include "log.h"
 #include "repo.h"
 #include "str.h"
 #include "utils.h"
@@ -131,7 +132,7 @@ str_t escape_special_chars(str_t input)
 	uint16_t new_len = input.len + extra_chars;
 	char *escaped_str = malloc(new_len + 1);
 	if (!escaped_str) {
-		fprintf(stderr, "escape_special_chars: memory allocation failed\n");
+		log_info("escape_special_chars: memory allocation failed\n");
 		return empty_str();
 	}
 	
