@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 	}
 
 	settings = default_settings();
-	init_default_logger();
+	(void)init_default_loggers();
 
 	while ((ch = getopt_long(argc, argv, "hdgmve:o:r:s:", long_options, &option_index)) != -1) {
 		switch (ch) {
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 			settings.sorted = true;
 			ret = parse_sort_order(optarg, strlen(optarg), &settings.sort_order); 
 			if (ret != OK) {
-				log_info("Unknown sort order '%s'. Set deafult: ASC\n", optarg);
+				(void)log_err("Unknown sort order '%s'. Set deafult: ASC\n", optarg);
 			}
 			break;
 		default:

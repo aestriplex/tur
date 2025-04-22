@@ -92,7 +92,7 @@ static void print_output(const repository_array_t *repos, const settings_t *sett
 
 	FILE *out = fopen(settings->output.val, "w");
 	if (!out) {
-		log_info("[print_output] cannot open file: %s\n", settings->output.val);
+		(void)log_err("print_output: cannot open file: %s\n", settings->output.val);
 		return;
 	}
 
@@ -107,7 +107,7 @@ static void print_output(const repository_array_t *repos, const settings_t *sett
 		generate_markdown_file(out, repos, settings);
 		break;
 	default:
-		log_info("corrupted output mode [%d]... stdout selected", settings->output_mode);
+		(void)log_err("corrupted output mode [%d]... stdout selected", settings->output_mode);
 		break;
 	}
 
@@ -152,7 +152,7 @@ static return_code_t init_thread_pool(const repository_array_t *repos, const set
 	return OK;
 
 err:
-	log_info("init_thread_pool: memory allocation for thread pool failed.");
+	(void)log_err("init_thread_pool: memory allocation for thread pool failed.");
 	return RUNTIME_MALLOC_ERROR;
 }
 
@@ -174,7 +174,7 @@ return_code_t walk_through_repos(const repository_array_t *repos, const settings
 
 	for (size_t i = 0; i < pool.n_threads; i++) {
 		if (pthread_create(pool.threads + i, NULL, walk_repo, &i) != 0) {
-			log_info( "walk_through_repos: cannot create thread #%zu\n", i);
+			(void)log_err("walk_through_repos: cannot create thread #%zu\n", i);
 			return RUNTIME_THREAD_CREATE_ERROR;
 		}
 	}
@@ -185,8 +185,8 @@ return_code_t walk_through_repos(const repository_array_t *repos, const settings
 
 	for (size_t i = 0; i < pool.n_workers; i++) {
 		if (pool.workers[i].ret != OK) {
-			log_info("walk_through_repos: worker #%zu failed with error code %d",
-					i, pool.workers[i].ret);
+			(void)log_err("walk_through_repos: worker #%zu failed with error code %d",
+						  i, pool.workers[i].ret);
 			return pool.workers[i].ret;
 		}
 	}

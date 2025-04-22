@@ -35,7 +35,7 @@ settings_t default_settings(void)
 	long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
 
 	if (num_cores < 0) {
-		log_info("sysconf: cannot get number of cores\n");
+		(void)log_err("sysconf: cannot get number of cores\n");
 		exit(1);
 	}
 

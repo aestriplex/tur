@@ -143,8 +143,7 @@ return_code_t get_repos_array(repository_array_t *repos, const settings_t *setti
 			size_t new_capacity = repos->capacity + DEFAULT_N_REPOSITORY;
 			repository_t *new_repos = realloc(repos->repositories, new_capacity * sizeof(repository_t));
 			if (!new_repos) {
-				if (log_info("[get_repos_array] memory allocation failed while expanding repository array\n") != OK)
-					exit(1);
+				(void)log_err("get_repos_array: memory allocation failed while expanding repository array\n");
 				break;
 			}
 			repos->repositories = new_repos;
