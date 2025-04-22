@@ -39,6 +39,7 @@ typedef enum {
 	UNKONWN_SORT_ORDER            = 0x0B,
 	NULL_PARAMETER                = 0x0C,
 	INVALID_LOGGER_FD             = 0x0D,
+	LOGGER_NOT_INITIALIZED        = 0x0E,
 
 	RUNTIME_LOGGER_ERROR          = 0xFD,
 	RUNTIME_THREAD_CREATE_ERROR   = 0xFE,

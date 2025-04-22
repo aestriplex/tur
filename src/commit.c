@@ -48,8 +48,8 @@ static bool is_co_author(const git_commit *commit, str_t *emails, int n_emails)
 	
 	message = git_commit_message(commit);
 	if (!message) {
-		log_info("Cannot get message for commit %s\n",
-				 git_oid_tostr_s(git_commit_id(commit)));
+		(void)log_err("Cannot get message for commit %s\n",
+					  git_oid_tostr_s(git_commit_id(commit)));
 		return false;
 	}
 
@@ -95,18 +95,18 @@ static void print_error(uint16_t return_code, const char *hash)
 {
 	switch (return_code) {
 	case PARENT_COMMIT_UNAVAILBLE:
-		log_info("cannot retrieve parent for commit %s. ERROR: %d\n", hash, return_code);
+		(void)log_err("cannot retrieve parent for commit %s. ERROR: %d\n", hash, return_code);
 		break;
 	case COMPARE_TREES_ERROR:
-		log_info("cannot compare trees for commit %s and its parent. ERROR: %d\n",
+		(void)log_err("cannot compare trees for commit %s and its parent. ERROR: %d\n",
 				hash, return_code);
 		break;
 	case CANNOT_RETRIEVE_STATS:
-		log_info("cannot get stats for commit %s. ERROR: %d\n", hash, return_code);
+		(void)log_err("cannot get stats for commit %s. ERROR: %d\n", hash, return_code);
 		break;
 	default:
-		log_info("an unknown error occurred while traversing commit "
-				 "tree on commit %s. ERROR: %d\n", hash, return_code);
+		(void)log_err("an unknown error occurred while traversing commit "
+					  "tree on commit %s. ERROR: %d\n", hash, return_code);
 		break;
 	}
 }
@@ -152,12 +152,12 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 	git_oid oid;
 
 	if (git_repository_open(&git_repo, repo_path.val) != 0) {
-		log_info("Failed to open repository `%s`\n", repo_path.val);
+		(void)log_err("Failed to open repository `%s`\n", repo_path.val);
 		goto ret;
 	}
 
 	if (git_revwalk_new(&walker, git_repo) != 0) {
-		log_info("An error occurred while reading from `%s`\n", repo_path.val);
+		(void)log_err("An error occurred while reading from `%s`\n", repo_path.val);
 		goto cleanup;
 	}
 
@@ -172,8 +172,9 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 	};
 	
 	if (!history->commit_arr.commits) {
-		log_info("[get_commit_history] cannot allocate commits array. Capacity: %zu; count: %zu\n",
-				 history->commit_arr.capacity, history->commit_arr.count);
+		(void)log_err("get_commit_history: cannot allocate commits array. "
+					  "Capacity: %zu; count: %zu\n",
+					  history->commit_arr.capacity, history->commit_arr.count);
 		goto cleanup;
 	}
 
@@ -203,7 +204,7 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 			size_t new_capacity = history->commit_arr.capacity + COMMIT_ARRAY_DEFAULT_SIZE;
 			commit_t *new_commits = realloc(history->commit_arr.commits, new_capacity * sizeof(commit_t));
 			if (!new_commits) {
-				log_info("[get_commit_history] memory allocation failed while expanding repository array\n");
+				(void)log_err("get_commit_history: memory allocation failed while expanding repository array\n");
 				goto cleanup;
 			}
 			history->commit_arr.commits = new_commits;

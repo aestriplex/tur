@@ -26,8 +26,12 @@
 
 #define STDERR_FILENO 2
 
-return_code_t init_default_logger(void);
-return_code_t init_logger(int file_descriptor);
+return_code_t init_info_logger(int file_descriptor);
+return_code_t init_error_logger(int file_descriptor);
+return_code_t init_def_info_logger(void);
+return_code_t init_def_error_logger(void);
+return_code_t init_default_loggers(void);
 return_code_t log_info(const char *format, ...);
+return_code_t log_err(const char *format, ...);
 
 #endif /* __LOG_H__ */
