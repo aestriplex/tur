@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 			settings.sorted = true;
 			ret = parse_sort_order(optarg, strlen(optarg), &settings.sort_order); 
 			if (ret != OK) {
-				fprintf(stderr, "Unknown sort order '%s'. Set deafult: ASC\n", optarg);
+				log_info("Unknown sort order '%s'. Set deafult: ASC\n", optarg);
 			}
 			break;
 		default:
