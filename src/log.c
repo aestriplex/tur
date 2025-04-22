@@ -1,4 +1,4 @@
-/* codes.h
+/* log.c
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
@@ -19,30 +19,34 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __CODES_H__
-#define __CODES_H__
+#include "codes.h"
+#include "log.h"
 
-#define __TUR_VERSION__ "1.1.0-dev"
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-typedef enum {
-	OK                            = 0x00,
-	INVALID_REPOS_LIST_PATH       = 0x01,
-	ARRAY_RESIZE_ALLOCATION_ERROR = 0x02,
-	INDEX_ALLOCATION_ERROR        = 0x03,
-	PARENT_COMMIT_UNAVAILBLE      = 0x04,
-	COMPARE_TREES_ERROR           = 0x05,
-	CANNOT_RETRIEVE_STATS         = 0x06,
-	REQUIRED_ARG_NULL             = 0x07,
-	INT_OVERFLOW                  = 0x08,
-	USUPPORTED_NEGATIVE_VALUE     = 0x09,
-	UNSUPPORTED_VALUE             = 0x0A,
-	UNKONWN_SORT_ORDER            = 0x0B,
-	NULL_PARAMETER                = 0x0C,
-	INVALID_LOGGER_FD             = 0x0D,
+static FILE *logger = NULL;
 
-	RUNTIME_LOGGER_ERROR          = 0xFD,
-	RUNTIME_THREAD_CREATE_ERROR   = 0xFE,
-	RUNTIME_MALLOC_ERROR          = 0xFF
-} return_code_t;
+return_code_t init_logger(int file_descriptor)
+{
+	FILE *_logger = fdopen(file_descriptor, "w");
+	if (!_logger) { return INVALID_LOGGER_FD; }
+	logger = _logger;
+	return OK;
+}
 
-#endif /* __CODES_H__ */
+return_code_t init_default_logger(void)
+{
+	logger = stderr;
+	return OK;
+}
+
+return_code_t log_info(const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	int res = vfprintf(logger, format, args);
+	va_end(args);
+	return res < 0 ? RUNTIME_LOGGER_ERROR : OK;
+}

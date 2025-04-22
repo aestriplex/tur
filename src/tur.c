@@ -20,6 +20,7 @@
  */
 
 #include "codes.h"
+#include "log.h"
 #include "opts_args.h"
 #include "repo.h"
 #include "settings.h"
@@ -109,6 +110,7 @@ int main(int argc, char *argv[])
 	}
 
 	settings = default_settings();
+	init_default_logger();
 
 	while ((ch = getopt_long(argc, argv, "hdgmve:o:r:s:", long_options, &option_index)) != -1) {
 		switch (ch) {
