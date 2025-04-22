@@ -129,9 +129,14 @@ static void *walk_repo(void* arg)
 		worker = pool.workers + pool.current_worker;
 		pool.current_worker++;
 		pthread_mutex_unlock(&pool.current_worker_lock);
-		
+
 		worker->repo->history = get_commit_history(worker->repo->path, pool.settings);
 		worker->ret = build_indexes(worker->repo, pool.settings);
+		(void)log_info("%lu commits in %s\t+%lu | -%lu\n",
+					   worker->repo->history->commit_arr.count,
+					   worker->repo->name.val,
+					   worker->repo->history->tot_lines_added,
+					   worker->repo->history->tot_lines_removed);
 	}
 	
 	return NULL;
@@ -161,7 +166,9 @@ return_code_t walk_through_repos(const repository_array_t *repos, const settings
 	return_code_t ret = OK;
 
 	ret = init_thread_pool(repos, settings);
-	if (ret != OK) {return RUNTIME_MALLOC_ERROR; }
+	if (ret != OK) { return RUNTIME_MALLOC_ERROR; }
+
+	(void)log_info("Created thread pool [size %lu]\n", pool.n_threads);
 
 	__sync_synchronize();
 
@@ -190,6 +197,8 @@ return_code_t walk_through_repos(const repository_array_t *repos, const settings
 			return pool.workers[i].ret;
 		}
 	}
+
+	(void)log_info("--------------\n");
 
 	print_output(repos, settings);
 

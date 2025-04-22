@@ -153,10 +153,13 @@ return_code_t get_repos_array(repository_array_t *repos, const settings_t *setti
 		repos->count++;
 	}
 
+	return_code_t ret = OK;
+	ret = log_info("%lu repositories found...\n", repos->count);
+
 	if (line) {
 		free(line);
 	}
 	fclose(repos_list);
 
-	return OK;
+	return ret;
 }

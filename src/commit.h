@@ -65,6 +65,8 @@ typedef struct {
 	size_t n_authored;
 	size_t n_co_authored;
 	indexes_t indexes;
+	size_t tot_lines_added;
+	size_t tot_lines_removed;
 } work_history_t;
 
 work_history_t *get_commit_history(str_t repo_path, const settings_t *settings);
