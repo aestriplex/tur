@@ -116,8 +116,7 @@ static void print_output(const repository_array_t *repos, const settings_t *sett
 
 static void *walk_repo(void* arg)
 {
-	/* unused arg */
-	(void)arg;
+	size_t max_name_len = *(size_t *)arg;
 	thread_worker_t *worker;
 
 	while (1) {
@@ -132,8 +131,9 @@ static void *walk_repo(void* arg)
 
 		worker->repo->history = get_commit_history(worker->repo->path, pool.settings);
 		worker->ret = build_indexes(worker->repo, pool.settings);
-		(void)log_info("%lu commits in %s  [+%lu | -%lu]\n",
+		(void)log_info("%-3lu commits in %-*s  [+%lu | -%lu]\n",
 					   worker->repo->history->commit_arr.count,
+					   max_name_len,
 					   worker->repo->name.val,
 					   worker->repo->history->tot_lines_added,
 					   worker->repo->history->tot_lines_removed);
@@ -164,6 +164,7 @@ err:
 return_code_t walk_through_repos(const repository_array_t *repos, const settings_t *settings)
 {
 	return_code_t ret = OK;
+	size_t max_name_len = repos->max_name_len;
 
 	ret = init_thread_pool(repos, settings);
 	if (ret != OK) { return RUNTIME_MALLOC_ERROR; }
@@ -180,7 +181,7 @@ return_code_t walk_through_repos(const repository_array_t *repos, const settings
 	}
 
 	for (size_t i = 0; i < pool.n_threads; i++) {
-		if (pthread_create(pool.threads + i, NULL, walk_repo, &i) != 0) {
+		if (pthread_create(pool.threads + i, NULL, walk_repo, &max_name_len) != 0) {
 			(void)log_err("walk_through_repos: cannot create thread #%zu\n", i);
 			return RUNTIME_THREAD_CREATE_ERROR;
 		}

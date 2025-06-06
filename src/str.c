@@ -42,7 +42,9 @@ str_t str_init(const char *str, uint16_t len)
 		(void)log_err("str_init: memory allocation failed\n");
 		return empty_str();
 	}
-	strncpy(copy, str, len);
+	if (len > 0) {
+		strncpy(copy, str, len);
+	}
 	copy[len] = '\0';
 
 	return (str_t) {

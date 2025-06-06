@@ -49,6 +49,7 @@ typedef struct {
 	repository_t *repositories;
 	size_t count;
 	size_t capacity;
+	size_t max_name_len;
 } repository_array_t;
 
 repository_t parse_repository(const char *line, ssize_t len);

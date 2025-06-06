@@ -112,7 +112,7 @@ repository_t parse_repository(const char *line, ssize_t len)
 return_code_t get_repos_array(repository_array_t *repos, const settings_t *settings)
 {
 	return_code_t ret = OK;
-	size_t len = 0;
+	size_t len = 0, max_name_len = 0;
 	ssize_t read;
 	char *line = NULL;
 	FILE *repos_list;
@@ -153,6 +153,13 @@ return_code_t get_repos_array(repository_array_t *repos, const settings_t *setti
 		repos->repositories[repos->count] = parse_repository(line, read);
 		repos->count++;
 	}
+
+	for (size_t i = 0; i < repos->count; i++) {
+		if (repos->repositories[i].name.len > max_name_len) {
+			max_name_len = repos->repositories[i].name.len;
+		}
+	}
+	repos->max_name_len = max_name_len;
 
 	ret = log_info("%lu repositories found...\n", repos->count);
 
