@@ -51,6 +51,16 @@ str_t str_init(const char *str, uint16_t len)
 	};
 }
 
+inline bool str_is_empty(str_t str)
+{
+	return str.len == 0;
+}
+
+inline bool str_not_empty(str_t str)
+{
+	return !str_is_empty(str);
+}
+
 bool str_equals(str_t str1, str_t str2)
 {
 	if (str1.len != str2.len) { return false; }

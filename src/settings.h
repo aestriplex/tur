@@ -54,6 +54,7 @@ typedef struct {
 	size_t n_threads;
 	bool no_ansi;
 	bool no_merge;
+	str_t title;
 } settings_t;
 
 settings_t default_settings(void);

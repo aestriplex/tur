@@ -111,6 +111,7 @@ repository_t parse_repository(const char *line, ssize_t len)
 
 return_code_t get_repos_array(repository_array_t *repos, const settings_t *settings)
 {
+	return_code_t ret = OK;
 	size_t len = 0;
 	ssize_t read;
 	char *line = NULL;
@@ -153,7 +154,6 @@ return_code_t get_repos_array(repository_array_t *repos, const settings_t *setti
 		repos->count++;
 	}
 
-	return_code_t ret = OK;
 	ret = log_info("%lu repositories found...\n", repos->count);
 
 	if (line) {

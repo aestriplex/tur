@@ -55,5 +55,6 @@ settings_t default_settings(void)
 		.n_threads = (size_t) num_cores,
 		.no_ansi = false,
 		.no_merge = false,
+		.title = empty_str(),
 	};
 }

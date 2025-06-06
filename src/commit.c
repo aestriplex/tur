@@ -41,7 +41,7 @@ static bool is_author(const git_signature *author, str_t *emails, int n_emails)
 	return false;
 }
 
-static bool is_co_author(const git_commit *commit, const char *message, str_t *emails, int n_emails)
+static bool is_co_author(const char *message, str_t *emails, int n_emails)
 {
 	char *line = (char *)message;
 
@@ -52,7 +52,7 @@ static bool is_co_author(const git_commit *commit, const char *message, str_t *e
 		if (strncmp(line, COAUTHOR_PREFIX, COAUTHOR_PREFIX_LEN) == 0) {
 			const char *coauthor_info = line + COAUTHOR_PREFIX_LEN;
 
-			while (*coauthor_info == ' ' && (coauthor_info - line) < line_len) {
+			while (*coauthor_info == ' ' && (size_t)(coauthor_info - line) < line_len) {
 				coauthor_info++;
 			}
 
@@ -194,7 +194,7 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 		if (is_author(author, settings->emails, settings->n_emails)) {
 			res = AUTHORED;
 			n_authored++;
-		} else if (is_co_author(raw_commit, msg, settings->emails, settings->n_emails)) {
+		} else if (is_co_author(msg, settings->emails, settings->n_emails)) {
 			res = CO_AUTHORED;
 			n_co_authored++;
 		} else {

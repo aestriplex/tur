@@ -31,7 +31,7 @@
 
 void test_parse_emails(void)
 {
-	int count;
+	size_t count;
 
 	{
 		char *test_input = "email1@example.com,email2@example.com";

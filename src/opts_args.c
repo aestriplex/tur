@@ -56,7 +56,7 @@ default_ret:
 	return STDOUT;
 }
 
-str_t *parse_emails(const char *input, int *count)
+str_t *parse_emails(const char *input, size_t *count)
 {
 	char *trimmed_str = trim_whitespace(input);
 	if (!trimmed_str) {
@@ -89,7 +89,7 @@ str_t *parse_emails(const char *input, int *count)
 		emails[*count].val = strdup(start);
 		if (!emails[*count].val) {
 			(void)log_err("parse_emails: cannot duplicate email #%d: strdup error\n", *count);
-			for (int i = 0; i < *count; i++) {
+			for (size_t i = 0; i < *count; i++) {
 				free((char *)emails[i].val);
 			}
 			free(emails);
@@ -105,7 +105,7 @@ str_t *parse_emails(const char *input, int *count)
 			emails = realloc(emails, capacity * sizeof(str_t));
 			if (!emails) {
 				(void)log_err("parse_emails: cannot resize email arrays #%d: realloc error\n", *count);
-				for (int i = 0; i < *count; i++) {
+				for (size_t i = 0; i < *count; i++) {
 					free((char *)emails[i].val);
 				}
 				emails = NULL;
@@ -120,7 +120,7 @@ str_t *parse_emails(const char *input, int *count)
 		emails[*count].val = strdup(start);
 		if (!emails[*count].val) {
 			(void)log_err("parse_emails: cannot duplicate email #%d: strdup error\n", *count);
-			for (int i = 0; i < *count; i++) {
+			for (size_t i = 0; i < *count; i++) {
 				free((char *)emails[i].val);
 			}
 			free(emails);

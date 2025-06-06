@@ -50,6 +50,7 @@ static struct option long_options[] = {
 	{ "out",       required_argument, 0, 'o' },
 	{ "repos",     required_argument, 0, 'r' },
 	{ "sort",      required_argument, 0, 's' },
+	{ "title",     required_argument, 0, 't' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -104,7 +105,8 @@ int main(int argc, char *argv[])
 {
 	repository_array_t repos;
 	return_code_t ret;
-	int ch, n_emails, option_index = 0;
+	size_t n_emails;
+	int ch, option_index = 0;
 
 	if (argc == 1) {
 		print_help();
@@ -114,7 +116,7 @@ int main(int argc, char *argv[])
 	settings = default_settings();
 	(void)init_default_loggers();
 
-	while ((ch = getopt_long(argc, argv, "hdgmve:o:r:s:", long_options, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "hdgmve:o:r:s:t:", long_options, &option_index)) != -1) {
 		switch (ch) {
 		case 'h':
 			print_help();
@@ -157,6 +159,10 @@ int main(int argc, char *argv[])
 			if (ret != OK) {
 				(void)log_err("Unknown sort order '%s'. Set deafult: ASC\n", optarg);
 			}
+			break;
+		case 't':
+			if (!strlen(optarg)) { break; }
+			settings.title = str_init(optarg, (uint16_t) strlen(optarg));
 			break;
 		default:
 			print_help();

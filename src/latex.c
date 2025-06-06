@@ -159,6 +159,10 @@ void generate_latex_file(FILE *out, const repository_array_t *repos, const setti
 				 "%% Commands definition\n"
 				 "\\newcommand{\\turtexpar}[1]{\\textbf{#1}}");
 
+	if (str_not_empty(settings->title)) {
+		fprintf(out, "\n\n\\section{%s}", settings->title.val);
+	}
+
 	if (!settings->grouped) {
 		fprintf(out, "\n\n\\begin{enumerate}\n" LIST_ITEMS_SPACING "\n");
 	}

@@ -19,7 +19,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 CC = gcc
-CFLAGS = -Wall -pedantic -O3 -std=c2x
+CFLAGS = -Wall -Wextra -Werror -pedantic -O3 -std=c2x
 CVARS = -D_GNU_SOURCE
 DEBUG_FLAGS = -Wall -pedantic -g -std=c2x
 INCLUDE_PATH = /usr/local/include
