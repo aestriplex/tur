@@ -131,7 +131,7 @@ static void *walk_repo(void* arg)
 
 		worker->repo->history = get_commit_history(worker->repo->path, pool.settings);
 		worker->ret = build_indexes(worker->repo, pool.settings);
-		(void)log_info("%-3lu commits in %-*s  [+%lu | -%lu]\n",
+		(void)log_info("%-5lu commits in %-*s  +%lu | -%lu\n",
 					   worker->repo->history->commit_arr.count,
 					   max_name_len,
 					   worker->repo->name.val,

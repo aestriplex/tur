@@ -27,13 +27,14 @@
 static void print_commit_diffs(const commit_t * commit, const settings_t *settings)
 {
 	char *msg = settings->no_ansi
-						  ? "    (%zu file%s changed +%zu | -%zu)\n"
-						  : "\t%zu file%s changed; " GREEN "+%zu" RESET " | " RED "-%zu" RESET "\n";
+						  ? "\t%zu file%s changed\t+%zu | -%zu%s"
+						  : "\t%zu file%s changed\t" GREEN "+%zu" RESET " | " RED "-%zu" RESET "%s";
 	fprintf(stdout, msg,
 			commit->stats.files_changed,
 			(commit->stats.files_changed > 1 ? "s": ""),
 			commit->stats.lines_added,
-			commit->stats.lines_removed);
+			commit->stats.lines_removed,
+			settings->print_msg ? "\n" : "");
 }
 
 static void print_commit_message(const commit_t * commit, const char *indent)
@@ -86,19 +87,23 @@ co_authored:
 	}
 }
 
-static void print_stdout_list(const repository_t *repo, const indexes_t *indexes, const settings_t *settings)
+static void print_stdout_list(const repository_t *repo, const indexes_t *indexes,
+							  const settings_t *settings, size_t max_name_len)
 {
 	commit_t **const authored = indexes->authored;
 	commit_t **const co_authored = indexes->co_authored;
+	const char *fmt_string = "| %-*s   %s %s [%c]";
 
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		if (settings->print_msg) {
 			print_commit_message(authored[n_c], "");
 		}
-		fprintf(stdout, "| %s: %s %s [A]",
+		fprintf(stdout, fmt_string,
+				(int)max_name_len,
 				repo->name.val,
 				authored[n_c]->hash.val,
-				format_date(authored[n_c]->date, settings->date_only).val);
+				format_date(authored[n_c]->date, settings->date_only).val,
+				'A');
 		
 		if (settings->show_diffs) {
 			print_commit_diffs(authored[n_c], settings);
@@ -110,10 +115,12 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 		if (settings->print_msg) {
 			print_commit_message(co_authored[n_c], "");
 		}
-		fprintf(stdout, "| %s: %s %s [C]",
+		fprintf(stdout, fmt_string,
+				(int)max_name_len,
 				repo->name.val,
 				co_authored[n_c]->hash.val,
-				format_date(co_authored[n_c]->date, settings->date_only).val);
+				format_date(co_authored[n_c]->date, settings->date_only).val,
+				'C');
 		
 		if (settings->show_diffs) {
 			print_commit_diffs(co_authored[n_c], settings);
@@ -130,7 +137,7 @@ void print_stdout(const repository_array_t *repos, const settings_t *settings)
 		if (settings->grouped) {
 			print_stdout_grouped(&repo, &repo.history->indexes, settings);
 		} else {
-			print_stdout_list(&repo, &repo.history->indexes, settings);
+			print_stdout_list(&repo, &repo.history->indexes, settings, repos->max_name_len);
 		}
 	}
 
