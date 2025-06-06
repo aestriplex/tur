@@ -33,7 +33,7 @@
 #define COAUTHOR_PREFIX_LEN 15
 #define COMMIT_ARRAY_DEFAULT_SIZE 10
 
-static inline bool is_author(const git_signature *author, str_t *emails, int n_emails)
+static bool is_author(const git_signature *author, str_t *emails, int n_emails)
 {
 	for (int i = 0; i < n_emails; i++) {
 		if (str_arr_equals(emails[i], author->email)) { return true; }
@@ -41,19 +41,10 @@ static inline bool is_author(const git_signature *author, str_t *emails, int n_e
 	return false;
 }
 
-static bool is_co_author(const git_commit *commit, str_t *emails, int n_emails)
+static bool is_co_author(const git_commit *commit, const char *message, str_t *emails, int n_emails)
 {
-	const char *message;
-	char *line;
-	
-	message = git_commit_message(commit);
-	if (!message) {
-		(void)log_err("Cannot get message for commit %s\n",
-					  git_oid_tostr_s(git_commit_id(commit)));
-		return false;
-	}
+	char *line = (char *)message;
 
-	line = (char *)message;
 	while (line) {
 		const char *next_line = strchr(line, '\n');
 		size_t line_len = (next_line) ? (size_t)(next_line - line) : strlen(line);
@@ -89,6 +80,12 @@ static bool is_co_author(const git_commit *commit, str_t *emails, int n_emails)
 	}
 
 	return false;
+}
+
+static inline bool is_merge_commit(const char*message)
+{
+	return chars_contains_chars(message, "Merge")
+	       || chars_contains_chars(message, "merge");
 }
 
 static void print_error(uint16_t return_code, const char *hash)
@@ -190,12 +187,14 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 		const char *msg = git_commit_message(raw_commit);
 		const git_signature *author = git_commit_author(raw_commit);
 
-		if (!author) { continue; }
+		if (!author || !msg) { goto free_commit; }
+
+		if (settings->no_merge && is_merge_commit(msg)) { goto free_commit; }
 
 		if (is_author(author, settings->emails, settings->n_emails)) {
 			res = AUTHORED;
 			n_authored++;
-		} else if (is_co_author(raw_commit, settings->emails, settings->n_emails)) {
+		} else if (is_co_author(raw_commit, msg, settings->emails, settings->n_emails)) {
 			res = CO_AUTHORED;
 			n_co_authored++;
 		} else {

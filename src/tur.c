@@ -45,6 +45,7 @@ static struct option long_options[] = {
 	{ "message",   no_argument,       0, 'm' },
 	{ "date-only", no_argument,       0,  1  },
 	{ "no-ansi",   no_argument,       0,  2  },
+	{ "no-merge",  no_argument,       0,  3  },
 	{ "emails",    required_argument, 0, 'e' },
 	{ "out",       required_argument, 0, 'o' },
 	{ "repos",     required_argument, 0, 'r' },
@@ -70,10 +71,11 @@ static void print_help(void)
 		   "                         Default: false\n"
 		   "  --date-only            Each commit will be printed without time information\n"
 		   "                         Format: Dec 28, 1994\n"
-		   " --no-ansi               Avoid ANSI escape characters (e.g. escape characters\n"
+		   "  --no-ansi              Avoid ANSI escape characters (e.g. escape characters\n"
 		   "                         for color handling in terminal)\n"
 		   "                         NOTE: this option is active only when printing to stdout.\n"
 		   "                               All other files ignore it.\n"
+		   "  --no-merge             Exclude merge commits\n"
 		   "  -e, --emails <e_1,...> Specify a list of email addresses\n"
 		   "                         This list expects the emails separated by a comma.\n"
 		   "  -o, --out FILE         Specify an output file. Allowed extensions are:\n"
@@ -134,6 +136,9 @@ int main(int argc, char *argv[])
 			break;
 		case 2:
 			settings.no_ansi = true;
+			break;
+		case 3:
+			settings.no_merge = true;
 			break;
 		case 'e':
 			settings.emails = parse_emails(optarg, &n_emails);

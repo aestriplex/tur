@@ -53,6 +53,7 @@ typedef struct {
 	bool date_only;
 	size_t n_threads;
 	bool no_ansi;
+	bool no_merge;
 } settings_t;
 
 settings_t default_settings(void);

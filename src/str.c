@@ -110,6 +110,11 @@ bool str_contains_chars(str_t str, const char * substr)
 	return strstr(str.val, substr) != NULL;
 }
 
+bool chars_contains_chars(const char *str, const char * substr)
+{
+	return strstr(str, substr) != NULL;
+}
+
 void str_free(str_t str)
 {
 	free((void *)str.val);

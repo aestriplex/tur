@@ -53,7 +53,7 @@ static repository_t init_repo(str_t path, str_t url)
 static fmt_commit_url select_function(str_t url)
 {
 	if (str_contains_chars(url, "github.com")) { return &get_github_commit_url; }
-	if (str_contains_chars(url, "gitlab.com")) { return &get_gitlab_commit_url; }
+	if (str_contains_chars(url, "gitlab")) { return &get_gitlab_commit_url; }
 	return &get_raw_url;
 }
 
