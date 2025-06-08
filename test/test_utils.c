@@ -288,4 +288,5 @@ int main(void)
 	test_format_date();
 	test_escape_special_chars();
 	test_trim_whitespace();
+	print_report();
 }

@@ -113,4 +113,5 @@ void test_str(void)
 int main(void)
 {
 	test_str();
+	print_report();
 }

@@ -207,4 +207,5 @@ void test_parse_repository()
 int main(void)
 {
 	test_parse_repository();
+	print_report();
 }

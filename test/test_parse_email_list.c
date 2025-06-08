@@ -115,4 +115,5 @@ void test_parse_emails(void)
 int main(void)
 {
 	test_parse_emails();
+	print_report();
 }

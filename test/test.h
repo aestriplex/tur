@@ -28,6 +28,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
+typedef enum {
+	PASS_ON_FAIL,
+	EXIT_ON_FAIL,
+} exit_mode_t;
+
+void set_exit_mode(exit_mode_t exit_mode);
+void print_report(void);
+
 /* assertions */
 void assert_true(bool condition, const char *message);
 

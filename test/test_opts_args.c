@@ -155,4 +155,5 @@ int main(void)
 {
 	test_parse_optarg_to_int();
 	test_parse_sort_order();
+	print_report();
 }
