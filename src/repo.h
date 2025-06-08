@@ -41,6 +41,7 @@ typedef struct {
 	str_t url;
 	str_t path;
 	str_t name;
+	str_array_t *branches;
 	fmt_t format;
 	work_history_t *history;
 } repository_t;

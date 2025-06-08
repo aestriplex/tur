@@ -57,6 +57,46 @@ static fmt_commit_url select_function(str_t url)
 	return &get_raw_url;
 }
 
+static str_array_t *get_branches(const char *line, size_t len)
+{
+	str_array_t *result = NULL;
+
+	char *to_parse = malloc(len + 1);
+	if (!to_parse) {
+		(void)log_err("get_branches: cannot allocate to_parse string\n");
+		exit(1);
+	}
+
+	memcpy(to_parse, line, len);
+	to_parse[len] = '\0';
+
+	size_t n_branches = 1;
+	for (char *p = to_parse; *p; ++p) {
+		if (*p == ',') n_branches++;
+	}
+
+	result = malloc(sizeof(str_array_t));
+	if (!result) {
+		(void)log_err("get_branches: cannot allocate result array\n");
+		exit(1);
+	}
+	result->strings = malloc(n_branches * sizeof(str_t));
+	if (!result->strings) {
+		(void)log_err("get_branches: cannot allocate result array inner strings\n");
+		exit(1);
+	}
+
+	result->len = 0;
+	char *token = strtok(to_parse, ",");
+	while (token) {
+		result->strings[result->len++] = str_init(token, strnlen(token, len));
+		token = strtok(NULL, ",");
+	}
+
+	free(to_parse);
+	return result;
+}
+
 repository_t parse_repository(const char *line, ssize_t len)
 {
 	repository_t repo = { 0 };
@@ -65,10 +105,29 @@ repository_t parse_repository(const char *line, ssize_t len)
 	if (bracket_open == NULL) {
 		return init_repo(str_init(line, len), empty_str());
 	}
-	
-	size_t path_len = bracket_open - line;
-	repo.path = str_init(line, path_len);
+
+	size_t path_and_banches_len = bracket_open - line;
+	const char *path_str = line;
+	const char *branches_str = NULL;
+	size_t path_len = 0;
+	size_t branches_len = 0;
+	const char *colon = memchr(line, ':', path_and_banches_len);
+
+	if (colon) {
+		path_len = (size_t)(colon - line);
+		branches_str = colon + 1;
+		branches_len = path_and_banches_len - path_len - 1;
+	} else {
+		path_len = path_and_banches_len;
+		branches_str = NULL;
+		branches_len = 0;
+	}
+
+	repo.path = str_init(path_str, path_len);
 	repo.name = get_repo_name(repo.path);
+	repo.branches = branches_str
+					? get_branches(branches_str, branches_len)
+					: NULL;
 
 	int nesting = 1;
 	const char *bracket_close = NULL;
@@ -86,7 +145,7 @@ repository_t parse_repository(const char *line, ssize_t len)
 	
 	size_t url_len;
 	if (!bracket_close) {
-		url_len = len - path_len - 1;
+		url_len = len - path_and_banches_len - 1;
 	} else {
 		url_len = bracket_close - bracket_open - 1;
 	}
