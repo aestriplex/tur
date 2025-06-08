@@ -104,7 +104,7 @@ static void print_help(void)
 int main(int argc, char *argv[])
 {
 	repository_array_t repos;
-	return_code_t ret;
+	return_code_t ret = OK;
 	size_t n_emails;
 	int ch, option_index = 0;
 
@@ -158,10 +158,15 @@ int main(int argc, char *argv[])
 			ret = parse_sort_order(optarg, strlen(optarg), &settings.sort_order); 
 			if (ret != OK) {
 				(void)log_err("Unknown sort order '%s'. Set deafult: ASC\n", optarg);
+				ret = OK;
 			}
 			break;
 		case 't':
-			if (!strlen(optarg)) { break; }
+			if (!strlen(optarg)) {
+				(void)log_err("Error parsing `--title` option. got an empty string. "
+							  "Title has been disabled");
+				break;
+			}
 			settings.title = str_init(optarg, (uint16_t) strlen(optarg));
 			break;
 		default:
@@ -173,13 +178,14 @@ int main(int argc, char *argv[])
 	git_libgit2_init();
 
 	ret = get_repos_array(&repos, &settings);
-	if (ret != OK) { return ret; }
+	if (ret != OK) { goto clean; }
 
 	ret = walk_through_repos(&repos, &settings);
-	if (ret != OK) { return ret; }
+	if (ret != OK) { goto clean; }
 
+clean:
 	git_libgit2_shutdown();
 
 end:
-	return 0;
+	return ret;
 }
