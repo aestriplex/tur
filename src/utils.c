@@ -62,9 +62,10 @@ str_t format_date(time_t timestamp, bool date_only)
 
 static str_t get_commit_url(str_t repo_url, str_t commit_hash, str_t provider_url)
 {
-	const size_t new_len = repo_url.len + provider_url.len + GIT_HASH_LEN;
-	char *url = malloc(new_len);
-	sprintf(url, "%s%s%s", repo_url.val, provider_url.val, commit_hash.val);
+	/* Adding one for the NULL terminator */
+	const size_t new_len = repo_url.len + provider_url.len + GIT_HASH_LEN + 1;
+	char *url = malloc(new_len * sizeof(char));
+	snprintf(url, new_len, "%s%s%s", repo_url.val, provider_url.val, commit_hash.val);
 
 	return str_init(url, new_len);
 }

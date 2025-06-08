@@ -91,7 +91,7 @@ void test_parse_emails(void)
 		for (int i = 0; i < 50; i++) {
 			strcat(test_input, "email");
 			char email[20];
-			sprintf(email, "%d@example.com", i);
+			snprintf(email, 20, "%d@example.com", i);
 			strcat(test_input, email);
 			if (i < 49) {
 				strcat(test_input, ",");
@@ -103,7 +103,7 @@ void test_parse_emails(void)
 		bool condition = true;
 		for (int i = 0; i < 50; i++) {
 			char expected_email[20];
-			sprintf(expected_email, "email%d@example.com", i);
+			snprintf(expected_email, 20, "email%d@example.com", i);
 			condition &= str_arr_equals(result[i], expected_email);
 			free((char *)result[i].val);
 		}

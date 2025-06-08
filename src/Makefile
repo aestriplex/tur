@@ -56,9 +56,13 @@ all: *.o
 debug: *.c
 	$(CC) $(CVARS) $(DEBUG_FLAGS) -I$(INCLUDE_PATH) -o $(OUT) $^ -L$(LIB_PATH) $(LIB)
 
-.PHONY: sanitize
-sanitize: *.c
+.PHONY: sanitize-thread
+sanitize-thread: *.c
 	$(CC) $(CVARS) -fsanitize=thread -I$(INCLUDE_PATH) -o $(OUT) $^ -L$(LIB_PATH) $(LIB)
+
+.PHONY: sanitize-address
+sanitize-address: *.c
+	$(CC) $(CVARS) -fsanitize=address -I$(INCLUDE_PATH) -o $(OUT) $^ -L$(LIB_PATH) $(LIB)
 
 .PHONY:clean
 clean:
