@@ -137,4 +137,5 @@ void str_array_free(str_array_t *arr)
 	for (size_t i = 0; i < arr->len; i++) {
 		str_free(arr->strings[i]);
 	}
+	free(arr->strings);
 }
