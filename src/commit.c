@@ -139,11 +139,13 @@ static uint16_t get_commit_stats(commit_stats_t *stats, const git_commit *commit
 	return OK;
 }
 
-work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
+work_history_t *get_commit_history(str_t repo_path, const char *branch_name, const settings_t *settings)
 {
 	git_repository *git_repo = NULL;
 	git_revwalk *walker = NULL;
 	git_commit *raw_commit = NULL;
+	git_reference *branch_ref = NULL;
+	git_object *branch_commit = NULL;
 	work_history_t *history = NULL;
 	size_t n_authored = 0, n_co_authored = 0;
 	git_oid oid;
@@ -158,8 +160,28 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 		goto cleanup;
 	}
 
-	git_revwalk_push_head(walker);
+	if (branch_name) {
+		if (git_branch_lookup(&branch_ref, git_repo, branch_name, GIT_BRANCH_LOCAL) != 0) {
+			(void)log_err("Cannot find a *local* branch named `%s`\n", branch_name);
+			exit(1);
+		}
+
+		if (git_reference_peel(&branch_commit, branch_ref, GIT_OBJECT_COMMIT) != 0) {
+			(void)log_err("Cannot find the HEAD of `%s`\n", branch_name);
+			exit(1);
+		}
+	}
+
 	git_revwalk_sorting(walker, GIT_SORT_TIME);
+
+	if (!branch_name) {
+		git_revwalk_push_head(walker);
+	} else {
+		if (git_revwalk_push(walker, git_object_id(branch_commit)) != 0) {
+			log_err("Cannot push the initial commit\n");
+			goto cleanup;
+		}
+	}
 
 	history = malloc(sizeof(work_history_t));
 	history->commit_arr = (commit_arr_t) {
@@ -235,6 +257,8 @@ work_history_t *get_commit_history(str_t repo_path, const settings_t *settings)
 	}
 
 	git_revwalk_free(walker);
+	git_object_free(branch_commit);
+	git_reference_free(branch_ref);
 
 	history->n_authored = n_authored;
 	history->n_co_authored = n_co_authored;

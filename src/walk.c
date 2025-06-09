@@ -129,14 +129,17 @@ static void *walk_repo(void* arg)
 		pool.current_worker++;
 		pthread_mutex_unlock(&pool.current_worker_lock);
 
-		worker->repo->history = get_commit_history(worker->repo->path, pool.settings);
+		const char *branch_name = worker->repo->branches ? worker->repo->branches->strings[0].val : NULL;
+
+		worker->repo->history = get_commit_history(worker->repo->path, branch_name, pool.settings);
 		worker->ret = build_indexes(worker->repo, pool.settings);
-		(void)log_info("%-5lu commits in %-*s  +%lu | -%lu\n",
+		(void)log_info("%-5lu commits in %-*s  +%lu | -%lu  ~%s\n",
 					   worker->repo->history->commit_arr.count,
 					   max_name_len,
 					   worker->repo->name.val,
 					   worker->repo->history->tot_lines_added,
-					   worker->repo->history->tot_lines_removed);
+					   worker->repo->history->tot_lines_removed,
+					   branch_name ? branch_name : "HEAD");
 	}
 	
 	return NULL;

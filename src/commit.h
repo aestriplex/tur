@@ -69,6 +69,6 @@ typedef struct {
 	size_t tot_lines_removed;
 } work_history_t;
 
-work_history_t *get_commit_history(str_t repo_path, const settings_t *settings);
+work_history_t *get_commit_history(str_t repo_path, const char *branch_name, const settings_t *settings);
 
 #endif /* __COMMIT_H__ */
