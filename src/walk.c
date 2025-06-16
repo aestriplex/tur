@@ -132,6 +132,11 @@ static void *walk_repo(void* arg)
 		const char *branch_name = worker->repo->branches ? worker->repo->branches->strings[0].val : NULL;
 
 		worker->repo->history = get_commit_history(worker->repo->path, branch_name, pool.settings);
+		if (!worker->repo->history) {
+			worker->ret = RUNTIME_MALLOC_ERROR;
+			(void)log_err("walk_repo: cannot retrieve commit history for %s\n", worker->repo->name.val);
+			continue;
+		}
 		worker->ret = build_indexes(worker->repo, pool.settings);
 		(void)log_info("%-5lu commits in %-*s  +%lu | -%lu  ~%s\n",
 					   worker->repo->history->commit_arr.count,

@@ -162,13 +162,16 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 
 	if (branch_name) {
 		if (git_branch_lookup(&branch_ref, git_repo, branch_name, GIT_BRANCH_LOCAL) != 0) {
-			(void)log_err("Cannot find a *local* branch named `%s`\n", branch_name);
-			exit(1);
+			(void)log_err("%s: Cannot find a *local* branch named `%s`\n", repo_path.val, branch_name);
+			git_revwalk_free(walker);
+			goto cleanup;
 		}
 
 		if (git_reference_peel(&branch_commit, branch_ref, GIT_OBJECT_COMMIT) != 0) {
-			(void)log_err("Cannot find the HEAD of `%s`\n", branch_name);
-			exit(1);
+			(void)log_err("%s: Cannot find the HEAD of `%s`\n", repo_path.val, branch_name);
+			git_revwalk_free(walker);
+			git_reference_free(branch_ref);
+			goto cleanup;
 		}
 	}
 
