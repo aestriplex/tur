@@ -19,4 +19,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "repo.h"
+#include "settings.h"
+
+return_code_t write_repos_on_file(const repository_array_t *repos,
+								  const settings_t *settings);
 return_code_t choose_commits_through_editor(const settings_t *settings);

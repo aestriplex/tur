@@ -211,7 +211,8 @@ return_code_t walk_through_repos(const repository_array_t *repos, const settings
 	(void)log_info("--------------\n");
 
 	if (settings->interactive) {
-		const return_code_t code = choose_commits_through_editor(settings);
+		return_code_t code = write_repos_on_file(repos, settings);
+		code = choose_commits_through_editor(settings);
 		if (code == CANNOT_FORK_PROCESS) {
 			(void)log_err("Cannot create a child process for the text editor...\n");
 		} else if (code == EXTERNAL_EDITOR_FAILED) {
