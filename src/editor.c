@@ -1,4 +1,4 @@
-/* settings.c
+/* editor.c
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
@@ -22,42 +22,34 @@
 #include "log.h"
 #include "settings.h"
 #include "str.h"
+#include "utils.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-#define DEFAULT_REPOS_LIST_PATH      ".rlist"
-#define DEFAULT_REPOS_LIST_PATH_SIZE 6
+#define COMMITS_FILE ".tur/commits"
 
-settings_t default_settings(void)
+return_code_t choose_commits_through_editor(const settings_t *settings)
 {
-	long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
+	return_code_t ret = OK;
 
-	if (num_cores < 0) {
-		(void)log_err("sysconf: cannot get number of cores\n");
-		exit(1);
+	ret = check_or_create_tur_dir();
+	if (ret != OK) {
+		return ret;
 	}
 
-	return (settings_t) {
-		.output_mode = STDOUT,
-		.output = empty_str(),
-		.clear_cache = false,
-		.no_cache = false,
-		.repos_path = str_init(DEFAULT_REPOS_LIST_PATH, DEFAULT_REPOS_LIST_PATH_SIZE),
-		.emails = NULL,
-		.n_emails = 0,
-		.grouped = false,
-		.sorted = false,
-		.show_diffs = false,
-		.print_msg = false,
-		.date_only = false,
-		.sort_order = ASC,
-		.n_threads = (size_t) num_cores,
-		.no_ansi = false,
-		.no_merge = false,
-		.title = empty_str(),
-		.interactive = false,
-		.editor = empty_str(),
-	};
+	pid_t pid = fork();
+
+	if (pid < 0) { return CANNOT_FORK_PROCESS; }
+
+	if (pid == 0) {
+		char *args[] = { (char *)settings->editor.val, COMMITS_FILE, NULL };
+		execvp(settings->editor.val, args);
+		return EXTERNAL_EDITOR_FAILED;
+	}
+
+	int status;
+	waitpid(pid, &status, 0);
+
+	return ret;
 }

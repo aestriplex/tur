@@ -41,6 +41,7 @@ typedef enum {
 typedef struct {
 	bool show_diffs;
 	bool clear_cache;
+	bool no_cache;
 	bool grouped;
 	bool sorted;
 	sort_ordering_t sort_order;
@@ -55,6 +56,8 @@ typedef struct {
 	bool no_ansi;
 	bool no_merge;
 	str_t title;
+	bool interactive;
+	str_t editor;
 } settings_t;
 
 settings_t default_settings(void);

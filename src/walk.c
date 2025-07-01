@@ -21,6 +21,7 @@
 
 #include "codes.h"
 #include "commit.h"
+#include "editor.h"
 #include "log.h"
 #include "repo.h"
 #include "settings.h"
@@ -208,6 +209,16 @@ return_code_t walk_through_repos(const repository_array_t *repos, const settings
 	}
 
 	(void)log_info("--------------\n");
+
+	if (settings->interactive) {
+		const return_code_t code = choose_commits_through_editor(settings);
+		if (code == CANNOT_FORK_PROCESS) {
+			(void)log_err("Cannot create a child process for the text editor...\n");
+		} else if (code == EXTERNAL_EDITOR_FAILED) {
+			(void)log_err("Cannot open editor `%s`. You can configure the environment "
+						  "variable 'GIT_EDITOR'\n", settings->editor.val);
+		}
+	}
 
 	print_output(repos, settings);
 

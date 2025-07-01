@@ -28,11 +28,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define EMPTY_STR (str_t) { .val="", .len=0 }
+static const str_t _empty_str = (str_t) { .val="", .len=0 };
 
 str_t empty_str(void)
 {
-	return str_init(EMPTY_STR.val, EMPTY_STR.len);
+	return str_init(_empty_str.val, _empty_str.len);
 }
 
 str_t str_init(const char *str, uint16_t len)

@@ -38,19 +38,21 @@
 
 static settings_t settings;
 static struct option long_options[] = {
-	{ "help",      no_argument,       0, 'h' },
-	{ "diffs",     no_argument,       0, 'd' },
-	{ "group",     no_argument,       0, 'g' },
-	{ "version",   no_argument,       0, 'v' },
-	{ "message",   no_argument,       0, 'm' },
-	{ "date-only", no_argument,       0,  1  },
-	{ "no-ansi",   no_argument,       0,  2  },
-	{ "no-merge",  no_argument,       0,  3  },
-	{ "emails",    required_argument, 0, 'e' },
-	{ "out",       required_argument, 0, 'o' },
-	{ "repos",     required_argument, 0, 'r' },
-	{ "sort",      required_argument, 0, 's' },
-	{ "title",     required_argument, 0, 't' },
+	{ "help",        no_argument,       0, 'h' },
+	{ "diffs",       no_argument,       0, 'd' },
+	{ "group",       no_argument,       0, 'g' },
+	{ "interactive", no_argument,       0, 'i' },
+	{ "message",     no_argument,       0, 'm' },
+	{ "version",     no_argument,       0, 'v' },
+	{ "date-only",   no_argument,       0,  1  },
+	{ "no-ansi",     no_argument,       0,  2  },
+	{ "no-merge",    no_argument,       0,  3  },
+	{ "no-cache",    no_argument,       0,  4  },
+	{ "emails",      required_argument, 0, 'e' },
+	{ "out",         required_argument, 0, 'o' },
+	{ "repos",       required_argument, 0, 'r' },
+	{ "sort",        required_argument, 0, 's' },
+	{ "title",       required_argument, 0, 't' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -67,6 +69,10 @@ static void print_help(void)
 		   "  -d, --diffs            Show diffs stats (rows added and removed, file changed)\n"
 		   "  -g, --group            Group commit by repository\n"
 		   "                         Default: false\n"
+		   "  -i, --interactive      Execute TUR in interactive mode. It opens an editor to let\n"
+		   "                         you choose which commit include in the output. The editor\n"
+		   "                         can be set with the environment variable `GIT_EDITOR`\n"
+		   "                               Default editor: VI\n"
 		   "  -m, --message          Shows the first line of the commit message\n"
 		   "  -v, --version          Prints the verison on tur\n"
 		   "                         Default: false\n"
@@ -76,6 +82,8 @@ static void print_help(void)
 		   "                         for color handling in terminal)\n"
 		   "                         NOTE: this option is active only when printing to stdout.\n"
 		   "                               All other files ignore it.\n"
+		   "  --no-cache             Disable the cache no file is neither saved nor created in\n"
+		   "                         the directory `.tur`\n"
 		   "  --no-merge             Exclude merge commits\n"
 		   "  -e, --emails <e_1,...> Specify a list of email addresses\n"
 		   "                         This list expects the emails separated by a comma.\n"
@@ -116,7 +124,7 @@ int main(int argc, char *argv[])
 	settings = default_settings();
 	(void)init_default_loggers();
 
-	while ((ch = getopt_long(argc, argv, "hdgmve:o:r:s:t:", long_options, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "hdgimve:o:r:s:t:", long_options, &option_index)) != -1) {
 		switch (ch) {
 		case 'h':
 			print_help();
@@ -126,6 +134,10 @@ int main(int argc, char *argv[])
 			break;
 		case 'g' :
 			settings.grouped = true;
+			break;
+		case 'i':
+			settings.interactive = true;
+			settings.editor = get_editor_or_default();
 			break;
 		case 'm':
 			settings.print_msg = true;
@@ -141,6 +153,9 @@ int main(int argc, char *argv[])
 			break;
 		case 3:
 			settings.no_merge = true;
+			break;
+		case 4:
+			settings.no_cache = true;
 			break;
 		case 'e':
 			settings.emails = parse_emails(optarg, &n_emails);
