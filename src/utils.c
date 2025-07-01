@@ -29,13 +29,11 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+
 #include <time.h>
 #include <unistd.h>
 
 #define DEFAULT_EDITOR "vi"
-#define TUR_DIR ".tur/"
 
 #define GITHUB_URL      "commit/"
 #define GITHUB_URL_SIZE 7
@@ -164,18 +162,4 @@ str_t get_editor_or_default(void)
 	const char* editor = getenv("GIT_EDITOR");
 	if (!editor) editor = DEFAULT_EDITOR;
 	return str_init(editor, strnlen(editor, 20));
-}
-
-return_code_t check_or_create_tur_dir(void)
-{
-	struct stat st = { 0 };
-
-	if (stat(TUR_DIR, &st) == -1) {
-		if (mkdir(TUR_DIR, 0700) != 0) {
-			(void)log_err("Cannot create the directory `%s`\n", TUR_DIR);
-			return CANNOT_CREATE_TUR_DIR;
-		}
-	}
-
-	return OK;
 }

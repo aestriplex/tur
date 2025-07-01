@@ -58,6 +58,7 @@ typedef struct {
 	str_t title;
 	bool interactive;
 	str_t editor;
+	bool force;
 } settings_t;
 
 settings_t default_settings(void);

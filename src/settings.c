@@ -59,5 +59,6 @@ settings_t default_settings(void)
 		.title = empty_str(),
 		.interactive = false,
 		.editor = empty_str(),
+		.force = false,
 	};
 }

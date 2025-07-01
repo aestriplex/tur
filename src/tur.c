@@ -19,6 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "cache.h"
 #include "codes.h"
 #include "log.h"
 #include "opts_args.h"
@@ -40,6 +41,7 @@ static settings_t settings;
 static struct option long_options[] = {
 	{ "help",        no_argument,       0, 'h' },
 	{ "diffs",       no_argument,       0, 'd' },
+	{ "force",       no_argument,       0, 'f' },
 	{ "group",       no_argument,       0, 'g' },
 	{ "interactive", no_argument,       0, 'i' },
 	{ "message",     no_argument,       0, 'm' },
@@ -48,6 +50,7 @@ static struct option long_options[] = {
 	{ "no-ansi",     no_argument,       0,  2  },
 	{ "no-merge",    no_argument,       0,  3  },
 	{ "no-cache",    no_argument,       0,  4  },
+	{ "clear-cache", no_argument,       0,  5  },
 	{ "emails",      required_argument, 0, 'e' },
 	{ "out",         required_argument, 0, 'o' },
 	{ "repos",       required_argument, 0, 'r' },
@@ -67,6 +70,10 @@ static void print_help(void)
 		   "Options:\n"
 		   "  -h, --help             Show this help message and exit\n"
 		   "  -d, --diffs            Show diffs stats (rows added and removed, file changed)\n"
+		   "  -f, --force            Force the *overwrite* of the commit file modifiede in interactive\n"
+		   "                         mode. With this option enabled, when you run TUR in interactive mode,\n"
+		   "                         it ignores the cached `.tur/commits` file, and creates a new one \n"
+		   "                         starting from the commits retrieved from the repositories\n"
 		   "  -g, --group            Group commit by repository\n"
 		   "                         Default: false\n"
 		   "  -i, --interactive      Execute TUR in interactive mode. It opens an editor to let\n"
@@ -76,6 +83,7 @@ static void print_help(void)
 		   "  -m, --message          Shows the first line of the commit message\n"
 		   "  -v, --version          Prints the verison on tur\n"
 		   "                         Default: false\n"
+		   "  --clear-cache          Delete the cache folder .tur/. Irreversible!!!\n"
 		   "  --date-only            Each commit will be printed without time information\n"
 		   "                         Format: Dec 28, 1994\n"
 		   "  --no-ansi              Avoid ANSI escape characters (e.g. escape characters\n"
@@ -124,13 +132,16 @@ int main(int argc, char *argv[])
 	settings = default_settings();
 	(void)init_default_loggers();
 
-	while ((ch = getopt_long(argc, argv, "hdgimve:o:r:s:t:", long_options, &option_index)) != -1) {
+	while ((ch = getopt_long(argc, argv, "hdfgimve:o:r:s:t:", long_options, &option_index)) != -1) {
 		switch (ch) {
 		case 'h':
 			print_help();
 			goto end;
 		case 'd':
 			settings.show_diffs = true;
+			break;
+		case 'f':
+			settings.force = true;
 			break;
 		case 'g' :
 			settings.grouped = true;
@@ -156,6 +167,15 @@ int main(int argc, char *argv[])
 			break;
 		case 4:
 			settings.no_cache = true;
+			break;
+		case 5:
+			ret = delete_cache();
+			if (ret != OK) {
+				(void)log_err("Cannot remove the cache dir `%s`...\n", TUR_DIR);
+				ret = OK;
+			} else {
+				(void)log_info("cache dir `%s` removed...\n", TUR_DIR);
+			}
 			break;
 		case 'e':
 			settings.emails = parse_emails(optarg, &n_emails);

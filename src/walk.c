@@ -19,6 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "cache.h"
 #include "codes.h"
 #include "commit.h"
 #include "editor.h"
@@ -32,6 +33,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#define FLOAT_AVG(x,y) ((float) ((float) x / y))
 
 static thread_pool_t pool;
 
@@ -69,7 +72,19 @@ static commit_t **get_commit_refs(const commit_arr_t *commit_arr, size_t commit_
 	return commits_with_resp;
 }
 
-static uint16_t build_indexes(repository_t *repo, const settings_t *settings)
+/* The indexes are built following these rationale:
+ *     - If no_cache == 1 && interactive == 0, then .tur/commits is ignored;
+ *     - If no_cache == 1 && interactive == 1, then .tur/commits is temporarily written,
+ *       and removed at the end of this function;
+ *     - If no_cache == 0 && interactive == 0, then .tur/commits is written with the indexes
+ *       built by this function;
+ *     - If no_cache == 0 && interactive == 1, then .tur/commits is written with the indexes
+ *       modified by the user in the text editor (interctive mode). If a file .tur/commits
+ *       is already present, then
+ *           * if force == 1, then the index is recalculated and the file overwritten;
+ *           * otherwise, the file is loaded as is and the index is not recalculated.
+ */
+static return_code_t build_indexes(repository_t *repo, const settings_t *settings)
 {
 	repo->history->indexes.authored = get_commit_refs(&repo->history->commit_arr,
 													  repo->history->n_authored,
@@ -139,12 +154,19 @@ static void *walk_repo(void* arg)
 			continue;
 		}
 		worker->ret = build_indexes(worker->repo, pool.settings);
-		(void)log_info("%-5lu commits in %-*s  +%lu | -%lu  ~%s\n",
-					   worker->repo->history->commit_arr.count,
+
+		/* Print log with stats */
+		const size_t n_commits = worker->repo->history->commit_arr.count;
+		const size_t lines_added = worker->repo->history->tot_lines_added;
+		const size_t lines_removed = worker->repo->history->tot_lines_removed;
+		(void)log_info("%-5lu commits in %-*s  +%lu | -%lu  [AVG +%.2f | -%.2f]  ~%s\n",
+					   n_commits,
 					   max_name_len,
 					   worker->repo->name.val,
-					   worker->repo->history->tot_lines_added,
-					   worker->repo->history->tot_lines_removed,
+					   lines_added,
+					   lines_removed,
+					   FLOAT_AVG(lines_added, n_commits),
+					   FLOAT_AVG(lines_removed, n_commits),
 					   branch_name ? branch_name : "HEAD");
 	}
 	
@@ -170,6 +192,7 @@ err:
 	return RUNTIME_MALLOC_ERROR;
 }
 
+/* This is the core function of the whole program.*/
 return_code_t walk_through_repos(const repository_array_t *repos, const settings_t *settings)
 {
 	return_code_t ret = OK;
@@ -210,15 +233,26 @@ return_code_t walk_through_repos(const repository_array_t *repos, const settings
 
 	(void)log_info("--------------\n");
 
+	if (settings->force) {
+		return_code_t code = write_repos_on_file(repos);
+		if (code != OK) { return code; }
+	}
+
 	if (settings->interactive) {
-		return_code_t code = write_repos_on_file(repos, settings);
-		code = choose_commits_through_editor(settings);
+		return_code_t code = choose_commits_through_editor(settings);
 		if (code == CANNOT_FORK_PROCESS) {
 			(void)log_err("Cannot create a child process for the text editor...\n");
 		} else if (code == EXTERNAL_EDITOR_FAILED) {
 			(void)log_err("Cannot open editor `%s`. You can configure the environment "
 						  "variable 'GIT_EDITOR'\n", settings->editor.val);
 		}
+	}
+
+	if (settings->no_cache) {
+		// code = delete_commits_file();
+		// if (code != OK) {
+		// 	(void)log_err("Cannot delete temporary commit file `%s`...\n", COMMITS_FILE);
+		// }
 	}
 
 	print_output(repos, settings);

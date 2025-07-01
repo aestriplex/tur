@@ -47,6 +47,5 @@ str_t get_first_line(str_t input);
 char* trim_whitespace(const char *str);
 str_t escape_special_chars(str_t input);
 str_t get_editor_or_default(void);
-return_code_t check_or_create_tur_dir(void);
 
 #endif /* __UTILS_H__ */

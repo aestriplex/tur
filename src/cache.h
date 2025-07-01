@@ -1,4 +1,4 @@
-/* editor.c
+/* cache.h
  * -----------------------------------------------------------------------
  * Copyright (C) 2025  Matteo Nicoli
  *
@@ -19,32 +19,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "cache.h"
-#include "log.h"
+#ifndef __CACHE_H__
+#define __CACHE_H__
+
+#define TUR_DIR ".tur/"
+#define COMMITS_FILE ".tur/commits"
+
 #include "repo.h"
 #include "settings.h"
-#include "str.h"
-#include "utils.h"
 
-#include <stdlib.h>
-#include <unistd.h>
+return_code_t delete_cache(void);
+return_code_t delete_commits_file(void);
+return_code_t check_or_create_tur_dir(void);
+return_code_t write_repos_on_file(const repository_array_t *repos);
 
-return_code_t choose_commits_through_editor(const settings_t *settings)
-{
-	return_code_t ret = OK;
-
-	pid_t pid = fork();
-
-	if (pid < 0) { return CANNOT_FORK_PROCESS; }
-
-	if (pid == 0) {
-		char *args[] = { (char *)settings->editor.val, COMMITS_FILE, NULL };
-		execvp(settings->editor.val, args);
-		return EXTERNAL_EDITOR_FAILED;
-	}
-
-	int status;
-	waitpid(pid, &status, 0);
-
-	return ret;
-}
+#endif /* __CACHE_H__ */
