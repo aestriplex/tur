@@ -22,12 +22,12 @@ all: tur test
 
 tur:
 	@echo "*****************************\n  Building tur\n*****************************"
-	@$(MAKE) -C src/
+	$(MAKE) -C src/
 
 .PHONY: test
 test:
 	@echo "*****************************\n  TESTS\n*****************************"
-	@$(MAKE) -C test/
+	$(MAKE) -C test/
 
 .PHONY: debug
 debug:

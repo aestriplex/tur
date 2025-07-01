@@ -27,6 +27,9 @@ INSTALL_PATH = /usr/local/bin
 LIB_PATH = /usr/local/lib
 LIB = -lgit2
 OUT = tur
+SRCDIR = .
+SOURCES := $(wildcard $(SRCDIR)/*.c)
+OBJECTS := $(SOURCES:.c=.o)
 
 # Change include and lib path for macOS with Apple Silicon
 UNAME_S := $(shell uname -s)
@@ -46,11 +49,14 @@ ifeq ($(UNAME_S), Linux)
 	endif
 endif
 
-all: *.o
-	$(CC) $(CFLAGS) -I$(INCLUDE_PATH) -o $(OUT) $^ -L$(LIB_PATH) $(LIB)
+.PHONY: all
+all: $(OUT)
 
-*.o: *.c
-	$(CC) $(CVARS) -I$(INCLUDE_PATH) $(CFLAGS) -c $^
+$(OUT): $(OBJECTS)
+	$(CC) $(CFLAGS) -I$(INCLUDE_PATH) $(OBJECTS) -o $@ -L$(LIB_PATH) $(LIB)
+
+$(SRCDIR)/%.o: $(SRCDIR)/%.c
+	$(CC) $(CVARS) -I$(INCLUDE_PATH) $(CFLAGS) -c $< -o $@
 
 .PHONY: debug
 debug: *.c
