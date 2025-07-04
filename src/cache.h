@@ -28,6 +28,7 @@
 #include "repo.h"
 #include "settings.h"
 
+bool commit_file_exists(void);
 return_code_t delete_cache(void);
 return_code_t delete_commits_file(void);
 return_code_t check_or_create_tur_dir(void);

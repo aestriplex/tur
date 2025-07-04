@@ -34,7 +34,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define FLOAT_AVG(x,y) ((float) ((float) x / y))
+typedef int (*ord_fn_t) (const void* a, const void* b);
+
+#define FLOAT_AVG(x,y) ((float) ((float) x / (y)))
 
 static thread_pool_t pool;
 
@@ -52,8 +54,10 @@ static int order_by_date_desc(const void* a, const void* b)
 	return -order_by_date_asc(a,b);
 }
 
-static commit_t **get_commit_refs(const commit_arr_t *commit_arr, size_t commit_with_resp,
-								  responsability_t resp, const settings_t *settings)
+static commit_t **get_commit_refs(const commit_arr_t *commit_arr,
+								  size_t commit_with_resp,
+								  responsability_t resp,
+								  const settings_t *settings)
 {
 	commit_t **commits_with_resp = malloc(commit_with_resp * sizeof(commit_t *));
 	for (size_t i = 0, n_resp = 0; i < commit_arr->count; i++) {
@@ -63,43 +67,48 @@ static commit_t **get_commit_refs(const commit_arr_t *commit_arr, size_t commit_
 		}
 	}
 	if (settings->sorted) {
+		ord_fn_t ord_fn = settings->sort_order == ASC
+						  ? order_by_date_asc
+						  : order_by_date_desc;
 		qsort(commits_with_resp,
 			  commit_with_resp,
 			  sizeof(commit_t *),
-			  settings->sort_order == ASC ? order_by_date_asc : order_by_date_desc);
+			  ord_fn);
 	}
 
 	return commits_with_resp;
 }
-
-/* The indexes are built following these rationale:
- *     - If no_cache == 1 && interactive == 0, then .tur/commits is ignored;
- *     - If no_cache == 1 && interactive == 1, then .tur/commits is temporarily written,
- *       and removed at the end of this function;
- *     - If no_cache == 0 && interactive == 0, then .tur/commits is written with the indexes
- *       built by this function;
- *     - If no_cache == 0 && interactive == 1, then .tur/commits is written with the indexes
- *       modified by the user in the text editor (interctive mode). If a file .tur/commits
- *       is already present, then
- *           * if force == 1, then the index is recalculated and the file overwritten;
- *           * otherwise, the file is loaded as is and the index is not recalculated.
- */
-static return_code_t build_indexes(repository_t *repo, const settings_t *settings)
+static bool non_cached_non_inter(const settings_t *settings)
 {
-	repo->history->indexes.authored = get_commit_refs(&repo->history->commit_arr,
-													  repo->history->n_authored,
-													  AUTHORED, settings);
-	repo->history->indexes.co_authored = get_commit_refs(&repo->history->commit_arr,
-														 repo->history->n_co_authored,
-														 CO_AUTHORED, settings);
-	
-	if (!repo->history->indexes.authored
-		|| !repo->history->indexes.co_authored) { return INDEX_ALLOCATION_ERROR; }
+	return settings->no_cache && !settings->interactive;
+}
+
+static bool cached_or_inter(const settings_t *settings)
+{
+	return !non_cached_non_inter(settings);
+}
+
+static return_code_t build_indexes(repository_t *repo,
+								   const settings_t *settings)
+{
+	commit_t **authored = get_commit_refs(&repo->history->commit_arr,
+										  repo->history->n_authored,
+										  AUTHORED, settings);
+	commit_t **co_authored = get_commit_refs(&repo->history->commit_arr,
+											 repo->history->n_co_authored,
+											 CO_AUTHORED, settings);
+
+	repo->history->indexes.authored = authored;
+	repo->history->indexes.co_authored = co_authored;
+
+	const indexes_t *idx = &repo->history->indexes; 
+	if (!idx->authored || !idx->co_authored) { return INDEX_ALLOCATION_ERROR; }
 
 	return OK;
 }
 
-static void print_output(const repository_array_t *repos, const settings_t *settings)
+static void print_output(const repository_array_t *repos,
+						 const settings_t *settings)
 {
 	if (settings->output_mode == STDOUT) {
 		print_stdout(repos, settings);
@@ -108,7 +117,8 @@ static void print_output(const repository_array_t *repos, const settings_t *sett
 
 	FILE *out = fopen(settings->output.val, "w");
 	if (!out) {
-		(void)log_err("print_output: cannot open file: %s\n", settings->output.val);
+		(void)log_err("print_output: cannot open file: %s\n",
+					  settings->output.val);
 		return;
 	}
 
@@ -123,7 +133,8 @@ static void print_output(const repository_array_t *repos, const settings_t *sett
 		generate_markdown_file(out, repos, settings);
 		break;
 	default:
-		(void)log_err("corrupted output mode [%d]... stdout selected", settings->output_mode);
+		(void)log_err("corrupted output mode [%d]... stdout selected",
+					  settings->output_mode);
 		break;
 	}
 
@@ -145,12 +156,16 @@ static void *walk_repo(void* arg)
 		pool.current_worker++;
 		pthread_mutex_unlock(&pool.current_worker_lock);
 
-		const char *branch_name = worker->repo->branches ? worker->repo->branches->strings[0].val : NULL;
+		const char *branch_name = worker->repo->branches
+								  ? worker->repo->branches->strings[0].val
+								  : NULL;
 
-		worker->repo->history = get_commit_history(worker->repo->path, branch_name, pool.settings);
+		worker->repo->history = get_commit_history(worker->repo->path,
+												   branch_name, pool.settings);
 		if (!worker->repo->history) {
 			worker->ret = RUNTIME_MALLOC_ERROR;
-			(void)log_err("walk_repo: cannot retrieve commit history for %s\n", worker->repo->name.val);
+			(void)log_err("walk_repo: cannot retrieve commit history for %s\n",
+						  worker->repo->name.val);
 			continue;
 		}
 		worker->ret = build_indexes(worker->repo, pool.settings);
@@ -173,7 +188,8 @@ static void *walk_repo(void* arg)
 	return NULL;
 }
 
-static return_code_t init_thread_pool(const repository_array_t *repos, const settings_t *settings)
+static return_code_t init_thread_pool(const repository_array_t *repos,
+									  const settings_t *settings)
 {
 	pool.threads = malloc(settings->n_threads * sizeof(pthread_t));
 	if (!pool.threads) { goto err; }
@@ -192,8 +208,34 @@ err:
 	return RUNTIME_MALLOC_ERROR;
 }
 
-/* This is the core function of the whole program.*/
-return_code_t walk_through_repos(const repository_array_t *repos, const settings_t *settings)
+static return_code_t cache_commit_list(const repository_array_t *repos,
+									   const settings_t *settings)
+{
+	return_code_t ret = OK;
+
+	if (cached_or_inter(settings)) {
+		if (settings->force || !commit_file_exists()) {
+			/* We have to create or overwrite the commits file */
+			ret = write_repos_on_file(repos);
+			if (ret != OK) { return ret; }
+		}
+	}
+
+	if (settings->interactive) {
+		ret = choose_commits_through_editor(settings);
+		if (ret == CANNOT_FORK_PROCESS) {
+			(void)log_err("Cannot create a child process for the text editor...\n");
+		} else if (ret == EXTERNAL_EDITOR_FAILED) {
+			(void)log_err("Cannot open editor `%s`. You can configure the environment "
+						  "variable 'GIT_EDITOR'\n", settings->editor.val);
+		}
+	}
+
+	return ret;
+}
+
+return_code_t walk_through_repos(const repository_array_t *repos,
+								 const settings_t *settings)
 {
 	return_code_t ret = OK;
 	size_t max_name_len = repos->max_name_len;
@@ -233,26 +275,25 @@ return_code_t walk_through_repos(const repository_array_t *repos, const settings
 
 	(void)log_info("--------------\n");
 
-	if (settings->force) {
-		return_code_t code = write_repos_on_file(repos);
-		if (code != OK) { return code; }
-	}
+	/* The indexes are built following these rationale:
+	 *     - If no_cache == 1 && interactive == 0, then .tur/commits is ignored;
+	 *     - If no_cache == 1 && interactive == 1, then .tur/commits is temporarily written,
+	 *       and removed at the end of this function;
+	 *     - If no_cache == 0 && interactive == 0, then .tur/commits is written with the indexes
+	 *       built by this function;
+	 *     - If no_cache == 0 && interactive == 1, then .tur/commits is written with the indexes
+	 *       modified by the user in the text editor (interctive mode). If a file .tur/commits
+	 *       is already present, then
+	 *           * if force == 1, then the index is recalculated and the file overwritten;
+	 *           * otherwise, the file is loaded as is and the index is not recalculated.
+	 */
+	ret = cache_commit_list(repos, settings);
 
-	if (settings->interactive) {
-		return_code_t code = choose_commits_through_editor(settings);
-		if (code == CANNOT_FORK_PROCESS) {
-			(void)log_err("Cannot create a child process for the text editor...\n");
-		} else if (code == EXTERNAL_EDITOR_FAILED) {
-			(void)log_err("Cannot open editor `%s`. You can configure the environment "
-						  "variable 'GIT_EDITOR'\n", settings->editor.val);
+	if (settings->no_cache && commit_file_exists()) {
+		ret = delete_commits_file();
+		if (ret != OK) {
+			(void)log_err("Cannot delete temporary commit file `%s`...\n", COMMITS_FILE);
 		}
-	}
-
-	if (settings->no_cache) {
-		// code = delete_commits_file();
-		// if (code != OK) {
-		// 	(void)log_err("Cannot delete temporary commit file `%s`...\n", COMMITS_FILE);
-		// }
 	}
 
 	print_output(repos, settings);

@@ -26,6 +26,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+static void print_commit_line(FILE *fp, const commit_t *commit)
+{
+	fprintf(fp, "%s\t%s\n", commit->hash.val, get_first_line(commit->msg).val);
+}
+
 return_code_t check_or_create_tur_dir(void)
 {
 	struct stat st = { 0 };
@@ -40,9 +45,10 @@ return_code_t check_or_create_tur_dir(void)
 	return OK;
 }
 
-static void print_commit_line(FILE *fp, const commit_t *commit)
+bool commit_file_exists(void)
 {
-	fprintf(fp, "%s\t%s\n", commit->hash.val, get_first_line(commit->msg).val);
+	struct stat st = { 0 };
+	return stat(COMMITS_FILE, &st) != -1;
 }
 
 return_code_t write_repos_on_file(const repository_array_t *repos)
@@ -62,7 +68,8 @@ return_code_t write_repos_on_file(const repository_array_t *repos)
 	}
 
 	for (size_t i = 0; i < repos->count; i++) {
-
+		/* We must not use the indexes here, because they are not allocated yet.
+		   In case of interactive mode, we are building this file before the index */
 		const repository_t *repo = repos->repositories + i;
 		const work_history_t *history = repo->history;
 		commit_t **const authored = history->indexes.authored;
@@ -84,9 +91,11 @@ return_code_t write_repos_on_file(const repository_array_t *repos)
 return_code_t delete_cache(void)
 {
 	if (remove(TUR_DIR) != 0) { return CANNOT_DELETE_TUR_DIR; }
+	return OK;
 }
 
 return_code_t delete_commits_file(void)
 {
 	if (remove(COMMITS_FILE) != 0) { return CANNOT_DELETE_COMMITS_FILE; }
+	return OK;
 }
