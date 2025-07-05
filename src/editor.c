@@ -35,11 +35,18 @@ return_code_t choose_commits_through_editor(const settings_t *settings)
 
 	pid_t pid = fork();
 
-	if (pid < 0) { return CANNOT_FORK_PROCESS; }
+	if (pid < 0) {
+		(void)log_err("choose_commits_through_editor: cannot create a child "
+					  "process for the text editor...\n");
+		return CANNOT_FORK_PROCESS;
+	}
 
 	if (pid == 0) {
 		char *args[] = { (char *)settings->editor.val, COMMITS_FILE, NULL };
 		execvp(settings->editor.val, args);
+		(void)log_err("choose_commits_through_editor: cannot open editor "
+					  "`%s`. You can configure the environment variable "
+					  "'GIT_EDITOR'\n", settings->editor.val);
 		return EXTERNAL_EDITOR_FAILED;
 	}
 

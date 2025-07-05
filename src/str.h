@@ -33,9 +33,11 @@ typedef struct {
 
 typedef struct {
 	str_t *strings;
-	uint16_t len;
+	size_t len;
+	size_t capacity;
 } str_array_t;
 
+/* Strings */
 str_t str_init(const char *str, uint16_t len);
 str_t empty_str(void);
 str_t str_copy(str_t source);
@@ -49,6 +51,9 @@ bool str_contains(str_t str, str_t substr);
 bool str_contains_chars(str_t str, const char * substr);
 bool chars_contains_chars(const char *str, const char * substr);
 void str_free(str_t str);
-void str_array_free(str_array_t *arr);
+
+/* String arrays */
+str_array_t *str_array_copy(const str_array_t *src);
+void str_array_free(str_array_t **arr);
 
 #endif /* __STR_H__ */ 

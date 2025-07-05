@@ -63,6 +63,7 @@ test/test_parse_email_list
 test/test_str
 test/test_utils
 test/test_opts_args
+test/test_lookup_table
 
 # macOS garbage file
 .DS_Store

@@ -39,14 +39,15 @@ static str_t get_repo_name(str_t repo_path)
 	return str_init(repo_name, (uint16_t) strlen(repo_name));
 }
 
-static repository_t init_repo(str_t path, str_t url)
+static repository_t init_repo(str_t path, unsigned id)
 {
 	return (repository_t) {
+		.id = id,
 		.path = path,
-		.url = url,
+		.url = empty_str(),
 		.name = get_repo_name(path),
 		.history = NULL,
-		.format = { 0 }
+		.format = { 0 },
 	};
 }
 
@@ -82,7 +83,8 @@ static str_array_t *get_branches(const char *line, size_t len)
 	}
 	result->strings = malloc(n_branches * sizeof(str_t));
 	if (!result->strings) {
-		(void)log_err("get_branches: cannot allocate result array inner strings\n");
+		(void)log_err("get_branches: cannot allocate result array "
+					  "inner strings\n");
 		exit(1);
 	}
 
@@ -92,18 +94,18 @@ static str_array_t *get_branches(const char *line, size_t len)
 		result->strings[result->len++] = str_init(token, strnlen(token, len));
 		token = strtok(NULL, ",");
 	}
-
+	result->capacity = result->len;
 	free(to_parse);
 	return result;
 }
 
-repository_t parse_repository(const char *line, ssize_t len)
+repository_t parse_repository(const char *line, ssize_t len, unsigned id)
 {
 	repository_t repo = { 0 };
 	const char *bracket_open = strchr(line, '[');
 	
 	if (bracket_open == NULL) {
-		return init_repo(str_init(line, len), empty_str());
+		return init_repo(str_init(line, len), id);
 	}
 
 	size_t path_and_banches_len = bracket_open - line;
@@ -171,6 +173,7 @@ repository_t parse_repository(const char *line, ssize_t len)
 return_code_t get_repos_array(repository_array_t *repos, const settings_t *settings)
 {
 	return_code_t ret = OK;
+	unsigned id = 0;
 	size_t len = 0, max_name_len = 0;
 	ssize_t read;
 	char *line = NULL;
@@ -203,13 +206,15 @@ return_code_t get_repos_array(repository_array_t *repos, const settings_t *setti
 			size_t new_capacity = repos->capacity + DEFAULT_N_REPOSITORY;
 			repository_t *new_repos = realloc(repos->repositories, new_capacity * sizeof(repository_t));
 			if (!new_repos) {
-				(void)log_err("get_repos_array: memory allocation failed while expanding repository array\n");
+				(void)log_err("get_repos_array: memory allocation failed "
+							  "while expanding repository array\n");
 				break;
 			}
 			repos->repositories = new_repos;
 			repos->capacity = new_capacity;
 		}
-		repos->repositories[repos->count] = parse_repository(line, read);
+		repos->repositories[repos->count] = parse_repository(line, read, id);
+		id++;
 		repos->count++;
 	}
 

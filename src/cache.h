@@ -22,11 +22,13 @@
 #ifndef __CACHE_H__
 #define __CACHE_H__
 
-#define TUR_DIR ".tur/"
-#define COMMITS_FILE ".tur/commits"
-
 #include "repo.h"
 #include "settings.h"
+
+#include <stdint.h>
+
+#define TUR_DIR ".tur/"
+#define COMMITS_FILE ".tur/commits"
 
 bool commit_file_exists(void);
 return_code_t delete_cache(void);

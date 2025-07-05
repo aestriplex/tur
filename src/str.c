@@ -28,6 +28,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * Strings
+ */
 static const str_t _empty_str = (str_t) { .val="", .len=0 };
 
 str_t empty_str(void)
@@ -132,10 +135,39 @@ void str_free(str_t str)
 	free((void *)str.val);
 }
 
-void str_array_free(str_array_t *arr)
+/*
+ * String arrays
+ */
+
+str_array_t *str_array_copy(const str_array_t *src)
 {
-	for (size_t i = 0; i < arr->len; i++) {
-		str_free(arr->strings[i]);
+	if (!src) { return NULL; }
+
+	str_array_t *copy = malloc(sizeof(str_array_t));
+	if (!copy) { return NULL; }
+
+	copy->len = src->len;
+	copy->capacity = src->capacity;
+	copy->strings = malloc(copy->capacity * sizeof(str_t));
+	if (!copy->strings) {
+		free(copy);
+		return NULL;
 	}
-	free(arr->strings);
+
+	for (size_t i = 0; i < src->len; i++) {
+		copy->strings[i] = str_copy(src->strings[i]);
+	}
+
+	return copy;
+}
+
+void str_array_free(str_array_t **arr)
+{
+	const str_array_t *array = *arr;
+	for (size_t i = 0; i < array->len; i++) {
+		str_free(array->strings[i]);
+	}
+	free(array->strings);
+	free(*arr);
+	*arr = NULL;
 }

@@ -21,7 +21,7 @@
 CC = gcc
 CVARS = -D_GNU_SOURCE
 CFLAGS = -Wall -pedantic -O3 -std=c2x -fsanitize=address
-TEST_BINS = test_parse_repository test_parse_email_list test_str test_utils test_opts_args
+TEST_BINS = test_parse_repository test_parse_email_list test_str test_utils test_opts_args test_lookup_table
 
 all: $(TEST_BINS)
 	./test_parse_repository
@@ -29,6 +29,7 @@ all: $(TEST_BINS)
 	./test_str
 	./test_utils
 	./test_opts_args
+	./test_lookup_table
 
 test_parse_repository: test.c test_parse_repository.c repo.o str.o utils.o log.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
@@ -45,6 +46,9 @@ test_utils: test.c test_utils.c str.o utils.o log.o
 test_opts_args: test.c test_opts_args.c opts_args.o utils.o str.o log.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
+test_lookup_table: test.c test_lookup_table.c lookup_table.o str.o log.o
+	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
+
 repo.o: ../src/repo.c
 	$(CC) $(CVARS) $(CFLAGS) -o $@ -c $^
 
@@ -58,6 +62,9 @@ utils.o: ../src/utils.c
 	$(CC) $(CVARS) $(CFLAGS) -o $@ -c $^
 
 log.o: ../src/log.c
+	$(CC) $(CVARS) $(CFLAGS) -o $@ -c $^
+
+lookup_table.o: ../src/lookup_table.c
 	$(CC) $(CVARS) $(CFLAGS) -o $@ -c $^
 
 .PHONY: clean

@@ -68,8 +68,6 @@ return_code_t write_repos_on_file(const repository_array_t *repos)
 	}
 
 	for (size_t i = 0; i < repos->count; i++) {
-		/* We must not use the indexes here, because they are not allocated yet.
-		   In case of interactive mode, we are building this file before the index */
 		const repository_t *repo = repos->repositories + i;
 		const work_history_t *history = repo->history;
 		commit_t **const authored = history->indexes.authored;

@@ -38,6 +38,7 @@ typedef struct {
 } fmt_t;
 
 typedef struct {
+	unsigned id;
 	str_t url;
 	str_t path;
 	str_t name;
@@ -53,7 +54,7 @@ typedef struct {
 	size_t max_name_len;
 } repository_array_t;
 
-repository_t parse_repository(const char *line, ssize_t len);
+repository_t parse_repository(const char *line, ssize_t len, unsigned id);
 return_code_t get_repos_array(repository_array_t *repos, const settings_t *settings);
 
 #endif /* __REPO_H__ */

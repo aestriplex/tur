@@ -36,6 +36,8 @@
 
 typedef int (*ord_fn_t) (const void* a, const void* b);
 
+#define REPO_STAT_LOG_STR "%-5lu commits in %-*s  +%lu | -%lu  " \
+						  "[AVG +%.2f | -%.2f]  ~%s\n"
 #define FLOAT_AVG(x,y) ((float) ((float) x / (y)))
 
 static thread_pool_t pool;
@@ -174,7 +176,7 @@ static void *walk_repo(void* arg)
 		const size_t n_commits = worker->repo->history->commit_arr.count;
 		const size_t lines_added = worker->repo->history->tot_lines_added;
 		const size_t lines_removed = worker->repo->history->tot_lines_removed;
-		(void)log_info("%-5lu commits in %-*s  +%lu | -%lu  [AVG +%.2f | -%.2f]  ~%s\n",
+		(void)log_info(REPO_STAT_LOG_STR,
 					   n_commits,
 					   max_name_len,
 					   worker->repo->name.val,
@@ -223,12 +225,7 @@ static return_code_t cache_commit_list(const repository_array_t *repos,
 
 	if (settings->interactive) {
 		ret = choose_commits_through_editor(settings);
-		if (ret == CANNOT_FORK_PROCESS) {
-			(void)log_err("Cannot create a child process for the text editor...\n");
-		} else if (ret == EXTERNAL_EDITOR_FAILED) {
-			(void)log_err("Cannot open editor `%s`. You can configure the environment "
-						  "variable 'GIT_EDITOR'\n", settings->editor.val);
-		}
+		if (ret != OK) { return ret; }
 	}
 
 	return ret;
@@ -288,14 +285,20 @@ return_code_t walk_through_repos(const repository_array_t *repos,
 	 *           * otherwise, the file is loaded as is and the index is not recalculated.
 	 */
 	ret = cache_commit_list(repos, settings);
+	if (ret != OK) { goto print_and_exit; }
+
+
 
 	if (settings->no_cache && commit_file_exists()) {
+		(void)log_info("Removing temporary commit file `%s`...\n",
+					   COMMITS_FILE);
 		ret = delete_commits_file();
 		if (ret != OK) {
 			(void)log_err("Cannot delete temporary commit file `%s`...\n", COMMITS_FILE);
 		}
 	}
 
+print_and_exit:
 	print_output(repos, settings);
 
 	return ret;
