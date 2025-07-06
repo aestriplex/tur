@@ -22,7 +22,7 @@
 #ifndef __CODES_H__
 #define __CODES_H__
 
-#define __TUR_VERSION__ "1.2.7-dev"
+#define __TUR_VERSION__ "1.3.0"
 
 typedef enum {
 	OK                            = 0x00,
@@ -52,7 +52,7 @@ typedef enum {
 
 	RUNTIME_LOGGER_ERROR          = 0xFD,
 	RUNTIME_THREAD_CREATE_ERROR   = 0xFE,
-	RUNTIME_MALLOC_ERROR          = 0xFF
+	RUNTIME_MALLOC_ERROR          = 0xFF,
 } return_code_t;
 
 #endif /* __CODES_H__ */
