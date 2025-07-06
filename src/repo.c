@@ -125,6 +125,7 @@ repository_t parse_repository(const char *line, ssize_t len, unsigned id)
 		branches_len = 0;
 	}
 
+	repo.id = id;
 	repo.path = str_init(path_str, path_len);
 	repo.name = get_repo_name(repo.path);
 	repo.branches = branches_str

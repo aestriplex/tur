@@ -287,7 +287,10 @@ return_code_t walk_through_repos(const repository_array_t *repos,
 	ret = cache_commit_list(repos, settings);
 	if (ret != OK) { goto print_and_exit; }
 
-
+	if (cached_or_inter(settings)) {
+		ret = rebuild_indexes(repos);
+		if (ret != OK) { goto print_and_exit; }
+	}
 
 	if (settings->no_cache && commit_file_exists()) {
 		(void)log_info("Removing temporary commit file `%s`...\n",

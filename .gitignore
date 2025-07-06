@@ -54,6 +54,9 @@ dkms.conf
 # Binaries
 src/tur
 
+# Cache files
+src/.tur
+
 # Editor
 .vscode
 

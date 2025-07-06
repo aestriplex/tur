@@ -54,6 +54,7 @@ void str_free(str_t str);
 
 /* String arrays */
 str_array_t *str_array_copy(const str_array_t *src);
+bool str_array_contains(const str_array_t *src, str_t str);
 void str_array_free(str_array_t **arr);
 
 #endif /* __STR_H__ */ 

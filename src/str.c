@@ -161,6 +161,14 @@ str_array_t *str_array_copy(const str_array_t *src)
 	return copy;
 }
 
+bool str_array_contains(const str_array_t *src, str_t str)
+{
+	for (size_t i = 0; i < src->len; i++) {
+		if (str_equals(src->strings[i], str)) { return true; }
+	}
+	return false;
+}
+
 void str_array_free(str_array_t **arr)
 {
 	const str_array_t *array = *arr;

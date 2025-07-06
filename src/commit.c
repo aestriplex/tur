@@ -277,3 +277,12 @@ cleanup:
 ret:
 	return history;
 }
+
+commit_t *get_commit_with_id(const commit_arr_t* commit_arr, str_t id)
+{
+	for (size_t i = 0; i < commit_arr->count; i++) {
+		if (str_equals(commit_arr->commits[i].hash, id)) { return commit_arr->commits + i; }
+	}
+
+	return NULL;
+}
