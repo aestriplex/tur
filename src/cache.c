@@ -74,27 +74,31 @@ static return_code_t parse_commit_file(table_t *repo_table)
 			ret = parse_commit_id(&current_repo_id, line);
 			if (ret != OK) { return ret; }
 
-			const size_t strings_size = DEFUALT_STR_ARR_SIZE * sizeof(str_t);
-			current_commits = malloc(sizeof(str_array_t));
-			current_commits->strings = malloc(strings_size);
-			current_commits->len = 0;
-			current_commits->capacity = DEFUALT_STR_ARR_SIZE;
+			str_array_init(&current_commits);
 
 		} else if (current_repo_id >= 0 && current_commits) {
 			if (strlen(line) == 0) { continue; }
-
-			if (current_commits->len >= current_commits->capacity) {
-				current_commits->capacity += DEFUALT_STR_ARR_SIZE;
-				current_commits->strings = realloc(current_commits->strings,
-					current_commits->capacity * sizeof(str_t));
-			}
 
 			char *end_of_hash = strchr(line, '\t');
 			if (!end_of_hash) { return COMMITS_FILE_HASH_CORRUPTED; }
 			
 			size_t hash_len = (size_t)(end_of_hash - line);
 			str_t hash = str_init(line, hash_len);
-			current_commits->strings[current_commits->len++] = hash;
+
+			/* If the commit name contains the string "[*]", then the commit
+			 * is labelled as a favorite.
+			 */
+			if (strnstr(end_of_hash, FAVORITE_STR, strlen(line))) {
+
+			}
+
+			ret = str_array_add(current_commits, hash);
+			if (ret == RUNTIME_ARRAY_REALLOC_ERROR) {
+				(void)log_err("parse_commit_file: cannot allocate enough "
+							  "memory for the commit list in `%s`",
+							   COMMITS_FILE);
+				goto cleanup;
+			}
 		}
 	}
 
@@ -103,6 +107,7 @@ static return_code_t parse_commit_file(table_t *repo_table)
 		str_array_free(&current_commits);
 	}
 
+cleanup:
 	free(line);
 	fclose(fp);
 
@@ -115,7 +120,7 @@ static return_code_t repo_index(repository_t *repo, const str_array_t *commits)
 	work_history_t *history = repo->history;
 
 	for (size_t i = 0; i < commits->len; i++) {
-		str_t commit_id = commits->strings[i];
+		str_t commit_id = str_array_get(commits, i);
 		commit_t *c = get_commit_with_id(&history->commit_arr, commit_id);
 		if (!c) {
 			(void)log_err("repo_index: cannot find commit `%s`\n",

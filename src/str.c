@@ -19,6 +19,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "array.h"
+#include "codes.h"
 #include "log.h"
 #include "str.h"
 
@@ -64,6 +66,11 @@ inline bool str_is_empty(str_t str)
 inline bool str_not_empty(str_t str)
 {
 	return !str_is_empty(str);
+}
+
+int str_compare(str_t str1, str_t str2)
+{
+	return strncmp(str1.val, str2.val, str1.len);
 }
 
 bool str_equals(str_t str1, str_t str2)
@@ -139,43 +146,48 @@ void str_free(str_t str)
  * String arrays
  */
 
+static void assign_str(void *src, void *elem)
+{
+	*(str_t *)src = str_copy(*(str_t *)elem);
+}
+
+static int compare_str(void *s1, void *s2)
+{
+	return str_compare(*(str_t *)s1, *(str_t *)s2);
+}
+
+static void free_str(void* s)
+{
+	str_t str = *(str_t *)s;
+	str_free(str);
+}
+
+void str_array_init(str_array_t **arr)
+{
+	array_init(arr, sizeof(str_t));
+}
+
+str_t str_array_get(const str_array_t *src, size_t i)
+{
+	return *((str_t *)src->values + i);
+}
+
+return_code_t str_array_add(str_array_t *src, str_t str)
+{
+	return array_add(src, &str, assign_str);
+}
+
 str_array_t *str_array_copy(const str_array_t *src)
 {
-	if (!src) { return NULL; }
-
-	str_array_t *copy = malloc(sizeof(str_array_t));
-	if (!copy) { return NULL; }
-
-	copy->len = src->len;
-	copy->capacity = src->capacity;
-	copy->strings = malloc(copy->capacity * sizeof(str_t));
-	if (!copy->strings) {
-		free(copy);
-		return NULL;
-	}
-
-	for (size_t i = 0; i < src->len; i++) {
-		copy->strings[i] = str_copy(src->strings[i]);
-	}
-
-	return copy;
+	return array_copy(src, assign_str);
 }
 
 bool str_array_contains(const str_array_t *src, str_t str)
 {
-	for (size_t i = 0; i < src->len; i++) {
-		if (str_equals(src->strings[i], str)) { return true; }
-	}
-	return false;
+	return array_contains(src, &str, compare_str);
 }
 
 void str_array_free(str_array_t **arr)
 {
-	const str_array_t *array = *arr;
-	for (size_t i = 0; i < array->len; i++) {
-		str_free(array->strings[i]);
-	}
-	free(array->strings);
-	free(*arr);
-	*arr = NULL;
+	array_free(arr, free_str);
 }

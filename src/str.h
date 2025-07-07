@@ -22,6 +22,9 @@
 #ifndef __STR_H__
 #define __STR_H__
 
+#include "array.h"
+#include "codes.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -31,11 +34,7 @@ typedef struct {
 	uint16_t len;
 } str_t;
 
-typedef struct {
-	str_t *strings;
-	size_t len;
-	size_t capacity;
-} str_array_t;
+typedef array_t str_array_t;
 
 /* Strings */
 str_t str_init(const char *str, uint16_t len);
@@ -43,6 +42,7 @@ str_t empty_str(void);
 str_t str_copy(str_t source);
 bool str_is_empty(str_t str);
 bool str_not_empty(str_t str);
+int str_compare(str_t str1, str_t str2);
 bool str_equals(str_t str1, str_t str2);
 bool str_arr_equals(str_t str, const char *expected);
 char get_char(str_t str, uint16_t i);
@@ -53,6 +53,9 @@ bool chars_contains_chars(const char *str, const char * substr);
 void str_free(str_t str);
 
 /* String arrays */
+void str_array_init(str_array_t **arr);
+str_t str_array_get(const str_array_t *src, size_t i);
+return_code_t str_array_add(str_array_t *src, str_t str);
 str_array_t *str_array_copy(const str_array_t *src);
 bool str_array_contains(const str_array_t *src, str_t str);
 void str_array_free(str_array_t **arr);
