@@ -163,3 +163,21 @@ str_t get_editor_or_default(void)
 	if (!editor) editor = DEFAULT_EDITOR;
 	return str_init(editor, strnlen(editor, 20));
 }
+
+return_code_t parse_commit_id(unsigned *id, const char *line)
+{
+	if (!id || !line) { return COMMITS_FILE_INVALID_REPO_ID; }
+	if (line[0] != '+' || !isspace(line[1])) { return COMMITS_FILE_INVALID_REPO_ID; }
+
+	line += 2;
+
+	if (!isdigit(*line)) { return COMMITS_FILE_INVALID_REPO_ID; }
+
+	char *endptr;
+	unsigned val = strtoul(line, &endptr, 10);
+
+	if (line == endptr || *endptr != ')') { return COMMITS_FILE_INVALID_REPO_ID; }
+
+	*id = (unsigned)val;
+	return OK;
+}

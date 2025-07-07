@@ -30,6 +30,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#define FAVORITE_STR "[*]"
+
 /* Just return the key as it is */
 uint32_t id_hash(void *key)
 {
@@ -41,9 +43,9 @@ static void print_commit_line(FILE *fp, const commit_t *commit)
 	fprintf(fp, "%s\t%s\n", commit->hash.val, get_first_line(commit->msg).val);
 }
 
-static return_code_t parse_commit_file(const repository_array_t *repos,
-									   table_t *repo_table)
+static return_code_t parse_commit_file(table_t *repo_table)
 {
+	return_code_t ret = OK;
 	FILE *fp = fopen(COMMITS_FILE, "r");
 	if (!fp) {
 		log_err("parse_commit_file: cannot open file `%s`\n", COMMITS_FILE);
@@ -54,7 +56,7 @@ static return_code_t parse_commit_file(const repository_array_t *repos,
 	size_t len = 0;
 	ssize_t read;
 
-	int current_repo_id = -1;
+	unsigned current_repo_id = (unsigned)-1;
 	str_array_t *current_commits = NULL;
 
 	while ((read = getline(&line, &len, fp)) != -1) {
@@ -68,30 +70,13 @@ static return_code_t parse_commit_file(const repository_array_t *repos,
 				str_array_free(&current_commits);
 			}
 
-			/* Parsing of the repo line "+ <ID>) <NAME>" */
-			char *paren = strchr(line, ')');
-			if (!paren || paren <= line + 2) { continue; }
+			/* Parsing the repo id from this line:  "+ <ID>) <NAME>" */
+			ret = parse_commit_id(&current_repo_id, line);
+			if (ret != OK) { return ret; }
 
-			char *repo_name = paren + 2;
-			size_t name_len = strlen(repo_name);
-
-			current_repo_id = -1;
-			for (size_t i = 0; i < repos->count; i++) {
-				repository_t *r = repos->repositories + i;
-				if (r->name.len == name_len &&
-					strncmp(r->name.val, repo_name, name_len) == 0) {
-					current_repo_id = r->id;
-					break;
-				}
-			}
-
-			if (current_repo_id == -1) {
-				log_err("parse_commit_file: repository '%s' not found in repos\n", repo_name);
-				continue;
-			}
-
+			const size_t strings_size = DEFUALT_STR_ARR_SIZE * sizeof(str_t);
 			current_commits = malloc(sizeof(str_array_t));
-			current_commits->strings = malloc(DEFUALT_STR_ARR_SIZE * sizeof(str_t));
+			current_commits->strings = malloc(strings_size);
 			current_commits->len = 0;
 			current_commits->capacity = DEFUALT_STR_ARR_SIZE;
 
@@ -103,9 +88,10 @@ static return_code_t parse_commit_file(const repository_array_t *repos,
 				current_commits->strings = realloc(current_commits->strings,
 					current_commits->capacity * sizeof(str_t));
 			}
+
 			char *end_of_hash = strchr(line, '\t');
 			if (!end_of_hash) { return COMMITS_FILE_HASH_CORRUPTED; }
-
+			
 			size_t hash_len = (size_t)(end_of_hash - line);
 			str_t hash = str_init(line, hash_len);
 			current_commits->strings[current_commits->len++] = hash;
@@ -120,7 +106,7 @@ static return_code_t parse_commit_file(const repository_array_t *repos,
 	free(line);
 	fclose(fp);
 
-	return OK;
+	return ret;
 }
 
 static return_code_t repo_index(repository_t *repo, const str_array_t *commits)
@@ -216,7 +202,7 @@ return_code_t rebuild_indexes(const repository_array_t *repos)
 	}
 
 	table_init(&repo_table, 10, 10, id_hash);
-	ret = parse_commit_file(repos, &repo_table);
+	ret = parse_commit_file(&repo_table);
 	if (ret != OK) { return ret; }
 
 	for (size_t i = 0; i < repos->count; i++) {

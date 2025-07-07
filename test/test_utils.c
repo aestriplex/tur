@@ -281,6 +281,88 @@ void test_trim_whitespace(void)
 	}
 }
 
+void test_parse_commit_id(void)
+{
+	{
+		const char *line = "+ 12345) RepoName";
+		unsigned id = 0;
+		return_code_t result = parse_commit_id(&id, line);
+
+		assert_true(result == OK && id == 12345,
+					"should correctly parse valid input with ID 12345");
+	}
+
+	{
+		const char *line = "+ 0) ZeroID";
+		unsigned id = 999;
+		return_code_t result = parse_commit_id(&id, line);
+
+		assert_true(result == OK && id == 0,
+					"should correctly parse zero as ID");
+	}
+
+	{
+		const char *line = "+12345)NoSpace";
+		unsigned id = 0;
+		return_code_t result = parse_commit_id(&id, line);
+
+		assert_true(result == COMMITS_FILE_INVALID_REPO_ID,
+					"should reject input without space after '+'");
+	}
+
+	{
+		const char *line = "12345) MissingPlus";
+		unsigned id = 0;
+		return_code_t result = parse_commit_id(&id, line);
+
+		assert_true(result == COMMITS_FILE_INVALID_REPO_ID,
+					"should reject input without '+' at the start");
+	}
+
+	{
+		const char *line = "+ abc) NotANumber";
+		unsigned id = 0;
+		return_code_t result = parse_commit_id(&id, line);
+
+		assert_true(result == COMMITS_FILE_INVALID_REPO_ID,
+					"should reject input with non-digit ID");
+	}
+
+	{
+		const char *line = "+ 12345 NoClosingParen";
+		unsigned id = 0;
+		return_code_t result = parse_commit_id(&id, line);
+
+		assert_true(result == COMMITS_FILE_INVALID_REPO_ID,
+					"should reject input without closing parenthesis");
+	}
+
+	{
+		const char *line = "+ 123)extra)stuff";
+		unsigned id = 0;
+		return_code_t result = parse_commit_id(&id, line);
+
+		assert_true(result == OK && id == 123,
+					"should accept valid ID even with extra characters after ')'");
+	}
+
+	{
+		const char *line = NULL;
+		unsigned id = 0;
+		return_code_t result = parse_commit_id(&id, line);
+
+		assert_true(result == COMMITS_FILE_INVALID_REPO_ID,
+					"should reject NULL line input");
+	}
+
+	{
+		const char *line = "+ 123)";
+		return_code_t result = parse_commit_id(NULL, line);
+
+		assert_true(result == COMMITS_FILE_INVALID_REPO_ID,
+					"should reject NULL id pointer");
+	}
+}
 
 int main(void)
 {
@@ -288,5 +370,6 @@ int main(void)
 	test_format_date();
 	test_escape_special_chars();
 	test_trim_whitespace();
+	test_parse_commit_id();
 	print_report();
 }
