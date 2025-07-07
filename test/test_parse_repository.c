@@ -144,7 +144,7 @@ void test_parse_repository()
 		assert_true(str_arr_equals(repo.path, "repo/path"), "Path should be 'repo/path'");
 		assert_true(str_arr_equals(repo.url, "https://example.com/"), "URL should be 'https://example.com/'");
 		assert_true(repo.branches->len == 1, "Should have one branch");
-		assert_true(str_arr_equals(repo.branches->strings[0], "main"), "Branch should be 'main'");
+		assert_true(str_arr_equals(str_array_get(repo.branches, 0), "main"), "Branch should be 'main'");
 
 		str_free(repo.path);
 		str_free(repo.name);
@@ -159,9 +159,9 @@ void test_parse_repository()
 		assert_true(str_arr_equals(repo.path, "repo/path"), "Path should be 'repo/path'");
 		assert_true(str_arr_equals(repo.url, "https://example.com/"), "URL should be 'https://example.com/'");
 		assert_true(repo.branches->len == 3, "Should have three branches");
-		assert_true(str_arr_equals(repo.branches->strings[0], "main"), "Branch[0] should be 'main'");
-		assert_true(str_arr_equals(repo.branches->strings[1], "dev"), "Branch[1] should be 'dev'");
-		assert_true(str_arr_equals(repo.branches->strings[2], "feature-x"), "Branch[2] should be 'feature-x'");
+		assert_true(str_arr_equals(str_array_get(repo.branches, 0), "main"), "Branch[0] should be 'main'");
+		assert_true(str_arr_equals(str_array_get(repo.branches, 1), "dev"), "Branch[1] should be 'dev'");
+		assert_true(str_arr_equals(str_array_get(repo.branches, 2), "feature-x"), "Branch[2] should be 'feature-x'");
 
 		str_free(repo.path);
 		str_free(repo.name);
@@ -176,7 +176,7 @@ void test_parse_repository()
 		assert_true(str_arr_equals(repo.path, ""), "Path should be empty");
 		assert_true(str_arr_equals(repo.url, "https://example.com/"), "URL should be 'https://example.com/'");
 		assert_true(repo.branches->len == 1, "Should have one branch");
-		assert_true(str_arr_equals(repo.branches->strings[0], "main"), "Branch should be 'main'");
+		assert_true(str_arr_equals(str_array_get(repo.branches, 0), "main"), "Branch should be 'main'");
 
 		str_free(repo.path);
 		str_free(repo.name);
@@ -191,7 +191,7 @@ void test_parse_repository()
 		assert_true(str_arr_equals(repo.path, "repo/path"), "Path should be 'repo/path'");
 		assert_true(str_arr_equals(repo.url, ""), "URL should be empty");
 		assert_true(repo.branches->len == 1, "Should have one branch");
-		assert_true(str_arr_equals(repo.branches->strings[0], "main"), "Branch should be 'main'");
+		assert_true(str_arr_equals(str_array_get(repo.branches, 0), "main"), "Branch should be 'main'");
 
 		str_free(repo.path);
 		str_free(repo.name);

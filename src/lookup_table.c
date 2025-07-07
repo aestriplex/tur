@@ -49,19 +49,6 @@ static bool should_be_resized(table_t *table)
 	return table->size >= table->max_size / 2;
 }
 
-static table_status_t str_array_add(str_array_t *arr, const str_t str) {
-	if (arr->len >= arr->capacity) {
-		arr->capacity += DEFUALT_STR_ARR_SIZE;
-		str_t *tmp = realloc(arr->strings, arr->capacity * sizeof(str_t));
-		if (!tmp) { return LM_CANNOT_RESIZE_STRING_ARRAY; }
-		arr->strings = tmp;
-	}
-	arr->strings[arr->len] = str_copy(str);
-	arr->len++;
-
-	return LM_OK;
-}
-
 table_status_t table_init(table_t *table, size_t capacity, size_t increment,
 						  hash_fn_t hash)
 {
