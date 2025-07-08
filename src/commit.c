@@ -31,7 +31,51 @@
 
 #define COAUTHOR_PREFIX "Co-authored-by:"
 #define COAUTHOR_PREFIX_LEN 15
-#define COMMIT_ARRAY_DEFAULT_SIZE 10
+
+static void assign_commit(void *src, void *elem)
+{
+	commit_t commit = *(commit_t *)elem;
+	*(commit_t *)src = commit;
+}
+
+static int compare_commit(void *s1, void *s2)
+{
+	return str_compare(*(str_t *)s1, *(str_t *)s2);
+}
+
+void commit_array_init(commit_arr_t **arr)
+{
+	return_code_t ret = array_init(arr, sizeof(commit_t));
+	if (ret == RUNTIME_MALLOC_ERROR) {
+		(void)log_err("get_commit_history: cannot allocate commits array. "
+					  "Capacity: %zu...\n", (*arr)->capacity);
+	}
+}
+
+commit_t *commit_array_get(const commit_arr_t *src, size_t i)
+{
+	return (commit_t *)src->values + i;
+}
+
+return_code_t commit_array_add(commit_arr_t *src, commit_t *commit)
+{
+	return array_add(src, commit, assign_commit);
+}
+
+commit_arr_t *commit_array_copy(const commit_arr_t *src)
+{
+	return array_copy(src, assign_commit);
+}
+
+bool commit_array_contains(const commit_arr_t *src, commit_t *commit)
+{
+	return array_contains(src, commit, compare_commit);
+}
+
+void commit_array_free(commit_arr_t **arr)
+{
+	array_free(arr, free);
+}
 
 static bool is_author(const git_signature *author, str_t *emails, int n_emails)
 {
@@ -187,21 +231,10 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 	}
 
 	history = malloc(sizeof(work_history_t));
-	history->commit_arr = (commit_arr_t) {
-		.capacity = COMMIT_ARRAY_DEFAULT_SIZE,
-		.count = 0,
-		.commits = malloc(COMMIT_ARRAY_DEFAULT_SIZE * sizeof(commit_t))
-	};
+	commit_array_init(&history->commit_arr);
 	history->tot_lines_added = 0;
 	history->tot_lines_removed = 0;
 	
-	if (!history->commit_arr.commits) {
-		(void)log_err("get_commit_history: cannot allocate commits array. "
-					  "Capacity: %zu; count: %zu\n",
-					  history->commit_arr.capacity, history->commit_arr.count);
-		goto cleanup;
-	}
-
 	responsability_t res;
 
 	while (git_revwalk_next(&oid, walker) == 0) {
@@ -226,17 +259,6 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 			goto free_commit;
 		}
 
-		if (history->commit_arr.count >= history->commit_arr.capacity) {
-			size_t new_capacity = history->commit_arr.capacity + COMMIT_ARRAY_DEFAULT_SIZE;
-			commit_t *new_commits = realloc(history->commit_arr.commits, new_capacity * sizeof(commit_t));
-			if (!new_commits) {
-				(void)log_err("get_commit_history: memory allocation failed while expanding repository array\n");
-				goto cleanup;
-			}
-			history->commit_arr.commits = new_commits;
-			history->commit_arr.capacity = new_capacity;
-		}
-
 		commit_stats_t stats = { 0 };
 		const uint16_t return_code = get_commit_stats(&stats, raw_commit, git_repo);
 		if (return_code != OK) {
@@ -244,14 +266,15 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 			return NULL;
 		}
 		const size_t index = n_authored + n_co_authored - 1;
-		history->commit_arr.commits[index] = (commit_t) {
+		commit_t commit = (commit_t) {
 			.hash = str_init(hash, GIT_HASH_LEN),
 			.date = (time_t) author->when.time,
 			.msg = str_init(msg, (uint16_t)strlen(msg)),
 			.responsability = res,
 			.stats = stats
 		};
-		history->commit_arr.count++;
+		commit_array_add(history->commit_arr, &commit);
+
 		history->tot_lines_added += stats.lines_added;
 		history->tot_lines_removed += stats.lines_removed;
 
@@ -280,8 +303,10 @@ ret:
 
 commit_t *get_commit_with_id(const commit_arr_t* commit_arr, str_t id)
 {
-	for (size_t i = 0; i < commit_arr->count; i++) {
-		if (str_equals(commit_arr->commits[i].hash, id)) { return commit_arr->commits + i; }
+	commit_t *current;
+	for (size_t i = 0; i < commit_arr->len; i++) {
+		current = commit_array_get(commit_arr, i);
+		if (str_equals(current->hash, id)) { return current; }
 	}
 
 	return NULL;

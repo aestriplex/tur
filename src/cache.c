@@ -121,7 +121,7 @@ static return_code_t repo_index(repository_t *repo, const str_array_t *commits)
 
 	for (size_t i = 0; i < commits->len; i++) {
 		str_t commit_id = str_array_get(commits, i);
-		commit_t *c = get_commit_with_id(&history->commit_arr, commit_id);
+		commit_t *c = get_commit_with_id(history->commit_arr, commit_id);
 		if (!c) {
 			(void)log_err("repo_index: cannot find commit `%s`\n",
 						  commit_id.val);

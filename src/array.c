@@ -27,14 +27,21 @@
 
 #define DEFAULT_ARRAY_SIZE 10
 
-void array_init(array_t **arr, size_t elem_sz)
+return_code_t array_init(array_t **arr, size_t elem_sz)
 {
 	array_t *array = malloc(sizeof(array_t));
+	if (!array) { return RUNTIME_MALLOC_ERROR; }
 	array->len = 0;
 	array->capacity = DEFAULT_ARRAY_SIZE;
 	array->element_size = elem_sz;
 	array->values = malloc(DEFAULT_ARRAY_SIZE * elem_sz);
+	if (!array->values) {
+		free(array);
+		return RUNTIME_ARRAY_REALLOC_ERROR;
+	}
 	*arr = array;
+
+	return OK;
 }
 
 return_code_t array_add(array_t *src, void *elem, assign_fn_t assign_fn)
