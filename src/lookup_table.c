@@ -20,6 +20,7 @@
  */
 
 #include "codes.h"
+#include "log.h"
 #include "lookup_table.h"
 
 #include <stdio.h>
@@ -103,7 +104,12 @@ table_status_t table_add(table_t *table, uint32_t key, str_t val)
 	for (size_t i = 0, max_size = table->max_size; i < max_size; i++) {
 		idx = (hash + i) % (max_size - 1);
 		if (table->pairs[idx].key == key) {
-			str_array_add(table->pairs[idx].value, val);
+			if (!table->pairs[idx].value) { return LM_CANNOT_INSERT_VALUE; }
+			if (str_array_add(table->pairs[idx].value, val) != OK) {
+				(void)log_err("table_add: an error occurred while adding the "
+							  "string `%s` to the map\n", val.val);
+				return LM_CANNOT_INSERT_VALUE;
+			}
 			return LM_OK;
 		}
 	}

@@ -29,12 +29,12 @@
 
 void array_init(array_t **arr, size_t elem_sz)
 {
-	array_t *array = *arr;
-	array = malloc(sizeof(array_t));
+	array_t *array = malloc(sizeof(array_t));
 	array->len = 0;
 	array->capacity = DEFAULT_ARRAY_SIZE;
 	array->element_size = elem_sz;
 	array->values = malloc(DEFAULT_ARRAY_SIZE * elem_sz);
+	*arr = array;
 }
 
 return_code_t array_add(array_t *src, void *elem, assign_fn_t assign_fn)
@@ -45,7 +45,7 @@ return_code_t array_add(array_t *src, void *elem, assign_fn_t assign_fn)
 		if (!src->values) { return RUNTIME_ARRAY_REALLOC_ERROR; }
 	}
 	assign_fn((uint8_t *)src->values + src->len * src->element_size,
-			  (uint8_t *)elem);
+			  elem);
 	src->len++;
 
 	return OK;
@@ -55,21 +55,13 @@ array_t *array_copy(const array_t *src, assign_fn_t assign_fn)
 {
 	if (!src) { return NULL; }
 
-	array_t *copy = malloc(sizeof(array_t));
-	if (!copy) { return NULL; }
-
 	size_t elem_size = src->element_size;
-	copy->len = src->len;
-	copy->capacity = src->capacity;
-	copy->values = malloc(copy->capacity * elem_size);
-	if (!copy->values) {
-		free(copy);
-		return NULL;
-	}
+	array_t *copy = NULL;
+	array_init(&copy, elem_size);
 
 	for (size_t i = 0; i < src->len; i++) {
-		assign_fn((uint8_t *)copy->values + i * elem_size,
-				  (uint8_t *)src->values + i * elem_size);
+		uint8_t *arr_offset = (uint8_t *)src->values + i * elem_size;
+		if (array_add(copy, arr_offset, assign_fn) != OK) { return NULL; }
 	}
 
 	return copy;
@@ -90,7 +82,7 @@ void array_free(array_t **arr, free_fn_t free_element_fn)
 {
 	const array_t *array = *arr;
 	for (size_t i = 0; i < array->len; i++) {
-		free_element_fn(array->values);
+		free_element_fn((uint8_t *)array->values + i * array->element_size);
 	}
 	free(array->values);
 	free(*arr);

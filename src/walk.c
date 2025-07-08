@@ -159,7 +159,7 @@ static void *walk_repo(void* arg)
 		pthread_mutex_unlock(&pool.current_worker_lock);
 
 		const char *branch_name = worker->repo->branches
-								  ? worker->repo->branches->strings[0].val
+								  ? str_array_get(worker->repo->branches, 0).val
 								  : NULL;
 
 		worker->repo->history = get_commit_history(worker->repo->path,

@@ -56,19 +56,18 @@ void test_table_put_and_get(void)
 	table_t table;
 	table_status_t status = table_init(&table, 10, 10, simple_hash);
 
-	str_array_t *arr = malloc(sizeof(str_array_t));
-	arr->strings = malloc(2 * sizeof(str_t));
-	arr->len = 1;
-	arr->capacity = 2;
-	arr->strings[0] = str_init("hello", 5);
+	str_array_t *arr = NULL;
+	str_array_init(&arr);
+	str_array_add(arr, str_init("hello", 5));
 
 	status = table_put(&table, 42, arr);
 	assert_true(status == LM_OK, "table_put should return LM_OK");
 
 	str_array_t *got = table_get(&table, 42);
 	assert_true(got != NULL, "table_get should return non-NULL for existing key");
+	printf("len: %zu\n", got->len);
 	assert_true(got->len == 1, "str_array_t should have length 1");
-	assert_true(str_arr_equals(got->strings[0], "hello"), "string should be 'hello'");
+	assert_true(str_arr_equals(str_array_get(got, 0), "hello"), "string should be 'hello'");
 
 	str_array_free(&arr);
 	table_free(&table);
@@ -79,11 +78,10 @@ void test_table_add_and_get(void)
 	table_t table;
 	table_init(&table, 10, 10, simple_hash);
 
-	str_array_t *arr = malloc(sizeof(str_array_t));
-	arr->strings = malloc(2 * sizeof(str_t));
-	arr->len = 1;
-	arr->capacity = 2;
-	arr->strings[0] = str_init("first", 5);
+	str_array_t *arr = NULL;
+	str_array_init(&arr);
+	str_array_add(arr, str_init("first", 5));
+
 	table_put(&table, 7, arr);
 
 	str_t second = str_init("second", 6);
@@ -93,7 +91,7 @@ void test_table_add_and_get(void)
 	str_array_t *got = table_get(&table, 7);
 	assert_true(got != NULL, "table_get should return non-NULL after add");
 	assert_true(got->len == 2, "str_array_t should have length 2");
-	assert_true(str_arr_equals(got->strings[1], "second"), "second string should be 'second'");
+	assert_true(str_arr_equals(str_array_get(got, 1), "second"), "second string should be 'second'");
 
 	str_array_free(&arr);
 	table_free(&table);
@@ -104,11 +102,10 @@ void test_table_remove(void)
 	table_t table;
 	table_init(&table, 10, 10, simple_hash);
 
-	str_array_t *arr = malloc(sizeof(str_array_t));
-	arr->strings = malloc(1 * sizeof(str_t));
-	arr->len = 1;
-	arr->capacity = 1;
-	arr->strings[0] = str_init("bye", 3);
+	str_array_t *arr = NULL;
+	str_array_init(&arr);
+	str_array_add(arr, str_init("bye", 3));
+
 	table_put(&table, 99, arr);
 
 	table_status_t status = table_remove(&table, 99);
@@ -126,18 +123,16 @@ void test_table_get_pairs(void)
 	table_t table;
 	table_init(&table, 10, 10, simple_hash);
 
-	str_array_t *arr1 = malloc(sizeof(str_array_t));
-	arr1->strings = malloc(1 * sizeof(str_t));
-	arr1->len = 1;
-	arr1->capacity = 1;
-	arr1->strings[0] = str_init("foo", 3);
+	str_array_t *arr1 = NULL;
+	str_array_init(&arr1);
+	str_array_add(arr1, str_init("foo", 3));
+
 	table_put(&table, 1, arr1);
 
-	str_array_t *arr2 = malloc(sizeof(str_array_t));
-	arr2->strings = malloc(1 * sizeof(str_t));
-	arr2->len = 1;
-	arr2->capacity = 1;
-	arr2->strings[0] = str_init("bar", 3);
+	str_array_t *arr2 = NULL;
+	str_array_init(&arr2);
+	str_array_add(arr2, str_init("bar", 3));
+
 	table_put(&table, 2, arr2);
 
 	pair_t pairs[2];

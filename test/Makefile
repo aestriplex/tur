@@ -31,22 +31,22 @@ all: $(TEST_BINS)
 	./test_opts_args
 	./test_lookup_table
 
-test_parse_repository: test.c test_parse_repository.c repo.o str.o utils.o log.o
+test_parse_repository: test.c test_parse_repository.c repo.o str.o utils.o log.o array.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
-test_parse_email_list: test.c test_parse_email_list.c opts_args.o str.o utils.o log.o
+test_parse_email_list: test.c test_parse_email_list.c opts_args.o str.o utils.o log.o array.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
-test_str: test.c test_str.c str.o log.o
+test_str: test.c test_str.c str.o log.o array.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
-test_utils: test.c test_utils.c str.o utils.o log.o
+test_utils: test.c test_utils.c str.o utils.o log.o array.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
-test_opts_args: test.c test_opts_args.c opts_args.o utils.o str.o log.o
+test_opts_args: test.c test_opts_args.c opts_args.o utils.o str.o log.o array.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
-test_lookup_table: test.c test_lookup_table.c lookup_table.o str.o log.o
+test_lookup_table: test.c test_lookup_table.c lookup_table.o str.o log.o array.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
 repo.o: ../src/repo.c
@@ -65,6 +65,9 @@ log.o: ../src/log.c
 	$(CC) $(CVARS) $(CFLAGS) -o $@ -c $^
 
 lookup_table.o: ../src/lookup_table.c
+	$(CC) $(CVARS) $(CFLAGS) -o $@ -c $^
+
+array.o: ../src/array.c
 	$(CC) $(CVARS) $(CFLAGS) -o $@ -c $^
 
 .PHONY: clean
