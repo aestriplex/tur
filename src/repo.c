@@ -76,25 +76,21 @@ static str_array_t *get_branches(const char *line, size_t len)
 		if (*p == ',') n_branches++;
 	}
 
-	result = malloc(sizeof(str_array_t));
-	if (!result) {
-		(void)log_err("get_branches: cannot allocate result array\n");
-		exit(1);
-	}
-	result->strings = malloc(n_branches * sizeof(str_t));
-	if (!result->strings) {
-		(void)log_err("get_branches: cannot allocate result array "
-					  "inner strings\n");
-		exit(1);
-	}
+	str_array_init(&result);
 
-	result->len = 0;
 	char *token = strtok(to_parse, ",");
 	while (token) {
-		result->strings[result->len++] = str_init(token, strnlen(token, len));
+		str_t branch_str = str_init(token, strnlen(token, len));
+		if (str_array_add(result, branch_str) != OK) {
+			(void)log_err("get_branches: an error occurred while adding a "
+						  "branch in branches array...");
+			str_array_free(&result);
+			free(to_parse);
+			return NULL;
+		}
 		token = strtok(NULL, ",");
 	}
-	result->capacity = result->len;
+
 	free(to_parse);
 	return result;
 }
