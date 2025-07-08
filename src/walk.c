@@ -62,9 +62,10 @@ static commit_t **get_commit_refs(const commit_arr_t *commit_arr,
 								  const settings_t *settings)
 {
 	commit_t **commits_with_resp = malloc(commit_with_resp * sizeof(commit_t *));
-	for (size_t i = 0, n_resp = 0; i < commit_arr->count; i++) {
-		if (commit_arr->commits[i].responsability == resp) {
-			commits_with_resp[n_resp] = commit_arr->commits + i;
+	for (size_t i = 0, n_resp = 0; i < commit_arr->len; i++) {
+		commit_t *commit = commit_array_get(commit_arr, i);
+		if (commit->responsability == resp) {
+			commits_with_resp[n_resp] = commit;
 			n_resp++;
 		}
 	}
@@ -93,10 +94,10 @@ static bool cached_or_inter(const settings_t *settings)
 static return_code_t build_indexes(repository_t *repo,
 								   const settings_t *settings)
 {
-	commit_t **authored = get_commit_refs(&repo->history->commit_arr,
+	commit_t **authored = get_commit_refs(repo->history->commit_arr,
 										  repo->history->n_authored,
 										  AUTHORED, settings);
-	commit_t **co_authored = get_commit_refs(&repo->history->commit_arr,
+	commit_t **co_authored = get_commit_refs(repo->history->commit_arr,
 											 repo->history->n_co_authored,
 											 CO_AUTHORED, settings);
 
@@ -173,7 +174,7 @@ static void *walk_repo(void* arg)
 		worker->ret = build_indexes(worker->repo, pool.settings);
 
 		/* Print log with stats */
-		const size_t n_commits = worker->repo->history->commit_arr.count;
+		const size_t n_commits = worker->repo->history->commit_arr->len;
 		const size_t lines_added = worker->repo->history->tot_lines_added;
 		const size_t lines_removed = worker->repo->history->tot_lines_removed;
 		(void)log_info(REPO_STAT_LOG_STR,

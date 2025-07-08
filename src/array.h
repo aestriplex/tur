@@ -38,7 +38,7 @@ typedef struct {
 	size_t element_size;
 } array_t;
 
-void array_init(array_t **arr, size_t elem_sz);
+return_code_t array_init(array_t **arr, size_t elem_sz);
 return_code_t array_add(array_t *src, void *elem, assign_fn_t assign_fn);
 array_t *array_copy(const array_t *src, assign_fn_t assign_fn);
 bool array_contains(const array_t *src, void *elem, compare_fn_t compare_elem);

@@ -22,6 +22,7 @@
 #ifndef __COMMIT_H__
 #define __COMMIT_H__
 
+#include "array.h"
 #include "settings.h"
 #include "str.h"
 
@@ -29,6 +30,8 @@
 #include <time.h>
 
 #define GIT_HASH_LEN 40
+
+typedef array_t  commit_arr_t;
 
 typedef enum {
 	AUTHORED,
@@ -50,18 +53,12 @@ typedef struct {
 } commit_t;
 
 typedef struct {
-	commit_t *commits;
-	size_t count;
-	size_t capacity;
-} commit_arr_t;
-
-typedef struct {
 	commit_t **authored;
 	commit_t **co_authored;
 } indexes_t;
 
 typedef struct {
-	commit_arr_t commit_arr;
+	commit_arr_t *commit_arr;
 	size_t n_authored;
 	size_t n_co_authored;
 	indexes_t indexes;
@@ -71,5 +68,15 @@ typedef struct {
 
 work_history_t *get_commit_history(str_t repo_path, const char *branch_name, const settings_t *settings);
 commit_t *get_commit_with_id(const commit_arr_t* commit_arr, str_t id);
+
+/*
+ * Commit arrays
+ */
+void commit_array_init(commit_arr_t **arr);
+commit_t *commit_array_get(const commit_arr_t *src, size_t i);
+return_code_t commit_array_add(commit_arr_t *src, commit_t *commit);
+commit_arr_t *commit_array_copy(const commit_arr_t *src);
+bool commit_array_contains(const commit_arr_t *src, commit_t *commit);
+void commit_array_free(commit_arr_t **arr);
 
 #endif /* __COMMIT_H__ */
