@@ -45,6 +45,8 @@ typedef struct {
 	const settings_t *settings;
 } thread_pool_t;
 
-return_code_t walk_through_repos(const repository_array_t *repos, const settings_t *settings);
+return_code_t walk_through_repos(const repository_array_t *repos,
+								 const settings_t *settings,
+								 repository_stats_t stats);
 
 #endif /* __WALK_H__ */

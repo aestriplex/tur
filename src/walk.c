@@ -111,10 +111,11 @@ static return_code_t build_indexes(repository_t *repo,
 }
 
 static void print_output(const repository_array_t *repos,
-						 const settings_t *settings)
+						 const settings_t *settings,
+						 repository_stats_t stats)
 {
 	if (settings->output_mode == STDOUT) {
-		print_stdout(repos, settings);
+		print_stdout(repos, settings, stats);
 		return;
 	}
 
@@ -196,11 +197,11 @@ static return_code_t init_thread_pool(const repository_array_t *repos,
 {
 	pool.threads = malloc(settings->n_threads * sizeof(pthread_t));
 	if (!pool.threads) { goto err; }
-	pool.workers = malloc(repos->count * sizeof(thread_worker_t));
+	pool.workers = malloc(repos->len * sizeof(thread_worker_t));
 	if (!pool.workers) { goto err; }
 	pool.settings = settings;
 	pool.n_threads = settings->n_threads;
-	pool.n_workers = repos->count;
+	pool.n_workers = repos->len;
 	pool.current_worker = 0;
 	pthread_mutex_init(&pool.current_worker_lock, NULL);
 
@@ -233,10 +234,11 @@ static return_code_t cache_commit_list(const repository_array_t *repos,
 }
 
 return_code_t walk_through_repos(const repository_array_t *repos,
-								 const settings_t *settings)
+								 const settings_t *settings,
+								 repository_stats_t stats)
 {
 	return_code_t ret = OK;
-	size_t max_name_len = repos->max_name_len;
+	size_t max_name_len = stats.max_name_len;
 
 	ret = init_thread_pool(repos, settings);
 	if (ret != OK) { return RUNTIME_MALLOC_ERROR; }
@@ -245,9 +247,10 @@ return_code_t walk_through_repos(const repository_array_t *repos,
 
 	__sync_synchronize();
 
-	for (size_t i = 0; i < repos->count; i++) {
+	for (size_t i = 0; i < repos->len; i++) {
+		repository_t *repo = repo_array_get(repos, i);
 		pool.workers[i] = (thread_worker_t) {
-			.repo = repos->repositories + i,
+			.repo = repo,
 			.ret = OK
 		};
 	}
@@ -303,7 +306,7 @@ return_code_t walk_through_repos(const repository_array_t *repos,
 	}
 
 print_and_exit:
-	print_output(repos, settings);
+	print_output(repos, settings, stats);
 
 	return ret;
 }

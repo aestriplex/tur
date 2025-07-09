@@ -177,8 +177,8 @@ return_code_t write_repos_on_file(const repository_array_t *repos)
 		return CANNOT_CREATE_COMMITS_FILE;
 	}
 
-	for (size_t i = 0; i < repos->count; i++) {
-		repository_t *repo = repos->repositories + i;
+	for (size_t i = 0; i < repos->len; i++) {
+		repository_t *repo = repo_array_get(repos, i);
 		const work_history_t *history = repo->history;
 		commit_t **const authored = history->indexes.authored;
 		commit_t **const co_authored = history->indexes.co_authored;
@@ -210,11 +210,11 @@ return_code_t rebuild_indexes(const repository_array_t *repos)
 	ret = parse_commit_file(&repo_table);
 	if (ret != OK) { return ret; }
 
-	for (size_t i = 0; i < repos->count; i++) {
+	for (size_t i = 0; i < repos->len; i++) {
 		str_array_t *commits = table_get(&repo_table, i);
 		if (!commits) { continue; }
-
-		ret = repo_index((repos->repositories + i), commits);
+		repository_t *repo = repo_array_get(repos, i);
+		ret = repo_index(repo, commits);
 		if (ret != OK) { return ret; }
 	}
 

@@ -31,8 +31,6 @@
 
 void test_parse_emails(void)
 {
-	size_t count;
-
 	{
 		char *test_input = "email1@example.com,email2@example.com";
 		str_array_t *result = parse_emails(test_input);
@@ -45,8 +43,6 @@ void test_parse_emails(void)
 		assert_true(email2.len == 18 && str_arr_equals(email2, "email2@example.com"),
 					"Second email is 'email2@example.com'");
 
-		// str_free(email1);
-		// str_free(email2);
 		str_array_free(&result);
 	}
 

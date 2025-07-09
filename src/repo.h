@@ -22,14 +22,13 @@
 #ifndef __REPO_H__
 #define __REPO_H__
 
+#include "array.h"
 #include "codes.h"
 #include "commit.h"
 #include "settings.h"
 #include "str.h"
 
 #include <stdint.h>
-
-#define DEFAULT_N_REPOSITORY 10
 
 typedef str_t (*fmt_commit_url) (str_t, str_t);
 
@@ -48,13 +47,24 @@ typedef struct {
 } repository_t;
 
 typedef struct {
-	repository_t *repositories;
-	size_t count;
-	size_t capacity;
 	size_t max_name_len;
-} repository_array_t;
+} repository_stats_t;
 
+typedef array_t repository_array_t;
+
+repository_stats_t get_repos_stats(const repository_array_t *repos);
 repository_t parse_repository(const char *line, ssize_t len, unsigned id);
 return_code_t get_repos_array(repository_array_t *repos, const settings_t *settings);
+repository_t *repository_copy(const repository_t *src);
+
+/*
+ * Repository arrays
+ */
+void repo_array_init(repository_array_t **arr);
+repository_t *repo_array_get(const repository_array_t *src, size_t i);
+return_code_t repo_array_add(repository_array_t *src, repository_t *commit);
+repository_array_t *repo_array_copy(const repository_array_t *src);
+bool repo_array_contains(const repository_array_t *src, repository_t *commit);
+void repo_array_free(repository_array_t **arr);
 
 #endif /* __REPO_H__ */

@@ -25,7 +25,7 @@
 #include "repo.h"
 #include "settings.h"
 
-void print_stdout(const repository_array_t *repos, const settings_t *settings);
+void print_stdout(const repository_array_t *repos, const settings_t *settings, repository_stats_t stats);
 void generate_latex_file(FILE *out, const repository_array_t *repos, const settings_t *settings);
 void generate_html_file(FILE *out, const repository_array_t *repos, const settings_t *settings);
 void generate_markdown_file(FILE *out, const repository_array_t *repos, const settings_t *settings);

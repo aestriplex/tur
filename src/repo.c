@@ -171,21 +171,13 @@ return_code_t get_repos_array(repository_array_t *repos, const settings_t *setti
 {
 	return_code_t ret = OK;
 	unsigned id = 0;
-	size_t len = 0, max_name_len = 0;
+	size_t len = 0;
 	ssize_t read;
 	char *line = NULL;
 	FILE *repos_list;
 
 	repos_list = fopen(settings->repos_path.val, "r");
 	if (!repos_list) { return INVALID_REPOS_LIST_PATH; }
-
-	repos->repositories = malloc(DEFAULT_N_REPOSITORY * sizeof(repository_t));
-	if (!repos->repositories) {
-		fclose(repos_list);
-		return ARRAY_RESIZE_ALLOCATION_ERROR;
-	}
-	repos->count = 0;
-	repos->capacity = DEFAULT_N_REPOSITORY;
 
 	while ((read = getline(&line, &len, repos_list)) != -1) {
 		char *trimmed = line;
@@ -199,35 +191,109 @@ return_code_t get_repos_array(repository_array_t *repos, const settings_t *setti
 
 		if (*trimmed == '\0') { continue; } 
 
-		if (repos->count >= repos->capacity) {
-			size_t new_capacity = repos->capacity + DEFAULT_N_REPOSITORY;
-			repository_t *new_repos = realloc(repos->repositories, new_capacity * sizeof(repository_t));
-			if (!new_repos) {
-				(void)log_err("get_repos_array: memory allocation failed "
-							  "while expanding repository array\n");
-				break;
-			}
-			repos->repositories = new_repos;
-			repos->capacity = new_capacity;
+		repository_t repo = parse_repository(line, read, id);
+		ret = repo_array_add(repos, &repo);
+		if (ret != OK) {
+			(void)log_err("get_repos_array: cannot create a repository "
+						  "list [%d]\n", ret);
+			goto cleanup;
 		}
-		repos->repositories[repos->count] = parse_repository(line, read, id);
+
 		id++;
-		repos->count++;
 	}
 
-	for (size_t i = 0; i < repos->count; i++) {
-		if (repos->repositories[i].name.len > max_name_len) {
-			max_name_len = repos->repositories[i].name.len;
-		}
-	}
-	repos->max_name_len = max_name_len;
+	ret = log_info("%lu repositories found...\n", repos->len);
 
-	ret = log_info("%lu repositories found...\n", repos->count);
-
+cleanup:
 	if (line) {
 		free(line);
 	}
 	fclose(repos_list);
 
 	return ret;
+}
+
+repository_stats_t get_repos_stats(const repository_array_t *repos)
+{
+	repository_stats_t stats = { 0 };
+
+	for (size_t i = 0; i < repos->len; i++) {
+		repository_t *repo = repo_array_get(repos, i);
+		if (repo->name.len > stats.max_name_len) {
+			stats.max_name_len = repo->name.len;
+		}
+	}
+
+	return stats;
+}
+
+repository_t *repository_copy(const repository_t *src)
+{
+	repository_t *new = malloc(sizeof(repository_t));
+	new->url = str_copy(src->url);
+	new->path = str_copy(src->path);
+	new->name = str_copy(src->name);
+	new->id = src->id;
+	new->format = src->format;
+	new->branches = str_array_copy(src->branches);
+	/* add deep copy of  history */
+	return new;
+}
+
+/*
+ * Repository arrays
+ */
+static void assign_repo(void *src, void *elem)
+{
+	repository_t *repo = (repository_t *)elem;
+	*(repository_t *)src = *repository_copy(repo);
+}
+
+static int compare_repo(void *r1, void *r2)
+{
+	repository_t *repo1 = (repository_t *)r1;
+	repository_t *repo2 = (repository_t *)r2;
+	return repo1->id > repo2->id
+		   ? -1
+		   : repo1->id != repo2->id;
+}
+
+static void free_repo(void *r)
+{
+	repository_t *repo = (repository_t *)r;
+	str_free(repo->url);
+	str_free(repo->path);
+	str_free(repo->name);
+	str_array_free(&repo->branches);
+	history_free(&repo->history);
+}
+
+void repo_array_init(repository_array_t **arr)
+{
+	array_init(arr, sizeof(repository_t));
+}
+
+repository_t *repo_array_get(const repository_array_t *src, size_t i)
+{
+	return (repository_t *)src->values + i;
+}
+
+return_code_t repo_array_add(repository_array_t *src, repository_t *repo)
+{
+	return array_add(src, repo, assign_repo);
+}
+
+repository_array_t *repo_array_copy(const repository_array_t *src)
+{
+	return array_copy(src, assign_repo);
+}
+
+bool repo_array_contains(const repository_array_t *src, repository_t *repo)
+{
+	return array_contains(src, repo, compare_repo);
+}
+
+void repo_array_free(repository_array_t **arr)
+{
+	array_free(arr, free_repo);
 }
