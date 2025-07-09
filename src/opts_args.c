@@ -81,7 +81,7 @@ str_array_t *parse_emails(const char *input)
 			str_array_free(&emails);
 			goto cleanup_and_exit;
 		}
-
+		str_free(email);
 		start = end + 1;
 	}
 
@@ -92,6 +92,7 @@ str_array_t *parse_emails(const char *input)
 			str_array_free(&emails);
 			goto cleanup_and_exit;
 		}
+		str_free(email);
 	}
 
 cleanup_and_exit:

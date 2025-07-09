@@ -20,7 +20,7 @@
 
 CC = gcc
 CVARS = -D_GNU_SOURCE
-CFLAGS = -Wall -pedantic -O3 -std=c2x -fsanitize=address
+CFLAGS = -Wall -pedantic -O3 -std=c2x
 TEST_BINS = test_parse_repository test_parse_email_list test_str test_utils test_opts_args test_lookup_table test_array
 
 all: $(TEST_BINS)
