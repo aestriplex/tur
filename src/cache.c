@@ -88,7 +88,7 @@ static return_code_t parse_commit_file(table_t *repo_table)
 			/* If the commit name contains the string "[*]", then the commit
 			 * is labelled as a favorite.
 			 */
-			if (strnstr(end_of_hash, FAVORITE_STR, strlen(line))) {
+			if (strstr(end_of_hash, FAVORITE_STR)) {
 
 			}
 
