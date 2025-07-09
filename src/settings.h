@@ -45,8 +45,7 @@ typedef struct {
 	bool grouped;
 	bool sorted;
 	sort_ordering_t sort_order;
-	str_t *emails;
-	int n_emails;
+	str_array_t *emails;
 	tur_output_t output_mode;
 	str_t output;
 	str_t repos_path;

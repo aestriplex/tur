@@ -83,15 +83,16 @@ void commit_array_free(commit_arr_t **arr)
 	array_free(arr, free_commit);
 }
 
-static bool is_author(const git_signature *author, str_t *emails, int n_emails)
+static bool is_author(const git_signature *author, str_array_t *emails)
 {
-	for (int i = 0; i < n_emails; i++) {
-		if (str_arr_equals(emails[i], author->email)) { return true; }
+	for (size_t i = 0; i < emails->len; i++) {
+		str_t email = str_array_get(emails, i);
+		if (str_arr_equals(email, author->email)) { return true; }
 	}
 	return false;
 }
 
-static bool is_co_author(const char *message, str_t *emails, int n_emails)
+static bool is_co_author(const char *message, str_array_t *emails)
 {
 	char *line = (char *)message;
 
@@ -116,8 +117,9 @@ static bool is_co_author(const char *message, str_t *emails, int n_emails)
 					strncpy(coauthor_email, email_start + 1, email_len);
 					coauthor_email[email_len] = '\0';
 
-					for (int i = 0; i < n_emails; i++) {
-						if (str_arr_equals(emails[i], coauthor_email)) {
+					for (size_t i = 0; i < emails->len; i++) {
+						str_t email = str_array_get(emails, i);
+						if (str_arr_equals(email, coauthor_email)) {
 							free(coauthor_email);
 							return true;
 						}
@@ -255,10 +257,10 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 
 		if (settings->no_merge && is_merge_commit(msg)) { goto clean_commit; }
 
-		if (is_author(author, settings->emails, settings->n_emails)) {
+		if (is_author(author, settings->emails)) {
 			res = AUTHORED;
 			n_authored++;
-		} else if (is_co_author(msg, settings->emails, settings->n_emails)) {
+		} else if (is_co_author(msg, settings->emails)) {
 			res = CO_AUTHORED;
 			n_co_authored++;
 		} else {
