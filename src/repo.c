@@ -88,6 +88,7 @@ static str_array_t *get_branches(const char *line, size_t len)
 			free(to_parse);
 			return NULL;
 		}
+		str_free(branch_str);
 		token = strtok(NULL, ",");
 	}
 
