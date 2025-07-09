@@ -70,7 +70,8 @@ table_status_t table_init(table_t *table, size_t capacity, size_t increment,
 	return LM_OK;
 }
 
-table_status_t table_put(table_t *table, uint32_t key, const str_array_t *val)
+table_status_t table_put(table_t *table, uint32_t key,
+						 const cacheidx_arr_t *val)
 {
 	uint32_t hash;
 	size_t idx;
@@ -85,7 +86,7 @@ table_status_t table_put(table_t *table, uint32_t key, const str_array_t *val)
 	for (size_t i = 0, max_size = table->max_size; i < max_size; i++) {
 		idx = (hash + i) % (max_size - 1);
 		if (!table->pairs[idx].value) {
-			str_array_t *new_arr = str_array_copy(val);
+			cacheidx_arr_t *new_arr = cache_array_copy(val);
 			table->pairs[idx] = (pair_t) {.key = key, .value = new_arr};
 			table->size++;
 			return LM_OK;
@@ -94,7 +95,7 @@ table_status_t table_put(table_t *table, uint32_t key, const str_array_t *val)
 	return LM_CANNOT_INSERT_VALUE;
 }
 
-table_status_t table_add(table_t *table, uint32_t key, str_t val)
+table_status_t table_add(table_t *table, uint32_t key, cache_index_t *val)
 {
 	uint32_t hash;
 	size_t idx;
@@ -105,9 +106,10 @@ table_status_t table_add(table_t *table, uint32_t key, str_t val)
 		idx = (hash + i) % (max_size - 1);
 		if (table->pairs[idx].key == key) {
 			if (!table->pairs[idx].value) { return LM_CANNOT_INSERT_VALUE; }
-			if (str_array_add(table->pairs[idx].value, val) != OK) {
+			if (cache_array_add(table->pairs[idx].value, val) != OK) {
 				(void)log_err("table_add: an error occurred while adding the "
-							  "string `%s` to the map\n", val.val);
+							  "cache index for commit `%s` to the map\n",
+							  val->hash);
 				return LM_CANNOT_INSERT_VALUE;
 			}
 			return LM_OK;
@@ -116,7 +118,7 @@ table_status_t table_add(table_t *table, uint32_t key, str_t val)
 	return LM_CANNOT_INSERT_VALUE;
 }
 
-str_array_t *table_get(const table_t * table, uint32_t key)
+cacheidx_arr_t *table_get(const table_t * table, uint32_t key)
 {
 	table_status_t hash;
 	size_t idx;
@@ -185,4 +187,70 @@ void table_free(table_t *table)
 	table->increment = 0;
 	table->max_size = 0;
 	table->size = 0;
+}
+
+bool chache_idx_equal(const cache_index_t *id1, const cache_index_t *id2)
+{
+	return str_equals(id1->hash, id2->hash)
+		   && id1->is_favorite == id2->is_favorite;
+}
+
+void cache_idx_free(cache_index_t *idx)
+{
+	str_free(idx->hash);
+}
+
+/*
+ * Cache index arrays
+ */
+static void assign_cache_idx(void *src, void *elem)
+{
+	cache_index_t *index = (cache_index_t *)elem;
+	*(cache_index_t *)src = (cache_index_t) {
+		.hash = str_copy(index->hash),
+		.is_favorite = index->is_favorite,
+	};
+}
+
+static int compare_cache_idx(void *idx1, void *idx2)
+{
+	cache_index_t *index1 = (cache_index_t *)idx1;
+	cache_index_t *index2 = (cache_index_t *)idx2;
+	return str_compare(index1->hash, index2->hash);
+}
+
+static void free_cache_idx(void* idx)
+{
+	cache_index_t *index = (cache_index_t *)idx;
+	str_free(index->hash);
+}
+
+void cache_array_init(cacheidx_arr_t **arr)
+{
+	array_init(arr, sizeof(cache_index_t));
+}
+
+cache_index_t *cache_array_get(const cacheidx_arr_t *src, size_t i)
+{
+	return (cache_index_t *)src->values + i;
+}
+
+return_code_t cache_array_add(cacheidx_arr_t *src, cache_index_t *idx)
+{
+	return array_add(src, idx, assign_cache_idx);
+}
+
+cacheidx_arr_t *cache_array_copy(const cacheidx_arr_t *src)
+{
+	return array_copy(src, assign_cache_idx);
+}
+
+bool cache_array_contains(const cacheidx_arr_t *src, cache_index_t *idx)
+{
+	return array_contains(src, idx, compare_cache_idx);
+}
+
+void cache_array_free(cacheidx_arr_t **arr)
+{
+	array_free(arr, free_cache_idx);
 }

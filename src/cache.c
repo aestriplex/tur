@@ -57,7 +57,7 @@ static return_code_t parse_commit_file(table_t *repo_table)
 	ssize_t read;
 
 	unsigned current_repo_id = (unsigned)-1;
-	str_array_t *current_commits = NULL;
+	cacheidx_arr_t *current_commits = NULL;
 
 	while ((read = getline(&line, &len, fp)) != -1) {
 		if (read > 0 && line[read - 1] == '\n') {
@@ -67,14 +67,14 @@ static return_code_t parse_commit_file(table_t *repo_table)
 		if (line[0] == '+') {
 			if (current_commits) {
 				table_put(repo_table, current_repo_id, current_commits);
-				str_array_free(&current_commits);
+				cache_array_free(&current_commits);
 			}
 
 			/* Parsing the repo id from this line:  "+ <ID>) <NAME>" */
 			ret = parse_commit_id(&current_repo_id, line);
 			if (ret != OK) { return ret; }
 
-			str_array_init(&current_commits);
+			cache_array_init(&current_commits);
 
 		} else if (current_commits) {
 			if (strlen(line) == 0) { continue; }
@@ -88,11 +88,12 @@ static return_code_t parse_commit_file(table_t *repo_table)
 			/* If the commit name contains the string "[*]", then the commit
 			 * is labelled as a favorite.
 			 */
-			if (strstr(end_of_hash, FAVORITE_STR)) {
+			cache_index_t idx = (cache_index_t) {
+				.hash = hash,
+				.is_favorite = strstr(end_of_hash, FAVORITE_STR),
+			};
 
-			}
-
-			ret = str_array_add(current_commits, hash);
+			ret = cache_array_add(current_commits, &idx);
 			if (ret == RUNTIME_ARRAY_REALLOC_ERROR) {
 				(void)log_err("parse_commit_file: cannot allocate enough "
 							  "memory for the commit list in `%s`",
@@ -104,7 +105,7 @@ static return_code_t parse_commit_file(table_t *repo_table)
 
 	if (current_commits) {
 		table_put(repo_table, current_repo_id, current_commits);
-		str_array_free(&current_commits);
+		cache_array_free(&current_commits);
 	}
 
 cleanup:
@@ -114,17 +115,17 @@ cleanup:
 	return ret;
 }
 
-static return_code_t repo_index(repository_t *repo, const str_array_t *commits)
+static return_code_t repo_index(repository_t *repo, const cacheidx_arr_t *commits)
 {
 	size_t authored_count = 0, co_authored_count = 0;
 	work_history_t *history = repo->history;
 
 	for (size_t i = 0; i < commits->len; i++) {
-		str_t commit_id = str_array_get(commits, i);
-		commit_t *c = get_commit_with_id(history->commit_arr, commit_id);
+		cache_index_t *commit_idx = cache_array_get(commits, i);
+		commit_t *c = get_commit_with_id(history->commit_arr, commit_idx->hash);
 		if (!c) {
 			(void)log_err("repo_index: cannot find commit `%s`\n",
-						  commit_id.val);
+						  commit_idx->hash.val);
 			return COMMIT_NOT_FOUND;
 		}
 
@@ -211,7 +212,7 @@ return_code_t rebuild_indexes(const repository_array_t *repos)
 	if (ret != OK) { return ret; }
 
 	for (size_t i = 0; i < repos->len; i++) {
-		str_array_t *commits = table_get(&repo_table, i);
+		cacheidx_arr_t *commits = table_get(&repo_table, i);
 		if (!commits) { continue; }
 		repository_t *repo = repo_array_get(repos, i);
 		ret = repo_index(repo, commits);

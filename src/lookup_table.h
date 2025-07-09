@@ -51,8 +51,15 @@ typedef enum {
 typedef uint32_t (*hash_fn_t)(void *);
 
 typedef struct {
+	str_t hash;
+	bool is_favorite;
+} cache_index_t;
+
+typedef array_t cacheidx_arr_t;
+
+typedef struct {
 	uint32_t key;
-	str_array_t *value;
+	cacheidx_arr_t *value;
 } pair_t;
 
 typedef struct {
@@ -65,11 +72,24 @@ typedef struct {
 
 table_status_t table_init(table_t *table, size_t capacity, size_t increment,
 						  hash_fn_t hash);
-table_status_t table_put(table_t *table, uint32_t key, const str_array_t *val);
-table_status_t table_add(table_t *table, uint32_t key, const str_t val);
-table_status_t table_remove(table_t * table, uint32_t key);
-str_array_t *table_get(const table_t * table, uint32_t key);
+table_status_t table_put(table_t *table, uint32_t key,
+						 const cacheidx_arr_t *val);
+table_status_t table_add(table_t *table, uint32_t key, cache_index_t *val);
+table_status_t table_remove(table_t *table, uint32_t key);
+cacheidx_arr_t *table_get(const table_t *table, uint32_t key);
 table_status_t table_get_pairs(const table_t *table, pair_t *keys);
+bool chache_idx_equal(const cache_index_t *id1, const cache_index_t *id2);
+void cache_idx_free(cache_index_t *idx);
 void table_free(table_t *table);
+
+/*
+ * Cache index arrays
+ */
+void cache_array_init(cacheidx_arr_t **arr);
+cache_index_t *cache_array_get(const cacheidx_arr_t *src, size_t i);
+return_code_t cache_array_add(cacheidx_arr_t *src, cache_index_t *idx);
+cacheidx_arr_t *cache_array_copy(const cacheidx_arr_t *src);
+bool cache_array_contains(const cacheidx_arr_t *src, cache_index_t *idx);
+void cache_array_free(cacheidx_arr_t **arr);
 
 #endif /* __LOOKUP_TABLE_H__ */
