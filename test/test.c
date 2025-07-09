@@ -58,5 +58,5 @@ void print_report(void)
 	printf("%s======================\n"
 		   "PASSED: %lu\nFAILED: %lu\n"
 		   "======================" RESET "\n",
-		   failed == 0 ? GREEN : RED,passed, failed);
+		   failed == 0 ? GREEN : RED, passed, failed);
 }

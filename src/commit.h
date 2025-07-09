@@ -68,6 +68,8 @@ typedef struct {
 
 work_history_t *get_commit_history(str_t repo_path, const char *branch_name, const settings_t *settings);
 commit_t *get_commit_with_id(const commit_arr_t* commit_arr, str_t id);
+commit_t *commit_copy(const commit_t *source);
+void commit_free(commit_t *commit);
 
 /*
  * Commit arrays
