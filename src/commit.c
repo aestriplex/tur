@@ -34,13 +34,19 @@
 
 static void assign_commit(void *src, void *elem)
 {
-	commit_t commit = *(commit_t *)elem;
-	*(commit_t *)src = commit;
+	commit_t *commit = (commit_t *)elem;
+	*(commit_t *)src = *commit_copy(commit);
 }
 
 static int compare_commit(void *s1, void *s2)
 {
 	return str_compare(*(str_t *)s1, *(str_t *)s2);
+}
+
+static void free_commit(void *c)
+{
+	commit_t *commit = (commit_t *)c;
+	commit_free(commit);
 }
 
 void commit_array_init(commit_arr_t **arr)
@@ -74,7 +80,7 @@ bool commit_array_contains(const commit_arr_t *src, commit_t *commit)
 
 void commit_array_free(commit_arr_t **arr)
 {
-	array_free(arr, free);
+	array_free(arr, free_commit);
 }
 
 static bool is_author(const git_signature *author, str_t *emails, int n_emails)
@@ -245,9 +251,9 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 		const char *msg = git_commit_message(raw_commit);
 		const git_signature *author = git_commit_author(raw_commit);
 
-		if (!author || !msg) { goto free_commit; }
+		if (!author || !msg) { goto clean_commit; }
 
-		if (settings->no_merge && is_merge_commit(msg)) { goto free_commit; }
+		if (settings->no_merge && is_merge_commit(msg)) { goto clean_commit; }
 
 		if (is_author(author, settings->emails, settings->n_emails)) {
 			res = AUTHORED;
@@ -256,7 +262,7 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 			res = CO_AUTHORED;
 			n_co_authored++;
 		} else {
-			goto free_commit;
+			goto clean_commit;
 		}
 
 		commit_stats_t stats = { 0 };
@@ -278,7 +284,7 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 		history->tot_lines_added += stats.lines_added;
 		history->tot_lines_removed += stats.lines_removed;
 
-	free_commit:
+	clean_commit:
 		git_commit_free(raw_commit);
 	}
 
@@ -310,4 +316,21 @@ commit_t *get_commit_with_id(const commit_arr_t* commit_arr, str_t id)
 	}
 
 	return NULL;
+}
+
+commit_t *commit_copy(const commit_t *src)
+{
+	commit_t *new = malloc(sizeof(commit_t));
+	new->hash = str_copy(src->hash);
+	new->responsability = src->responsability;
+	new->date = src->date;
+	new->msg = str_copy(src->msg);
+	new->stats = src->stats;
+	return new;
+}
+
+void commit_free(commit_t *commit)
+{
+	str_free(commit->hash);
+	str_free(commit->msg);
 }
