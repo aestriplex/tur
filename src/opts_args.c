@@ -33,8 +33,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEFAULT_EMAIL_ARR_SIZE 10
-
 tur_output_t parse_output_file_ext(const char *arg)
 {
 	const char* dot = strrchr(arg, '.');
@@ -56,7 +54,7 @@ default_ret:
 	return STDOUT;
 }
 
-str_t *parse_emails(const char *input, size_t *count)
+str_array_t *parse_emails(const char *input)
 {
 	char *trimmed_str = trim_whitespace(input);
 	if (!trimmed_str) {
@@ -64,71 +62,36 @@ str_t *parse_emails(const char *input, size_t *count)
 		return NULL;
 	}
 
-	if (strlen(trimmed_str) == 0) {
-		/* happy path, empty list */
-		*count = 0;
-		free(trimmed_str);
-		return NULL;
-	}
+	str_array_t *emails = NULL;
+	str_array_init(&emails);
 
-	size_t capacity = DEFAULT_EMAIL_ARR_SIZE;
-	str_t *emails = malloc(capacity * sizeof(str_t));
-	if (!emails) {
-		(void)log_err("parse_emails: cannot allocate email array memory: malloc error\n");
-		emails = NULL;
+	if (strlen(trimmed_str) == 0) {
+		/* happy path, return an empty array */
 		goto cleanup_and_exit;
 	}
-
-	*count = 0;
 
 	char *start = trimmed_str;
 	char *end = NULL;
 
 	while ((end = strstr(start, ",")) != NULL) {
 		*end = '\0';
-		emails[*count].val = strdup(start);
-		if (!emails[*count].val) {
-			(void)log_err("parse_emails: cannot duplicate email #%d: strdup error\n", *count);
-			for (size_t i = 0; i < *count; i++) {
-				free((char *)emails[i].val);
-			}
-			free(emails);
-			emails = NULL;
+		str_t email = str_init(start, strlen(start));
+		return_code_t ret = str_array_add(emails, email);
+		if (ret != OK) {
+			str_array_free(&emails);
 			goto cleanup_and_exit;
-		}
-		emails[*count].len = strlen(emails[*count].val);
-
-		(*count)++;
-
-		if (*count >= capacity) {
-			capacity += DEFAULT_EMAIL_ARR_SIZE;
-			emails = realloc(emails, capacity * sizeof(str_t));
-			if (!emails) {
-				(void)log_err("parse_emails: cannot resize email arrays #%d: realloc error\n", *count);
-				for (size_t i = 0; i < *count; i++) {
-					free((char *)emails[i].val);
-				}
-				emails = NULL;
-				goto cleanup_and_exit;
-			}
 		}
 
 		start = end + 1;
 	}
 
 	if (*start != '\0') {
-		emails[*count].val = strdup(start);
-		if (!emails[*count].val) {
-			(void)log_err("parse_emails: cannot duplicate email #%d: strdup error\n", *count);
-			for (size_t i = 0; i < *count; i++) {
-				free((char *)emails[i].val);
-			}
-			free(emails);
-			emails = NULL;
+		str_t email = str_init(start, strlen(start));
+		return_code_t ret = str_array_add(emails, email);
+		if (ret != OK) {
+			str_array_free(&emails);
 			goto cleanup_and_exit;
 		}
-		emails[*count].len = strlen(emails[*count].val);
-		(*count)++;
 	}
 
 cleanup_and_exit:

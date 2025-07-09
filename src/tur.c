@@ -121,7 +121,6 @@ int main(int argc, char *argv[])
 {
 	repository_array_t repos;
 	return_code_t ret = OK;
-	size_t n_emails;
 	int ch, option_index = 0;
 
 	if (argc == 1) {
@@ -178,8 +177,7 @@ int main(int argc, char *argv[])
 			}
 			break;
 		case 'e':
-			settings.emails = parse_emails(optarg, &n_emails);
-			settings.n_emails = n_emails;
+			settings.emails = parse_emails(optarg);
 			break;
 		case 'o':
 			settings.output_mode = parse_output_file_ext(optarg);

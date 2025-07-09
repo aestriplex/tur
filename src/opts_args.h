@@ -26,7 +26,7 @@
 #include "str.h"
 
 tur_output_t parse_output_file_ext(const char *arg);
-str_t *parse_emails(const char *input, size_t *count);
+str_array_t *parse_emails(const char *input);
 uint16_t parse_optarg_to_int(const char *optarg, unsigned *out_value);
 uint16_t parse_sort_order(const char *opt_str, size_t len, sort_ordering_t *order);
 
