@@ -65,7 +65,7 @@ static return_code_t parse_commit_file(table_t *repo_table)
 		}
 
 		if (line[0] == '+') {
-			if (current_repo_id >= 0 && current_commits) {
+			if (current_commits) {
 				table_put(repo_table, current_repo_id, current_commits);
 				str_array_free(&current_commits);
 			}
@@ -76,7 +76,7 @@ static return_code_t parse_commit_file(table_t *repo_table)
 
 			str_array_init(&current_commits);
 
-		} else if (current_repo_id >= 0 && current_commits) {
+		} else if (current_commits) {
 			if (strlen(line) == 0) { continue; }
 
 			char *end_of_hash = strchr(line, '\t');
@@ -102,7 +102,7 @@ static return_code_t parse_commit_file(table_t *repo_table)
 		}
 	}
 
-	if (current_repo_id >= 0 && current_commits) {
+	if (current_commits) {
 		table_put(repo_table, current_repo_id, current_commits);
 		str_array_free(&current_commits);
 	}

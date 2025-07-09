@@ -27,6 +27,7 @@
 #include "utils.h"
 
 #include <stdlib.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 return_code_t choose_commits_through_editor(const settings_t *settings)
