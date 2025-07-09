@@ -54,11 +54,13 @@ void test_table_init(void)
 void test_table_put_and_get(void)
 {
 	table_t table;
+	str_t hello = str_init("hello", 5);
+
 	table_status_t status = table_init(&table, 10, 10, simple_hash);
 
 	str_array_t *arr = NULL;
 	str_array_init(&arr);
-	str_array_add(arr, str_init("hello", 5));
+	str_array_add(arr, hello);
 
 	status = table_put(&table, 42, arr);
 	assert_true(status == LM_OK, "table_put should return LM_OK");
@@ -69,6 +71,7 @@ void test_table_put_and_get(void)
 	assert_true(got->len == 1, "str_array_t should have length 1");
 	assert_true(str_arr_equals(str_array_get(got, 0), "hello"), "string should be 'hello'");
 
+	str_free(hello);
 	str_array_free(&arr);
 	table_free(&table);
 }
@@ -76,23 +79,26 @@ void test_table_put_and_get(void)
 void test_table_add_and_get(void)
 {
 	table_t table;
+	str_t first = str_init("first", 5);
+	str_t second = str_init("second", 6);
+
 	table_init(&table, 10, 10, simple_hash);
 
 	str_array_t *arr = NULL;
 	str_array_init(&arr);
-	str_array_add(arr, str_init("first", 5));
+	str_array_add(arr, first);
 
 	table_put(&table, 7, arr);
 
-	str_t second = str_init("second", 6);
 	table_add(&table, 7, second);
-	str_free(second);
-
+	
 	str_array_t *got = table_get(&table, 7);
 	assert_true(got != NULL, "table_get should return non-NULL after add");
 	assert_true(got->len == 2, "str_array_t should have length 2");
 	assert_true(str_arr_equals(str_array_get(got, 1), "second"), "second string should be 'second'");
-
+	
+	str_free(first);
+	str_free(second);
 	str_array_free(&arr);
 	table_free(&table);
 }
@@ -100,11 +106,13 @@ void test_table_add_and_get(void)
 void test_table_remove(void)
 {
 	table_t table;
+	str_t bye = str_init("bye", 3);
+
 	table_init(&table, 10, 10, simple_hash);
 
 	str_array_t *arr = NULL;
 	str_array_init(&arr);
-	str_array_add(arr, str_init("bye", 3));
+	str_array_add(arr, bye);
 
 	table_put(&table, 99, arr);
 
@@ -114,6 +122,7 @@ void test_table_remove(void)
 	str_array_t *got = table_get(&table, 99);
 	assert_true(got == NULL, "table_get should return NULL after remove");
 
+	str_free(bye);
 	str_array_free(&arr);
 	table_free(&table);
 }
@@ -121,17 +130,20 @@ void test_table_remove(void)
 void test_table_get_pairs(void)
 {
 	table_t table;
+	str_t foo = str_init("foo", 3);
+	str_t bar = str_init("bar", 3);
+
 	table_init(&table, 10, 10, simple_hash);
 
 	str_array_t *arr1 = NULL;
 	str_array_init(&arr1);
-	str_array_add(arr1, str_init("foo", 3));
+	str_array_add(arr1, foo);
 
 	table_put(&table, 1, arr1);
 
 	str_array_t *arr2 = NULL;
 	str_array_init(&arr2);
-	str_array_add(arr2, str_init("bar", 3));
+	str_array_add(arr2, bar);
 
 	table_put(&table, 2, arr2);
 
@@ -141,6 +153,8 @@ void test_table_get_pairs(void)
 	assert_true(pairs[0].key == 1 || pairs[1].key == 1, "key 1 should be present");
 	assert_true(pairs[0].key == 2 || pairs[1].key == 2, "key 2 should be present");
 
+	str_free(foo);
+	str_free(bar);	
 	str_array_free(&arr1);
 	str_array_free(&arr2);
 	table_free(&table);
