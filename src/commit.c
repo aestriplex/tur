@@ -34,8 +34,9 @@
 
 static void assign_commit(void *src, void *elem)
 {
-	commit_t *commit = (commit_t *)elem;
-	*(commit_t *)src = *commit_copy(commit);
+	commit_t *tmp = commit_copy((commit_t *)elem);
+    *(commit_t *)src = *tmp;
+    free(tmp);
 }
 
 static int compare_commit(void *c1, void *c2)
