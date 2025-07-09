@@ -33,7 +33,7 @@
 /*
  * Strings
  */
-static const str_t _empty_str = (str_t) { .val="", .len=0 };
+static const str_t _empty_str = { "", 0 };
 
 str_t empty_str(void)
 {

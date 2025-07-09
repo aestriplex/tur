@@ -71,11 +71,6 @@ static str_array_t *get_branches(const char *line, size_t len)
 	memcpy(to_parse, line, len);
 	to_parse[len] = '\0';
 
-	size_t n_branches = 1;
-	for (char *p = to_parse; *p; ++p) {
-		if (*p == ',') n_branches++;
-	}
-
 	str_array_init(&result);
 
 	char *token = strtok(to_parse, ",");
