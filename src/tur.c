@@ -119,7 +119,6 @@ static void print_help(void)
 
 int main(int argc, char *argv[])
 {
-	repository_array_t repos;
 	return_code_t ret = OK;
 	int ch, option_index = 0;
 
@@ -210,10 +209,16 @@ int main(int argc, char *argv[])
 
 	git_libgit2_init();
 
-	ret = get_repos_array(&repos, &settings);
+	repository_array_t *repos = NULL;
+
+	repo_array_init(&repos);
+
+	ret = get_repos_array(repos, &settings);
 	if (ret != OK) { goto clean; }
 
-	ret = walk_through_repos(&repos, &settings);
+	repository_stats_t repos_stats = get_repos_stats(repos);
+
+	ret = walk_through_repos(repos, &settings, repos_stats);
 	if (ret != OK) { goto clean; }
 
 clean:

@@ -52,6 +52,9 @@ typedef struct {
 	commit_stats_t stats;
 } commit_t;
 
+/* Commits in the indexes are just pointers to the commits in commit_arr.
+ * !!! DO NOT FREE THEM !!!
+ */
 typedef struct {
 	commit_t **authored;
 	commit_t **co_authored;
@@ -70,6 +73,7 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 commit_t *get_commit_with_id(const commit_arr_t* commit_arr, str_t id);
 commit_t *commit_copy(const commit_t *source);
 void commit_free(commit_t *commit);
+void history_free(work_history_t **history);
 
 /*
  * Commit arrays

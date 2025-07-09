@@ -38,9 +38,11 @@ static void assign_commit(void *src, void *elem)
 	*(commit_t *)src = *commit_copy(commit);
 }
 
-static int compare_commit(void *s1, void *s2)
+static int compare_commit(void *c1, void *c2)
 {
-	return str_compare(*(str_t *)s1, *(str_t *)s2);
+	commit_t *commit1 = (commit_t *)c1;
+	commit_t *commit2 = (commit_t *)c2;
+	return str_compare(commit1->hash, commit2->hash);
 }
 
 static void free_commit(void *c)
@@ -273,7 +275,7 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 			print_error(return_code, hash);
 			return NULL;
 		}
-		const size_t index = n_authored + n_co_authored - 1;
+
 		commit_t commit = (commit_t) {
 			.hash = str_init(hash, GIT_HASH_LEN),
 			.date = (time_t) author->when.time,
@@ -307,6 +309,15 @@ cleanup:
 	git_repository_free(git_repo);
 ret:
 	return history;
+}
+
+void history_free(work_history_t **history)
+{
+	work_history_t *h = *history;
+	commit_array_free(&h->commit_arr);
+	free(h->indexes.authored);
+	free(h->indexes.co_authored);
+	*history = NULL;
 }
 
 commit_t *get_commit_with_id(const commit_arr_t* commit_arr, str_t id)

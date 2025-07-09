@@ -148,13 +148,13 @@ void generate_markdown_file(FILE *out, const repository_array_t *repos, const se
 		fprintf(out, "# %s\n", settings->title.val);
 	}
 
-	for (size_t i = 0; i < repos->count; i++) {
-		const repository_t repo = repos->repositories[i];
+	for (size_t i = 0; i < repos->len; i++) {
+		repository_t *repo = repo_array_get(repos, i);
 
 		if (settings->grouped) {
-			generate_md_file_grouped(out, &repo, &repo.history->indexes, settings);
+			generate_md_file_grouped(out, repo, &repo->history->indexes, settings);
 		} else {
-			generate_md_file_list(out, &repo, &repo.history->indexes, settings);
+			generate_md_file_list(out, repo, &repo->history->indexes, settings);
 		}
 	}
 }

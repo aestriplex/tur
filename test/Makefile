@@ -32,8 +32,8 @@ all: $(TEST_BINS)
 	./test_lookup_table
 	./test_array
 
-test_parse_repository: test.c test_parse_repository.c repo.o str.o utils.o log.o array.o
-	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
+test_parse_repository: test.c test_parse_repository.c repo.o str.o utils.o log.o array.o commit.o
+	$(CC) $(CVARS) $(CFLAGS) -o $@ $^ -lgit2
 
 test_parse_email_list: test.c test_parse_email_list.c opts_args.o str.o utils.o log.o array.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
