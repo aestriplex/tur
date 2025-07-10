@@ -35,8 +35,8 @@
 static void assign_commit(void *src, void *elem)
 {
 	commit_t *tmp = commit_copy((commit_t *)elem);
-    *(commit_t *)src = *tmp;
-    free(tmp);
+	*(commit_t *)src = *tmp;
+	free(tmp);
 }
 
 static int compare_commit(void *c1, void *c2)
@@ -140,7 +140,7 @@ static bool is_co_author(const char *message, str_array_t *emails)
 static inline bool is_merge_commit(const char*message)
 {
 	return chars_contains_chars(message, "Merge")
-	       || chars_contains_chars(message, "merge");
+		   || chars_contains_chars(message, "merge");
 }
 
 static void print_error(uint16_t return_code, const char *hash)
@@ -312,12 +312,57 @@ ret:
 	return history;
 }
 
+work_history_t *history_copy(const work_history_t *src)
+{
+	if (!src) return NULL;
+
+	work_history_t *copy = malloc(sizeof(work_history_t));
+	if (!copy) return NULL;
+
+	copy->commit_arr = commit_array_copy(src->commit_arr);
+
+	copy->tot_lines_added = src->tot_lines_added;
+	copy->tot_lines_removed = src->tot_lines_removed;
+	copy->n_authored = src->n_authored;
+	copy->n_co_authored = src->n_co_authored;
+
+	copy->indexes.authored = NULL;
+	copy->indexes.co_authored = NULL;
+	if (src->indexes.authored) {
+		size_t n = src->n_authored;
+		copy->indexes.authored = malloc(n * sizeof(size_t));
+		if (copy->indexes.authored) {
+			memcpy(copy->indexes.authored, src->indexes.authored, n * sizeof(size_t));
+		}
+	}
+	if (src->indexes.co_authored) {
+		size_t n = src->n_co_authored;
+		copy->indexes.co_authored = malloc(n * sizeof(size_t));
+		if (copy->indexes.co_authored) {
+			memcpy(copy->indexes.co_authored, src->indexes.co_authored, n * sizeof(size_t));
+		}
+	}
+
+	return copy;
+}
+
 void history_free(work_history_t **history)
 {
+	if (!history || !*history) return;
 	work_history_t *h = *history;
-	commit_array_free(&h->commit_arr);
-	free(h->indexes.authored);
-	free(h->indexes.co_authored);
+	if (h->commit_arr) {
+		commit_array_free(&h->commit_arr);
+		h->commit_arr = NULL;
+	}
+	if (h->indexes.authored) {
+		free(h->indexes.authored);
+		h->indexes.authored = NULL;
+	}
+	if (h->indexes.co_authored) {
+		free(h->indexes.co_authored);
+		h->indexes.co_authored = NULL;
+	}
+	free(h);
 	*history = NULL;
 }
 

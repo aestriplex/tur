@@ -232,7 +232,7 @@ repository_t *repository_copy(const repository_t *src)
 	new->id = src->id;
 	new->format = src->format;
 	new->branches = str_array_copy(src->branches);
-	/* add deep copy of  history */
+	new->history = history_copy(src->history);
 	return new;
 }
 
@@ -241,8 +241,9 @@ repository_t *repository_copy(const repository_t *src)
  */
 static void assign_repo(void *src, void *elem)
 {
-	repository_t *repo = (repository_t *)elem;
-	*(repository_t *)src = *repository_copy(repo);
+	repository_t *repo = repository_copy((repository_t *)elem);
+	*(repository_t *)src = *repo;
+	free(repo);
 }
 
 static int compare_repo(void *r1, void *r2)
@@ -260,8 +261,12 @@ static void free_repo(void *r)
 	str_free(repo->url);
 	str_free(repo->path);
 	str_free(repo->name);
-	str_array_free(&repo->branches);
-	history_free(&repo->history);
+	if (repo->history) {
+		history_free(&repo->history);
+	}
+	if (repo->branches) {
+		str_array_free(&repo->branches);
+	}
 }
 
 void repo_array_init(repository_array_t **arr)

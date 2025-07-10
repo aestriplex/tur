@@ -71,7 +71,7 @@ test_opts_args: test.c test_opts_args.c opts_args.o utils.o str.o log.o array.o
 test_lookup_table: test.c test_lookup_table.c lookup_table.o str.o log.o array.o
 	$(CC) $(CVARS) $(CFLAGS) -o $@ $^
 
-test_array: test.c test_array.c commit.o str.o log.o array.o
+test_array: test.c test_array.c commit.o str.o log.o array.o repo.o utils.o lookup_table.o
 	$(CC) $(CVARS) $(CFLAGS) -I$(INCLUDE_PATH) -o $@ $^ -L$(LIB_PATH) $(LIB)
 
 repo.o: ../src/repo.c
@@ -100,4 +100,4 @@ commit.o: ../src/commit.c
 
 .PHONY: clean
 clean:
-	rm -f *o $(TEST_BINS)
+	rm -rf *o *.dSYM $(TEST_BINS)
