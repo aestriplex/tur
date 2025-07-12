@@ -81,15 +81,6 @@ static commit_t **get_commit_refs(const commit_arr_t *commit_arr,
 
 	return commits_with_resp;
 }
-static bool non_cached_non_inter(const settings_t *settings)
-{
-	return settings->no_cache && !settings->interactive;
-}
-
-static bool cached_or_inter(const settings_t *settings)
-{
-	return !non_cached_non_inter(settings);
-}
 
 static return_code_t build_indexes(repository_t *repo,
 								   const settings_t *settings)
@@ -217,7 +208,7 @@ static return_code_t cache_commit_list(const repository_array_t *repos,
 {
 	return_code_t ret = OK;
 
-	if (cached_or_inter(settings)) {
+	if (!settings->no_cache) {
 		if (settings->force || !commit_file_exists()) {
 			/* We have to create or overwrite the commits file */
 			ret = write_repos_on_file(repos);

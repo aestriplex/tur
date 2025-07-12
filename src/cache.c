@@ -148,7 +148,8 @@ return_code_t check_or_create_tur_dir(void)
 
 	if (stat(TUR_DIR, &st) == -1) {
 		if (mkdir(TUR_DIR, 0700) != 0) {
-			(void)log_err("Cannot create the directory `%s`\n", TUR_DIR);
+			(void)log_err("Cannot create the directory `%s` "
+						  "with permission 700\n", TUR_DIR);
 			return CANNOT_CREATE_TUR_DIR;
 		}
 	}
