@@ -157,7 +157,9 @@ void generate_latex_file(FILE *out, const repository_array_t *repos, const setti
 				 "include it in a LaTeX document with both "
 				 "*xcolor* and *hyperref* packages.\n\n"
 				 "%% Commands definition\n"
-				 "\\newcommand{\\turtexpar}[1]{\\textbf{#1}}");
+				 "\\definecolor{americanrose}{rgb}{1.0, 0.01, 0.24}\n"
+				 "\\newcommand{\\turtexpar}[1]{\\textbf{#1}}\n"
+				 "\\newcommand{\\turfav}{ {\\Large \\textcolor{americanrose}{$\\star$}}}");
 
 	if (str_not_empty(settings->title)) {
 		fprintf(out, "\n\n\\section{%s}", settings->title.val);
@@ -178,6 +180,8 @@ void generate_latex_file(FILE *out, const repository_array_t *repos, const setti
 	}
 
 	if (!settings->grouped) {
-		fprintf(out, "\\end{enumerate}\n");
+		fprintf(out, "\\end{enumerate}\n"
+					 "\\vspace{1cm}\n\n"
+					 "\\noindent (\\turfav{} indicates a valuable contribution)\n");
 	}
 }
