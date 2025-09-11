@@ -56,15 +56,11 @@ typedef struct {
  * !!! DO NOT FREE THEM !!!
  */
 typedef struct {
-	commit_t **authored;
-	commit_t **co_authored;
-} indexes_t;
-
-typedef struct {
 	commit_arr_t *commit_arr;
+	commit_t **authored_idx;
+	commit_t **co_authored_idx;
 	size_t n_authored;
 	size_t n_co_authored;
-	indexes_t indexes;
 	size_t tot_lines_added;
 	size_t tot_lines_removed;
 } work_history_t;

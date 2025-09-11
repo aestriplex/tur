@@ -42,10 +42,12 @@ static void print_commit_message(const commit_t * commit, const char *indent)
 	fprintf(stdout, "%s| %s\n", indent, get_first_line(commit->msg).val);
 }
 
-static void print_stdout_grouped(const repository_t *repo, const indexes_t *indexes, const settings_t *settings)
+static void print_stdout_grouped(const repository_t *repo,
+								 const work_history_t *history,
+								 const settings_t *settings)
 {
-	commit_t **const authored = indexes->authored;
-	commit_t **const co_authored = indexes->co_authored;
+	commit_t **const authored = history->authored_idx;
+	commit_t **const co_authored = history->co_authored_idx;
 
 	if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
 
@@ -87,11 +89,13 @@ co_authored:
 	}
 }
 
-static void print_stdout_list(const repository_t *repo, const indexes_t *indexes,
-							  const settings_t *settings, size_t max_name_len)
+static void print_stdout_list(const repository_t *repo,
+							  const work_history_t *history,
+							  const settings_t *settings,
+							  size_t max_name_len)
 {
-	commit_t **const authored = indexes->authored;
-	commit_t **const co_authored = indexes->co_authored;
+	commit_t **const authored = history->authored_idx;
+	commit_t **const co_authored = history->co_authored_idx;
 	const char *fmt_string = "| %-*s   %s %s [%c]";
 
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
@@ -135,9 +139,9 @@ void print_stdout(const repository_array_t *repos, const settings_t *settings, r
 		repository_t *repo = repo_array_get(repos, i);
 
 		if (settings->grouped) {
-			print_stdout_grouped(repo, &repo->history->indexes, settings);
+			print_stdout_grouped(repo, repo->history, settings);
 		} else {
-			print_stdout_list(repo, &repo->history->indexes, settings, stats.max_name_len);
+			print_stdout_list(repo, repo->history, settings, stats.max_name_len);
 		}
 	}
 

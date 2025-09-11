@@ -29,7 +29,7 @@
 #include <string.h>
 #include <git2.h>
 
-#define COAUTHOR_PREFIX "Co-authored-by:"
+#define COAUTHOR_PREFIX     "Co-authored-by:"
 #define COAUTHOR_PREFIX_LEN 15
 
 static void assign_commit(void *src, void *elem)
@@ -301,10 +301,8 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 	history->n_co_authored = n_co_authored;
 
 	/* Indexes are built in walk procedure (see walk.c) */
-	history->indexes = (indexes_t) {
-		.authored = NULL,
-		.co_authored = NULL
-	};
+	history->authored_idx = NULL;
+	history->co_authored_idx = NULL;
 
 cleanup:
 	git_repository_free(git_repo);
@@ -326,20 +324,20 @@ work_history_t *history_copy(const work_history_t *src)
 	copy->n_authored = src->n_authored;
 	copy->n_co_authored = src->n_co_authored;
 
-	copy->indexes.authored = NULL;
-	copy->indexes.co_authored = NULL;
-	if (src->indexes.authored) {
+	copy->authored_idx = NULL;
+	copy->co_authored_idx = NULL;
+	if (src->authored_idx) {
 		size_t n = src->n_authored;
-		copy->indexes.authored = malloc(n * sizeof(size_t));
-		if (copy->indexes.authored) {
-			memcpy(copy->indexes.authored, src->indexes.authored, n * sizeof(size_t));
+		copy->authored_idx = malloc(n * sizeof(size_t));
+		if (copy->authored_idx) {
+			memcpy(copy->authored_idx, src->authored_idx, n * sizeof(size_t));
 		}
 	}
-	if (src->indexes.co_authored) {
+	if (src->co_authored_idx) {
 		size_t n = src->n_co_authored;
-		copy->indexes.co_authored = malloc(n * sizeof(size_t));
-		if (copy->indexes.co_authored) {
-			memcpy(copy->indexes.co_authored, src->indexes.co_authored, n * sizeof(size_t));
+		copy->co_authored_idx = malloc(n * sizeof(size_t));
+		if (copy->co_authored_idx) {
+			memcpy(copy->co_authored_idx, src->co_authored_idx, n * sizeof(size_t));
 		}
 	}
 
@@ -354,13 +352,13 @@ void history_free(work_history_t **history)
 		commit_array_free(&h->commit_arr);
 		h->commit_arr = NULL;
 	}
-	if (h->indexes.authored) {
-		free(h->indexes.authored);
-		h->indexes.authored = NULL;
+	if (h->authored_idx) {
+		free(h->authored_idx);
+		h->authored_idx = NULL;
 	}
-	if (h->indexes.co_authored) {
-		free(h->indexes.co_authored);
-		h->indexes.co_authored = NULL;
+	if (h->co_authored_idx) {
+		free(h->co_authored_idx);
+		h->co_authored_idx = NULL;
 	}
 	free(h);
 	*history = NULL;

@@ -43,6 +43,33 @@ static void print_commit_line(FILE *fp, const commit_t *commit)
 	fprintf(fp, "%s\t%s\n", commit->hash.val, get_first_line(commit->msg).val);
 }
 
+static return_code_t repo_index(repository_t *repo, const cacheidx_arr_t *commits)
+{
+	size_t authored_count = 0, co_authored_count = 0;
+	work_history_t *history = repo->history;
+
+	for (size_t i = 0; i < commits->len; i++) {
+		cache_index_t *commit_idx = cache_array_get(commits, i);
+		commit_t *c = get_commit_with_id(history->commit_arr, commit_idx->hash);
+		if (!c) {
+			(void)log_err("repo_index: cannot find commit `%s`\n",
+						  commit_idx->hash.val);
+			return COMMIT_NOT_FOUND;
+		}
+
+		if (c->responsability == AUTHORED) {
+			history->authored_idx[authored_count++] = c;
+		} else {
+			history->co_authored_idx[co_authored_count++] = c;
+		}
+	}
+
+	history->n_authored = authored_count;
+	history->n_co_authored = co_authored_count;
+
+	return OK;
+}
+
 static return_code_t parse_commit_file(table_t *repo_table)
 {
 	return_code_t ret = OK;
@@ -88,9 +115,10 @@ static return_code_t parse_commit_file(table_t *repo_table)
 			/* If the commit name contains the string "[*]", then the commit
 			 * is labelled as a favorite.
 			 */
+			bool is_favorite = strstr(end_of_hash, FAVORITE_STR);
 			cache_index_t idx = (cache_index_t) {
 				.hash = hash,
-				.is_favorite = strstr(end_of_hash, FAVORITE_STR),
+				.is_favorite = is_favorite,
 			};
 
 			ret = cache_array_add(current_commits, &idx);
@@ -113,33 +141,6 @@ cleanup:
 	fclose(fp);
 
 	return ret;
-}
-
-static return_code_t repo_index(repository_t *repo, const cacheidx_arr_t *commits)
-{
-	size_t authored_count = 0, co_authored_count = 0;
-	work_history_t *history = repo->history;
-
-	for (size_t i = 0; i < commits->len; i++) {
-		cache_index_t *commit_idx = cache_array_get(commits, i);
-		commit_t *c = get_commit_with_id(history->commit_arr, commit_idx->hash);
-		if (!c) {
-			(void)log_err("repo_index: cannot find commit `%s`\n",
-						  commit_idx->hash.val);
-			return COMMIT_NOT_FOUND;
-		}
-
-		if (c->responsability == AUTHORED) {
-			history->indexes.authored[authored_count++] = c;
-		} else {
-			history->indexes.co_authored[co_authored_count++] = c;
-		}
-	}
-
-	history->n_authored = authored_count;
-	history->n_co_authored = co_authored_count;
-
-	return OK;
 }
 
 return_code_t check_or_create_tur_dir(void)
@@ -182,8 +183,8 @@ return_code_t write_repos_on_file(const repository_array_t *repos)
 	for (size_t i = 0; i < repos->len; i++) {
 		repository_t *repo = repo_array_get(repos, i);
 		const work_history_t *history = repo->history;
-		commit_t **const authored = history->indexes.authored;
-		commit_t **const co_authored = history->indexes.co_authored;
+		commit_t **const authored = history->authored_idx;
+		commit_t **const co_authored = history->co_authored_idx;
 
 		fprintf(fp, "+ %u) %s\n", repo->id, repo->name.val);
 		for (size_t j = 0; j < history->n_authored; j++) {

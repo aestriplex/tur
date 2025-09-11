@@ -44,11 +44,11 @@ static void print_commit_message(FILE *out, const commit_t * commit)
 
 static void generate_md_file_grouped(FILE *out,
 									 const repository_t *repo,
-									 const indexes_t *indexes,
+									 const work_history_t *history,
 									 const settings_t *settings)
 {
-	commit_t **const authored = indexes->authored;
-	commit_t **const co_authored = indexes->co_authored;
+	commit_t **const authored = history->authored_idx;
+	commit_t **const co_authored = history->co_authored_idx;
 
 	if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
 
@@ -95,11 +95,11 @@ co_authored:
 
 static void generate_md_file_list(FILE *out,
 								  const repository_t *repo,
-								  const indexes_t *indexes,
+								  const work_history_t *history,
 								  const settings_t *settings)
 {
-	commit_t **const authored = indexes->authored;
-	commit_t **const co_authored = indexes->co_authored;
+	commit_t **const authored = history->authored_idx;
+	commit_t **const co_authored = history->co_authored_idx;
 
 	size_t n_commit = 1;
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
@@ -152,9 +152,9 @@ void generate_markdown_file(FILE *out, const repository_array_t *repos, const se
 		repository_t *repo = repo_array_get(repos, i);
 
 		if (settings->grouped) {
-			generate_md_file_grouped(out, repo, &repo->history->indexes, settings);
+			generate_md_file_grouped(out, repo, repo->history, settings);
 		} else {
-			generate_md_file_list(out, repo, &repo->history->indexes, settings);
+			generate_md_file_list(out, repo, repo->history, settings);
 		}
 	}
 }

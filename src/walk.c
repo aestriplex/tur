@@ -26,6 +26,7 @@
 #include "log.h"
 #include "repo.h"
 #include "settings.h"
+#include "utils.h"
 #include "view.h"
 #include "walk.h"
 
@@ -92,11 +93,10 @@ static return_code_t build_indexes(repository_t *repo,
 											 repo->history->n_co_authored,
 											 CO_AUTHORED, settings);
 
-	repo->history->indexes.authored = authored;
-	repo->history->indexes.co_authored = co_authored;
+	if (!authored || !co_authored) { return INDEX_ALLOCATION_ERROR; }
 
-	const indexes_t *idx = &repo->history->indexes; 
-	if (!idx->authored || !idx->co_authored) { return INDEX_ALLOCATION_ERROR; }
+	repo->history->authored_idx = authored;
+	repo->history->co_authored_idx = co_authored;
 
 	return OK;
 }

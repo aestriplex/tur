@@ -164,6 +164,16 @@ str_t get_editor_or_default(void)
 	return str_init(editor, strnlen(editor, 20));
 }
 
+bool non_cached_non_inter(const settings_t *settings)
+{
+	return settings->no_cache && !settings->interactive;
+}
+
+bool cached_or_inter(const settings_t *settings)
+{
+	return !non_cached_non_inter(settings);
+}
+
 return_code_t parse_commit_id(unsigned *id, const char *line)
 {
 	if (!id || !line) { return COMMITS_FILE_INVALID_REPO_ID; }

@@ -53,11 +53,11 @@ static void print_commit_message(FILE *out, const commit_t * commit)
 
 static void generate_html_file_grouped(FILE *out,
 									   const repository_t *repo,
-									   const indexes_t *indexes,
+									   const work_history_t *history,
 									   const settings_t *settings)
 {
-	commit_t **const authored = indexes->authored;
-	commit_t **const co_authored = indexes->co_authored;
+	commit_t **const authored = history->authored_idx;
+	commit_t **const co_authored = history->co_authored_idx;
 
 	if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
 
@@ -116,11 +116,11 @@ co_authored:
 
 static void generate_html_file_list(FILE *out,
 									const repository_t *repo,
-									const indexes_t *indexes,
+									const work_history_t *history,
 									const settings_t *settings)
 {
-	commit_t **const authored = indexes->authored;
-	commit_t **const co_authored = indexes->co_authored;
+	commit_t **const authored = history->authored_idx;
+	commit_t **const co_authored = history->co_authored_idx;
 
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(out, "<div style=" COMMIT_ITEM_BORDER_STYLE ">\n");
@@ -173,9 +173,9 @@ void generate_html_file(FILE *out, const repository_array_t *repos, const settin
 		repository_t *repo = repo_array_get(repos, i);
 
 		if (settings->grouped) {
-			generate_html_file_grouped(out, repo, &repo->history->indexes, settings);
+			generate_html_file_grouped(out, repo, repo->history, settings);
 		} else {
-			generate_html_file_list(out, repo, &repo->history->indexes, settings);
+			generate_html_file_list(out, repo, repo->history, settings);
 		}
 	}
 
