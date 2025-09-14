@@ -26,6 +26,7 @@
 #include "lookup_table.h"
 #include "utils.h"
 
+#include <errno.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -226,12 +227,18 @@ return_code_t rebuild_indexes(const repository_array_t *repos)
 
 return_code_t delete_cache(void)
 {
-	if (remove(TUR_DIR) != 0) { return CANNOT_DELETE_TUR_DIR; }
+	if (remove(TUR_DIR) != 0) {
+		perror("Error deleting cache dir");
+		return CANNOT_DELETE_TUR_DIR;
+	}
 	return OK;
 }
 
-return_code_t delete_commits_file(void)
+return_code_t delete_commits_index(void)
 {
-	if (remove(COMMITS_FILE) != 0) { return CANNOT_DELETE_COMMITS_FILE; }
+	if (remove(COMMITS_FILE) != 0) {
+		perror("Error deleting commits index file");
+		return CANNOT_DELETE_COMMITS_FILE;
+	}
 	return OK;
 }

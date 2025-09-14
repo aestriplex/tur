@@ -32,7 +32,7 @@
 
 bool commit_file_exists(void);
 return_code_t delete_cache(void);
-return_code_t delete_commits_file(void);
+return_code_t delete_commits_index(void);
 return_code_t check_or_create_tur_dir(void);
 return_code_t write_repos_on_file(const repository_array_t *repos);
 return_code_t rebuild_indexes(const repository_array_t *repos);

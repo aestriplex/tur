@@ -35,10 +35,10 @@
 
 #define DEFAULT_EDITOR "vi"
 
-#define GITHUB_URL      "commit/"
-#define GITHUB_URL_SIZE 7
-#define GITLAB_URL      "-/commit/"
-#define GITLAB_URL_SIZE 9
+#define GITHUB_URL      "/commit/"
+#define GITHUB_URL_SIZE 8
+#define GITLAB_URL      "/-/commit/"
+#define GITLAB_URL_SIZE 10
 
 static str_t time_to_full_string(time_t timestamp)
 {

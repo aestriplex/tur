@@ -57,7 +57,7 @@ void test_parse_repository()
 		repository_t repo = parse_repository(line, strlen(line), 0);
 		
 		assert_true(str_arr_equals(repo.path, "repo/path"), "Path should be 'repo/path'");
-		assert_true(str_arr_equals(repo.url, "https://example.com/"), "URL should be 'https://example.com/'");
+		assert_true(str_arr_equals(repo.url, "https://example.com"), "URL should be 'https://example.com'");
 
 		str_free(repo.path);
 		str_free(repo.name);
@@ -69,7 +69,7 @@ void test_parse_repository()
 		repository_t repo = parse_repository(line, strlen(line), 0);
 		
 		assert_true(repo.path.len == 0, "Path should be empty");
-		assert_true(str_arr_equals(repo.url, "https://example.com/"), "URL should be 'https://example.com/'");
+		assert_true(str_arr_equals(repo.url, "https://example.com"), "URL should be 'https://example.com'");
 
 		str_free(repo.path);
 		str_free(repo.name);
@@ -93,7 +93,7 @@ void test_parse_repository()
 		repository_t repo = parse_repository(line, strlen(line), 0);
 		
 		assert_true(str_arr_equals(repo.path, "repo/path"), "Path should be 'repo/path'");
-		assert_true(str_arr_equals(repo.url, "https://example.com/repo[name]/"), "URL should be 'https://example.com/repo[name]/'");
+		assert_true(str_arr_equals(repo.url, "https://example.com/repo[name]"), "URL should be 'https://example.com/repo[name]'");
 
 		str_free(repo.path);
 		str_free(repo.name);
@@ -129,7 +129,7 @@ void test_parse_repository()
 		repository_t repo = parse_repository(line, strlen(line), 0);
 		
 		assert_true(str_arr_equals(repo.path, "repo/path"), "Path should be 'repo/path'");
-		assert_true(str_arr_equals(repo.url, "git@github.com:user/repo.git/"), "URL should be 'git@github.com:user/repo.git/'");
+		assert_true(str_arr_equals(repo.url, "git@github.com:user/repo.git"), "URL should be 'git@github.com:user/repo.git'");
 
 		str_free(repo.path);
 		str_free(repo.name);

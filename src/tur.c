@@ -83,7 +83,7 @@ static void print_help(void)
 		   "  -m, --message          Shows the first line of the commit message\n"
 		   "  -v, --version          Prints the verison on tur\n"
 		   "                         Default: false\n"
-		   "  --clear-cache          Delete the cache folder .tur/. Irreversible!!!\n"
+		   "  --clear-cache          Delete the commit index file `.tur/commits_index` Irreversible!!!\n"
 		   "  --date-only            Each commit will be printed without time information\n"
 		   "                         Format: Dec 28, 1994\n"
 		   "  --no-ansi              Avoid ANSI escape characters (e.g. escape characters\n"
@@ -167,12 +167,12 @@ int main(int argc, char *argv[])
 			settings.no_cache = true;
 			break;
 		case 5:
-			ret = delete_cache();
+			ret = delete_commits_index();
 			if (ret != OK) {
-				(void)log_err("Cannot remove the cache dir `%s`...\n", TUR_DIR);
+				(void)log_err("Cannot remove the commit index `%s`...\n", COMMITS_FILE);
 				ret = OK;
 			} else {
-				(void)log_info("cache dir `%s` removed...\n", TUR_DIR);
+				(void)log_info("Removed commit index `%s` ...\n", COMMITS_FILE);
 			}
 			break;
 		case 'e':
@@ -205,6 +205,12 @@ int main(int argc, char *argv[])
 			print_help();
 			return -1;
 		}
+	}
+
+	if (!settings.emails || settings.emails->len == 0) {
+		(void)log_err("You should specify at least one email address");
+		print_help();
+		goto end;
 	}
 
 	git_libgit2_init();

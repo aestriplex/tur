@@ -290,7 +290,7 @@ return_code_t walk_through_repos(const repository_array_t *repos,
 	if (settings->no_cache && commit_file_exists()) {
 		(void)log_info("Removing temporary commit file `%s`...\n",
 					   COMMITS_FILE);
-		ret = delete_commits_file();
+		ret = delete_commits_index();
 		if (ret != OK) {
 			(void)log_err("Cannot delete temporary commit file `%s`...\n", COMMITS_FILE);
 		}
