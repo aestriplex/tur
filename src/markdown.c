@@ -26,6 +26,11 @@
 
 #include <stdio.h>
 
+static const char *favorite_md(const commit_t *commit)
+{
+	return commit->is_favorite ? " ★" : "";
+}
+
 static void print_commit_diffs(FILE *out, const commit_t *commit)
 {
 	fprintf(out, "%zu file%c changed "
@@ -67,6 +72,8 @@ static void generate_md_file_grouped(FILE *out,
 				authored[n_c]->hash.val,
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				format_date(authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_md(authored[n_c]));
+		fprintf(out, "\n");
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -87,6 +94,8 @@ co_authored:
 				co_authored[n_c]->hash.val,
 				repo->format.commit_url(repo->url, co_authored[n_c]->hash).val,
 				format_date(co_authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_md(co_authored[n_c]));
+		fprintf(out, "\n");
 		if (settings->show_diffs) {
 			print_commit_diffs(out, co_authored[n_c]);
 		}
@@ -112,6 +121,8 @@ static void generate_md_file_list(FILE *out,
 				authored[n_c]->hash.val,
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				format_date(authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_md(authored[n_c]));
+		fprintf(out, "\n");
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -130,6 +141,8 @@ static void generate_md_file_list(FILE *out,
 				co_authored[n_c]->hash.val,
 				repo->format.commit_url(repo->url, co_authored[n_c]->hash).val,
 				format_date(co_authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_md(co_authored[n_c]));
+		fprintf(out, "\n");
 		if (settings->show_diffs) {
 			print_commit_diffs(out, co_authored[n_c]);
 		}

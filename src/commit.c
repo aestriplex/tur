@@ -279,6 +279,7 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 
 		commit_t commit = (commit_t) {
 			.hash = str_init(hash, GIT_HASH_LEN),
+			.is_favorite = false,
 			.date = (time_t) author->when.time,
 			.msg = str_init(msg, (uint16_t)strlen(msg)),
 			.responsability = res,
@@ -379,6 +380,7 @@ commit_t *commit_copy(const commit_t *src)
 {
 	commit_t *new = malloc(sizeof(commit_t));
 	new->hash = str_copy(src->hash);
+	new->is_favorite = src->is_favorite;
 	new->responsability = src->responsability;
 	new->date = src->date;
 	new->msg = str_copy(src->msg);

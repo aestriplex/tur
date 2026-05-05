@@ -35,6 +35,11 @@
 #define H3 "<h3 style='margin: 5px 0px;'><i>%s</i></h3>\n"
 #define H2 "<h2 style='margin-bottom: 0px;'>%s</h2>\n"
 
+static const char *favorite_html(const commit_t *commit)
+{
+	return commit->is_favorite ? " <span title='favorite'>&#9733;</span>" : "";
+}
+
 static void print_commit_diffs(FILE *out, const commit_t * commit)
 {
 	fprintf(out, "%zu file%c changed "
@@ -78,6 +83,7 @@ static void generate_html_file_grouped(FILE *out,
 				format_date(authored[n_c]->date, settings->date_only).val,
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val);
+		fprintf(out, "%s", favorite_html(authored[n_c]));
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -104,6 +110,7 @@ co_authored:
 				format_date(co_authored[n_c]->date, settings->date_only).val,
 				repo->format.commit_url(repo->url, co_authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val);
+		fprintf(out, "%s", favorite_html(co_authored[n_c]));
 		if (settings->show_diffs) {
 			print_commit_diffs(out, co_authored[n_c]);
 		}
@@ -132,6 +139,7 @@ static void generate_html_file_list(FILE *out,
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val,
 				format_date(authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_html(authored[n_c]));
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -149,6 +157,7 @@ static void generate_html_file_list(FILE *out,
 				repo->format.commit_url(repo->url, co_authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val,
 				format_date(co_authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_html(co_authored[n_c]));
 		if (settings->show_diffs) {
 			print_commit_diffs(out, co_authored[n_c]);
 		}

@@ -22,8 +22,6 @@
 #ifndef __LOADER_H__
 #define __LOADER_H__
 
-#include "settings.h"
-
-void load_commits(const settings_t *settings);
+void load_commits(void);
 
 #endif /* __LOADER_H__ */

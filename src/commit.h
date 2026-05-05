@@ -26,6 +26,7 @@
 #include "settings.h"
 #include "str.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
 
@@ -46,6 +47,7 @@ typedef struct {
 
 typedef struct {
 	str_t hash;
+	bool is_favorite;
 	responsability_t responsability;
 	time_t date;
 	str_t msg;

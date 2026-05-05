@@ -20,9 +20,8 @@
  */
 
 #include "loader.h"
-#include "settings.h"
 
-void load_commits(const settings_t *settings)
+void load_commits(void)
 {
 	
 }

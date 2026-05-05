@@ -24,6 +24,11 @@
 
 #include <stdio.h>
 
+static const char *favorite_stdout(const commit_t *commit)
+{
+	return commit->is_favorite ? " ★" : "";
+}
+
 static void print_commit_diffs(const commit_t * commit, const settings_t *settings)
 {
 	char *msg = settings->no_ansi
@@ -63,6 +68,7 @@ static void print_stdout_grouped(const repository_t *repo,
 		fprintf(stdout, "\t| %s %s",
 				authored[n_c]->hash.val,
 				format_date(authored[n_c]->date, settings->date_only).val);
+		fprintf(stdout, "%s", favorite_stdout(authored[n_c]));
 		if (settings->show_diffs) {
 			print_commit_diffs(authored[n_c], settings);
 		}
@@ -81,6 +87,7 @@ co_authored:
 		fprintf(stdout, "\t| %s %s",
 				co_authored[n_c]->hash.val,
 				format_date(co_authored[n_c]->date, settings->date_only).val);
+		fprintf(stdout, "%s", favorite_stdout(co_authored[n_c]));
 
 		if (settings->show_diffs) {
 			print_commit_diffs(co_authored[n_c], settings);
@@ -108,6 +115,7 @@ static void print_stdout_list(const repository_t *repo,
 				authored[n_c]->hash.val,
 				format_date(authored[n_c]->date, settings->date_only).val,
 				'A');
+		fprintf(stdout, "%s", favorite_stdout(authored[n_c]));
 		
 		if (settings->show_diffs) {
 			print_commit_diffs(authored[n_c], settings);
@@ -125,6 +133,7 @@ static void print_stdout_list(const repository_t *repo,
 				co_authored[n_c]->hash.val,
 				format_date(co_authored[n_c]->date, settings->date_only).val,
 				'C');
+		fprintf(stdout, "%s", favorite_stdout(co_authored[n_c]));
 		
 		if (settings->show_diffs) {
 			print_commit_diffs(co_authored[n_c], settings);

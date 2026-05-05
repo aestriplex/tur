@@ -28,6 +28,11 @@
 
 #define LIST_ITEMS_SPACING "\\setlength\\itemsep{1em}"
 
+static const char *favorite_tex(const commit_t *commit)
+{
+	return commit->is_favorite ? " \\turfav{}" : "";
+}
+
 static void print_commit_diffs(FILE *out, const commit_t * commit)
 {
 	fprintf(out, "\\\\%zu file%c changed "
@@ -73,6 +78,7 @@ static void generate_latex_file_grouped(FILE *out,
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val,
 				format_date(authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_tex(authored[n_c]));
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -99,6 +105,7 @@ co_authored:
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val,
 				format_date(co_authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_tex(co_authored[n_c]));
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -127,6 +134,8 @@ static void generate_latex_file_list(FILE *out, const
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val,
 				format_date(authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_tex(authored[n_c]));
+		fprintf(out, "\n");
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -144,6 +153,8 @@ static void generate_latex_file_list(FILE *out, const
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val,
 				format_date(co_authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_tex(co_authored[n_c]));
+		fprintf(out, "\n");
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}

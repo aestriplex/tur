@@ -41,13 +41,23 @@ uint32_t id_hash(void *key)
 
 static void print_commit_line(FILE *fp, const commit_t *commit)
 {
-	fprintf(fp, "%s\t%s\n", commit->hash.val, get_first_line(commit->msg).val);
+	fprintf(fp,
+			"%s\t%s%s%s\n",
+			commit->hash.val,
+			get_first_line(commit->msg).val,
+			commit->is_favorite ? "\t" : "",
+			commit->is_favorite ? FAVORITE_STR : "");
 }
 
 static return_code_t repo_index(repository_t *repo, const cacheidx_arr_t *commits)
 {
 	size_t authored_count = 0, co_authored_count = 0;
 	work_history_t *history = repo->history;
+
+	for (size_t i = 0; i < history->commit_arr->len; i++) {
+		commit_t *commit = commit_array_get(history->commit_arr, i);
+		commit->is_favorite = false;
+	}
 
 	for (size_t i = 0; i < commits->len; i++) {
 		cache_index_t *commit_idx = cache_array_get(commits, i);
@@ -57,6 +67,8 @@ static return_code_t repo_index(repository_t *repo, const cacheidx_arr_t *commit
 						  commit_idx->hash.val);
 			return COMMIT_NOT_FOUND;
 		}
+
+		c->is_favorite = commit_idx->is_favorite;
 
 		if (c->responsability == AUTHORED) {
 			history->authored_idx[authored_count++] = c;
