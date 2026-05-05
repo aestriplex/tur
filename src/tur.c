@@ -1,6 +1,6 @@
 /* tur.c
  * -----------------------------------------------------------------------
- * Copyright (C) 2025  Matteo Nicoli
+ * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
  * This file is part of TUR.
  *
@@ -62,8 +62,8 @@ static struct option long_options[] = {
 static void print_help(void)
 {
 	printf("T U R\n"
-		   "---------------------------------\n"
-		   "Developed by aestriplex, (c) 2025\n"
+		   "----------------------------------------\n"
+		   "Developed by aestriplex, (c) 2025 - 2026\n"
 		   "version %s\n"
 		   "\n"
 		   "Usage: tur [OPTIONS]\n"
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (!settings.emails || settings.emails->len == 0) {
-		(void)log_err("You should specify at least one email address");
+		(void)log_err("You should specify at least one email address\n");
 		print_help();
 		goto end;
 	}

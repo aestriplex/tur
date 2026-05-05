@@ -1,6 +1,6 @@
 /* loader.c - loads the commits, either from repositories or from cache
  * -----------------------------------------------------------------------
- * Copyright (C) 2025  Matteo Nicoli
+ * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
  * This file is part of TUR.
  *
