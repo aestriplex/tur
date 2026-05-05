@@ -22,6 +22,8 @@
 #ifndef __LOADER_H__
 #define __LOADER_H__
 
-void load_commits(void);
+#include "repo.h"
+
+return_code_t load_cached_history(const repository_t *repo, work_history_t **history);
 
 #endif /* __LOADER_H__ */

@@ -6,6 +6,8 @@ TUR is an open-source command-line utility designed to help developers and proje
 
 * Track commits by one or multiple email addresses
 * Support for multiple repositories via a simple repository list file
+* Incremental cache: only newer commits are fetched when cache is enabled
+* Interactive favorites/selection editing via a dedicated index file
 * Multiple output formats:
     - Standard output (stdout)
     - LaTeX
@@ -49,12 +51,27 @@ sudo make install
 | `-v`, `--version` | Display version |
 | `--date-only` | Each commit will be printed without time information |
 | `--no-ansi` | Avoid ANSI escape characters in terminal (e.g. colors) |
+| `--no-cache` | Disable cache usage for the current run |
+| `--clear-cache` | Remove all TUR cache files from `.tur/` |
+| `-i`, `--interactive` | Open editor to select commits in `.tur/commits_index` |
+| `-f`, `--force` | Recreate `.tur/commits_index` before interactive editing |
 | `-e <e_1,...,e_n>`, `--emails <e_1,...,e_n>` | Provide a comma-separated list of emails |
 | `-o <FILE>`, `--out <FILE>` | Specify an output file format (e.g., `.tex`, `.html`, `.md`) |
 | `-r <FILE>`, `--repos <FILE>` | Specify a file containing repository paths |
 | `-s`, `--sort` | Sort commits by date. You have to specify an order: ASC (Ascending order) or DESC (Descending order) |
 
 Option `e` is required. If you don't specify any output file, it prints in `stdout`.
+
+#### Cache files
+
+When cache is enabled (default), TUR writes files in `.tur/`:
+
+- `.tur/commits_cache`: full per-repository commit cache used for incremental loading
+- `.tur/commits_index`: selected commits used for output and interactive edits
+
+With cache enabled, TUR loads cached data and retrieves only commits newer than the latest cached commit. The interactive file is intentionally separate from full cache data.
+
+If you run with `--no-cache`, TUR skips cache files and reads commits directly from repositories for that run.
 
 #### Repository list
 
@@ -85,3 +102,8 @@ So, a pipeline could look like this
 ```
 $ tur -f repository_list.txt -e example1@provider1.com,example2@provider2.com -gdm -s DESC | grep repo1
 ```
+
+#### Favorites in interactive mode
+
+Run TUR with `-i` to open `.tur/commits_index` in your editor (from `GIT_EDITOR`, default: `vi`).
+Mark a commit as favorite by adding `[*]` at the end of its line, then save and close the editor.

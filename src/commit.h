@@ -68,6 +68,11 @@ typedef struct {
 } work_history_t;
 
 work_history_t *get_commit_history(str_t repo_path, const char *branch_name, const settings_t *settings);
+work_history_t *get_commit_history_since(str_t repo_path,
+										 const char *branch_name,
+										 const settings_t *settings,
+										 const str_t *stop_hash,
+										 bool *stop_found);
 commit_t *get_commit_with_id(const commit_arr_t* commit_arr, str_t id);
 commit_t *commit_copy(const commit_t *source);
 work_history_t *history_copy(const work_history_t *src);

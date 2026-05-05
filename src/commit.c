@@ -194,7 +194,11 @@ static uint16_t get_commit_stats(commit_stats_t *stats, const git_commit *commit
 	return OK;
 }
 
-work_history_t *get_commit_history(str_t repo_path, const char *branch_name, const settings_t *settings)
+work_history_t *get_commit_history_since(str_t repo_path,
+										 const char *branch_name,
+										 const settings_t *settings,
+										 const str_t *stop_hash,
+										 bool *stop_found)
 {
 	git_repository *git_repo = NULL;
 	git_revwalk *walker = NULL;
@@ -204,6 +208,9 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 	work_history_t *history = NULL;
 	size_t n_authored = 0, n_co_authored = 0;
 	git_oid oid;
+	bool should_stop = stop_hash && str_not_empty(*stop_hash);
+
+	if (stop_found) { *stop_found = false; }
 
 	if (git_repository_open(&git_repo, repo_path.val) != 0) {
 		(void)log_err("Failed to open repository `%s`\n", repo_path.val);
@@ -253,6 +260,11 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 		if (git_commit_lookup(&raw_commit, git_repo, &oid) != 0) { continue; }
 		
 		const char *hash = git_oid_tostr_s(git_commit_id(raw_commit));
+		if (should_stop && str_arr_equals(*stop_hash, hash)) {
+			if (stop_found) { *stop_found = true; }
+			goto clean_commit;
+		}
+
 		const char *msg = git_commit_message(raw_commit);
 		const git_signature *author = git_commit_author(raw_commit);
 
@@ -292,6 +304,10 @@ work_history_t *get_commit_history(str_t repo_path, const char *branch_name, con
 
 	clean_commit:
 		git_commit_free(raw_commit);
+
+		if (should_stop && stop_found && *stop_found) {
+			break;
+		}
 	}
 
 	git_revwalk_free(walker);
@@ -309,6 +325,17 @@ cleanup:
 	git_repository_free(git_repo);
 ret:
 	return history;
+}
+
+work_history_t *get_commit_history(str_t repo_path,
+								   const char *branch_name,
+								   const settings_t *settings)
+{
+	return get_commit_history_since(repo_path,
+									branch_name,
+									settings,
+									NULL,
+									NULL);
 }
 
 work_history_t *history_copy(const work_history_t *src)

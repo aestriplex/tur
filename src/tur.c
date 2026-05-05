@@ -70,28 +70,28 @@ static void print_help(void)
 		   "Options:\n"
 		   "  -h, --help             Show this help message and exit\n"
 		   "  -d, --diffs            Show diffs stats (rows added and removed, file changed)\n"
-		   "  -f, --force            Force the *overwrite* of the commit file modifiede in interactive\n"
-		   "                         mode. With this option enabled, when you run TUR in interactive mode,\n"
-		   "                         it ignores the cached `.tur/commits` file, and creates a new one \n"
-		   "                         starting from the commits retrieved from the repositories\n"
+		   "  -f, --force            Force overwrite of `.tur/commits_index` (interactive selection file).\n"
+		   "                         It does not disable incremental cache loading from `.tur/commits_cache`.\n"
 		   "  -g, --group            Group commit by repository\n"
 		   "                         Default: false\n"
 		   "  -i, --interactive      Execute TUR in interactive mode. It opens an editor to let\n"
-		   "                         you choose which commit include in the output. The editor\n"
+		   "                         you choose which commits include in the output (`.tur/commits_index`).\n"
+		   "                         Full cache data is stored separately in `.tur/commits_cache`.\n"
+		   "                         The editor\n"
 		   "                         can be set with the environment variable `GIT_EDITOR`\n"
 		   "                               Default editor: VI\n"
 		   "  -m, --message          Shows the first line of the commit message\n"
 		   "  -v, --version          Prints the verison on tur\n"
 		   "                         Default: false\n"
-		   "  --clear-cache          Delete the commit index file `.tur/commits_index` Irreversible!!!\n"
+		   "  --clear-cache          Delete `.tur/commits_index` and `.tur/commits_cache` (irreversible)\n"
 		   "  --date-only            Each commit will be printed without time information\n"
 		   "                         Format: Dec 28, 1994\n"
 		   "  --no-ansi              Avoid ANSI escape characters (e.g. escape characters\n"
 		   "                         for color handling in terminal)\n"
 		   "                         NOTE: this option is active only when printing to stdout.\n"
 		   "                               All other files ignore it.\n"
-		   "  --no-cache             Disable the cache no file is neither saved nor created in\n"
-		   "                         the directory `.tur`\n"
+		   "  --no-cache             Disable cache files in `.tur/`; commits are read only from repositories\n"
+		   "                         for this run\n"
 		   "  --no-merge             Exclude merge commits\n"
 		   "  -e, --emails <e_1,...> Specify a list of email addresses\n"
 		   "                         This list expects the emails separated by a comma.\n"
@@ -173,6 +173,14 @@ int main(int argc, char *argv[])
 				ret = OK;
 			} else {
 				(void)log_info("Removed commit index `%s` ...\n", COMMITS_FILE);
+			}
+
+			ret = delete_full_cache();
+			if (ret != OK) {
+				(void)log_err("Cannot remove the full cache `%s`...\n", FULL_CACHE_FILE);
+				ret = OK;
+			} else {
+				(void)log_info("Removed full cache `%s` ...\n", FULL_CACHE_FILE);
 			}
 			break;
 		case 'e':

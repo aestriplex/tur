@@ -49,6 +49,25 @@ static void print_commit_line(FILE *fp, const commit_t *commit)
 			commit->is_favorite ? FAVORITE_STR : "");
 }
 
+static char get_resp_char(responsability_t resp)
+{
+	return resp == AUTHORED ? 'A' : 'C';
+}
+
+static void print_cache_commit_line(FILE *fp, const commit_t *commit)
+{
+	fprintf(fp,
+			"%s\t%c\t%lld\t%zu\t%zu\t%zu\t%d\t%s\n",
+			commit->hash.val,
+			get_resp_char(commit->responsability),
+			(long long)commit->date,
+			commit->stats.files_changed,
+			commit->stats.lines_added,
+			commit->stats.lines_removed,
+			commit->is_favorite ? 1 : 0,
+			get_first_line(commit->msg).val);
+}
+
 static return_code_t repo_index(repository_t *repo, const cacheidx_arr_t *commits)
 {
 	size_t authored_count = 0, co_authored_count = 0;
@@ -177,6 +196,12 @@ bool commit_file_exists(void)
 	return stat(COMMITS_FILE, &st) != -1;
 }
 
+bool full_cache_file_exists(void)
+{
+	struct stat st = { 0 };
+	return stat(FULL_CACHE_FILE, &st) != -1;
+}
+
 return_code_t write_repos_on_file(const repository_array_t *repos)
 {
 	return_code_t ret = OK;
@@ -205,6 +230,38 @@ return_code_t write_repos_on_file(const repository_array_t *repos)
 		}
 		for (size_t j = 0; j < history->n_co_authored; j++) {
 			print_commit_line(fp, co_authored[j]);
+		}
+	}
+
+	fclose(fp);
+	return ret;
+}
+
+return_code_t write_full_cache_on_file(const repository_array_t *repos)
+{
+	return_code_t ret = OK;
+	FILE *fp = NULL;
+
+	ret = check_or_create_tur_dir();
+	if (ret != OK) {
+		return ret;
+	}
+
+	fp = fopen(FULL_CACHE_FILE, "w");
+	if (!fp) {
+		(void)log_err("Cannot create file `%s`...\n", FULL_CACHE_FILE);
+		return CANNOT_CREATE_COMMITS_FILE;
+	}
+
+	for (size_t i = 0; i < repos->len; i++) {
+		repository_t *repo = repo_array_get(repos, i);
+		const work_history_t *history = repo->history;
+		const commit_arr_t *commit_arr = history->commit_arr;
+
+		fprintf(fp, "+ %u) %s\n", repo->id, repo->name.val);
+		for (size_t j = 0; j < commit_arr->len; j++) {
+			commit_t *commit = commit_array_get(commit_arr, j);
+			print_cache_commit_line(fp, commit);
 		}
 	}
 
@@ -250,6 +307,15 @@ return_code_t delete_commits_index(void)
 {
 	if (remove(COMMITS_FILE) != 0) {
 		perror("Error deleting commits index file");
+		return CANNOT_DELETE_COMMITS_FILE;
+	}
+	return OK;
+}
+
+return_code_t delete_full_cache(void)
+{
+	if (remove(FULL_CACHE_FILE) != 0) {
+		perror("Error deleting full cache file");
 		return CANNOT_DELETE_COMMITS_FILE;
 	}
 	return OK;
