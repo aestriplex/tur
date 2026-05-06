@@ -30,169 +30,169 @@
 
 static const char *favorite_tex(const commit_t *commit)
 {
-	return commit->is_favorite ? " \\turfav{}" : "";
+    return commit->is_favorite ? " \\turfav{}" : "";
 }
 
 static void print_commit_diffs(FILE *out, const commit_t * commit)
 {
-	fprintf(out, "\\\\%zu file%c changed "
-				 "\\textcolor{teal}{+%zu} "
-				 "$~\\vert{}~$ \\textcolor{red}{-%zu}\n",
-			commit->stats.files_changed,
-			(commit->stats.files_changed > 1 ? 's': ASCII_SPACE),
-			commit->stats.lines_added,
-			commit->stats.lines_removed);
+    fprintf(out, "\\\\%zu file%c changed "
+                 "\\textcolor{teal}{+%zu} "
+                 "$~\\vert{}~$ \\textcolor{red}{-%zu}\n",
+            commit->stats.files_changed,
+            (commit->stats.files_changed > 1 ? 's': ASCII_SPACE),
+            commit->stats.lines_added,
+            commit->stats.lines_removed);
 }
 
 static void print_commit_message(FILE *out, const commit_t * commit)
 {
-	fprintf(out, "%s\\\\ \n", escape_special_chars(get_first_line(commit->msg)).val);
+    fprintf(out, "%s\\\\ \n", escape_special_chars(get_first_line(commit->msg)).val);
 }
 
 static void generate_latex_file_grouped(FILE *out,
-										const repository_t *repo,
-										const work_history_t *history,
-										const settings_t *settings)
+                                        const repository_t *repo,
+                                        const work_history_t *history,
+                                        const settings_t *settings)
 {
-	commit_t **const authored = history->authored_idx;
-	commit_t **const co_authored = history->co_authored_idx;
+    commit_t **const authored = history->authored_idx;
+    commit_t **const co_authored = history->co_authored_idx;
 
-	if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
+    if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
 
-	fprintf(out, "\n\n\\subsection{%s}\n\\label{subsec:%s}\n", repo->name.val, repo->name.val);
-		
-	if (repo->history->n_authored == 0) { goto co_authored; }
+    fprintf(out, "\n\n\\subsection{%s}\n\\label{subsec:%s}\n", repo->name.val, repo->name.val);
+        
+    if (repo->history->n_authored == 0) { goto co_authored; }
 
-	fprintf(out, "\n\\turtexpar{Authored}\n\\label{par:%s-authored}\n\n"
-				 "\\begin{enumerate}\n" LIST_ITEMS_SPACING "\n",
-				 repo->name.val);
-	
-	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "\t\\item \\label{%s:item:%s} ",
-				repo->name.val,
-				authored[n_c]->hash.val);
-		if (settings->print_msg) {
-			print_commit_message(out, authored[n_c]);
-		}
-		fprintf(out, "\\href{%s}{%s} (%s) ",
-				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
-				authored[n_c]->hash.val,
-				format_date(authored[n_c]->date, settings->date_only).val);
-		fprintf(out, "%s", favorite_tex(authored[n_c]));
-		if (settings->show_diffs) {
-			print_commit_diffs(out, authored[n_c]);
-		}
-	}
+    fprintf(out, "\n\\turtexpar{Authored}\n\\label{par:%s-authored}\n\n"
+                 "\\begin{enumerate}\n" LIST_ITEMS_SPACING "\n",
+                 repo->name.val);
+    
+    for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
+        fprintf(out, "\t\\item \\label{%s:item:%s} ",
+                repo->name.val,
+                authored[n_c]->hash.val);
+        if (settings->print_msg) {
+            print_commit_message(out, authored[n_c]);
+        }
+        fprintf(out, "\\href{%s}{%s} (%s) ",
+                repo->format.commit_url(repo->url, authored[n_c]->hash).val,
+                authored[n_c]->hash.val,
+                format_date(authored[n_c]->date, settings->date_only).val);
+        fprintf(out, "%s", favorite_tex(authored[n_c]));
+        if (settings->show_diffs) {
+            print_commit_diffs(out, authored[n_c]);
+        }
+    }
 
-	fprintf(out, "\\end{enumerate}\n");
+    fprintf(out, "\\end{enumerate}\n");
 
 co_authored:
-	
-	if (repo->history->n_co_authored == 0) { return; }
+    
+    if (repo->history->n_co_authored == 0) { return; }
 
-	fprintf(out, "\n\\turtexpar{Co-authored}\n\\label{par:%s-co-authored}\n\n"
-				 "\\begin{enumerate}\n" LIST_ITEMS_SPACING "\n",
-				 repo->name.val);
-	
-	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(out, "\t\\item \\label{%s:item:%s} ",
-				repo->name.val,
-				authored[n_c]->hash.val);
-		if (settings->print_msg) {
-			print_commit_message(out, co_authored[n_c]);
-		}
-		fprintf(out, "\\href{%s}{%s} (%s) ",
-				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
-				co_authored[n_c]->hash.val,
-				format_date(co_authored[n_c]->date, settings->date_only).val);
-		fprintf(out, "%s", favorite_tex(co_authored[n_c]));
-		if (settings->show_diffs) {
-			print_commit_diffs(out, authored[n_c]);
-		}
-	}
+    fprintf(out, "\n\\turtexpar{Co-authored}\n\\label{par:%s-co-authored}\n\n"
+                 "\\begin{enumerate}\n" LIST_ITEMS_SPACING "\n",
+                 repo->name.val);
+    
+    for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
+        fprintf(out, "\t\\item \\label{%s:item:%s} ",
+                repo->name.val,
+                authored[n_c]->hash.val);
+        if (settings->print_msg) {
+            print_commit_message(out, co_authored[n_c]);
+        }
+        fprintf(out, "\\href{%s}{%s} (%s) ",
+                repo->format.commit_url(repo->url, authored[n_c]->hash).val,
+                co_authored[n_c]->hash.val,
+                format_date(co_authored[n_c]->date, settings->date_only).val);
+        fprintf(out, "%s", favorite_tex(co_authored[n_c]));
+        if (settings->show_diffs) {
+            print_commit_diffs(out, authored[n_c]);
+        }
+    }
 
-	fprintf(out, "\\end{enumerate}\n");
+    fprintf(out, "\\end{enumerate}\n");
 }
 
 static void generate_latex_file_list(FILE *out, const
-									 repository_t *repo,
-									 const work_history_t *history,
-									 const settings_t *settings)
+                                     repository_t *repo,
+                                     const work_history_t *history,
+                                     const settings_t *settings)
 {
-	commit_t **const authored = history->authored_idx;
-	commit_t **const co_authored = history->co_authored_idx;
+    commit_t **const authored = history->authored_idx;
+    commit_t **const co_authored = history->co_authored_idx;
 
-	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "\t\\item \\label{%s:item:%s}",
-				repo->name.val,
-				authored[n_c]->hash.val);
-		if (settings->print_msg) {
-			print_commit_message(out, authored[n_c]);
-		}
-		fprintf(out, "%s: [A] \\href{%s}{%s} %s\n",
-				repo->name.val,
-				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
-				authored[n_c]->hash.val,
-				format_date(authored[n_c]->date, settings->date_only).val);
-		fprintf(out, "%s", favorite_tex(authored[n_c]));
-		fprintf(out, "\n");
-		if (settings->show_diffs) {
-			print_commit_diffs(out, authored[n_c]);
-		}
-	}
+    for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
+        fprintf(out, "\t\\item \\label{%s:item:%s}",
+                repo->name.val,
+                authored[n_c]->hash.val);
+        if (settings->print_msg) {
+            print_commit_message(out, authored[n_c]);
+        }
+        fprintf(out, "%s: [A] \\href{%s}{%s} %s\n",
+                repo->name.val,
+                repo->format.commit_url(repo->url, authored[n_c]->hash).val,
+                authored[n_c]->hash.val,
+                format_date(authored[n_c]->date, settings->date_only).val);
+        fprintf(out, "%s", favorite_tex(authored[n_c]));
+        fprintf(out, "\n");
+        if (settings->show_diffs) {
+            print_commit_diffs(out, authored[n_c]);
+        }
+    }
 
-	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(out, "\t\\item \\label{%s:item:%s} ",
-				repo->name.val,
-				authored[n_c]->hash.val);
-		if (settings->print_msg) {
-			print_commit_message(out, co_authored[n_c]);
-		}
-		fprintf(out, "%s: [C] \\href{%s}{%s} %s\n",
-				repo->name.val,
-				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
-				co_authored[n_c]->hash.val,
-				format_date(co_authored[n_c]->date, settings->date_only).val);
-		fprintf(out, "%s", favorite_tex(co_authored[n_c]));
-		fprintf(out, "\n");
-		if (settings->show_diffs) {
-			print_commit_diffs(out, authored[n_c]);
-		}
-	}
+    for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
+        fprintf(out, "\t\\item \\label{%s:item:%s} ",
+                repo->name.val,
+                authored[n_c]->hash.val);
+        if (settings->print_msg) {
+            print_commit_message(out, co_authored[n_c]);
+        }
+        fprintf(out, "%s: [C] \\href{%s}{%s} %s\n",
+                repo->name.val,
+                repo->format.commit_url(repo->url, authored[n_c]->hash).val,
+                co_authored[n_c]->hash.val,
+                format_date(co_authored[n_c]->date, settings->date_only).val);
+        fprintf(out, "%s", favorite_tex(co_authored[n_c]));
+        fprintf(out, "\n");
+        if (settings->show_diffs) {
+            print_commit_diffs(out, authored[n_c]);
+        }
+    }
 }
 
 void generate_latex_file(FILE *out, const repository_array_t *repos, const settings_t *settings)
 {
-	fprintf(out, "%% This file is automatically generated by TUR.\n"
-				 "%% This file is not standalone, you have to "
-				 "include it in a LaTeX document with both "
-				 "*xcolor* and *hyperref* packages.\n\n"
-				 "%% Commands definition\n"
-				 "\\definecolor{americanrose}{rgb}{1.0, 0.01, 0.24}\n"
-				 "\\newcommand{\\turtexpar}[1]{\\textbf{#1}}\n"
-				 "\\newcommand{\\turfav}{ {\\Large \\textcolor{americanrose}{$\\star$}}}");
+    fprintf(out, "%% This file is automatically generated by TUR.\n"
+                 "%% This file is not standalone, you have to "
+                 "include it in a LaTeX document with both "
+                 "*xcolor* and *hyperref* packages.\n\n"
+                 "%% Commands definition\n"
+                 "\\definecolor{americanrose}{rgb}{1.0, 0.01, 0.24}\n"
+                 "\\newcommand{\\turtexpar}[1]{\\textbf{#1}}\n"
+                 "\\newcommand{\\turfav}{ {\\Large \\textcolor{americanrose}{$\\star$}}}");
 
-	if (str_not_empty(settings->title)) {
-		fprintf(out, "\n\n\\section{%s}", settings->title.val);
-	}
+    if (str_not_empty(settings->title)) {
+        fprintf(out, "\n\n\\section{%s}", settings->title.val);
+    }
 
-	if (!settings->grouped) {
-		fprintf(out, "\n\n\\begin{enumerate}\n" LIST_ITEMS_SPACING "\n");
-	}
+    if (!settings->grouped) {
+        fprintf(out, "\n\n\\begin{enumerate}\n" LIST_ITEMS_SPACING "\n");
+    }
 
-	for (size_t i = 0; i < repos->len; i++) {
-		repository_t *repo = repo_array_get(repos, i);
+    for (size_t i = 0; i < repos->len; i++) {
+        repository_t *repo = repo_array_get(repos, i);
 
-		if (settings->grouped) {
-			generate_latex_file_grouped(out, repo, repo->history, settings);
-		} else {
-			generate_latex_file_list(out, repo, repo->history, settings);
-		}
-	}
+        if (settings->grouped) {
+            generate_latex_file_grouped(out, repo, repo->history, settings);
+        } else {
+            generate_latex_file_list(out, repo, repo->history, settings);
+        }
+    }
 
-	if (!settings->grouped) {
-		fprintf(out, "\\end{enumerate}\n"
-					 "\\vspace{1cm}\n\n"
-					 "\\noindent (\\turfav{} indicates a valuable contribution)\n");
-	}
+    if (!settings->grouped) {
+        fprintf(out, "\\end{enumerate}\n"
+                     "\\vspace{1cm}\n\n"
+                     "\\noindent (\\turfav{} indicates a valuable contribution)\n");
+    }
 }

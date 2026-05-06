@@ -31,55 +31,55 @@ static FILE *error_logger = NULL;
 
 return_code_t init_info_logger(int file_descriptor)
 {
-	FILE *_logger = fdopen(file_descriptor, "w");
-	if (!_logger) { return INVALID_LOGGER_FD; }
-	info_logger = _logger;
-	return OK;
+    FILE *_logger = fdopen(file_descriptor, "w");
+    if (!_logger) { return INVALID_LOGGER_FD; }
+    info_logger = _logger;
+    return OK;
 }
 
 return_code_t init_error_logger(int file_descriptor)
 {
-	FILE *_logger = fdopen(file_descriptor, "w");
-	if (!_logger) { return INVALID_LOGGER_FD; }
-	error_logger = _logger;
-	return OK;
+    FILE *_logger = fdopen(file_descriptor, "w");
+    if (!_logger) { return INVALID_LOGGER_FD; }
+    error_logger = _logger;
+    return OK;
 }
 
 return_code_t init_def_info_logger(void)
 {
-	info_logger = stderr;
-	return OK;
+    info_logger = stderr;
+    return OK;
 }
 
 return_code_t init_def_error_logger(void)
 {
-	error_logger = stderr;
-	return OK;
+    error_logger = stderr;
+    return OK;
 }
 
 return_code_t init_default_loggers(void)
 {
-	(void)init_def_info_logger();
-	(void)init_def_error_logger();
-	return OK;
+    (void)init_def_info_logger();
+    (void)init_def_error_logger();
+    return OK;
 }
 
 return_code_t log_info(const char *format, ...)
 {
-	va_list args;
-	if (!info_logger) { return LOGGER_NOT_INITIALIZED; }
-	va_start(args, format);
-	int res = vfprintf(info_logger, format, args);
-	va_end(args);
-	return res < 0 ? RUNTIME_LOGGER_ERROR : OK;
+    va_list args;
+    if (!info_logger) { return LOGGER_NOT_INITIALIZED; }
+    va_start(args, format);
+    int res = vfprintf(info_logger, format, args);
+    va_end(args);
+    return res < 0 ? RUNTIME_LOGGER_ERROR : OK;
 }
 
 return_code_t log_err(const char *format, ...)
 {
-	va_list args;
-	if (!error_logger) { return LOGGER_NOT_INITIALIZED; }
-	va_start(args, format);
-	int res = vfprintf(error_logger, format, args);
-	va_end(args);
-	return res < 0 ? RUNTIME_LOGGER_ERROR : OK;
+    va_list args;
+    if (!error_logger) { return LOGGER_NOT_INITIALIZED; }
+    va_start(args, format);
+    int res = vfprintf(error_logger, format, args);
+    va_end(args);
+    return res < 0 ? RUNTIME_LOGGER_ERROR : OK;
 }

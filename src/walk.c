@@ -39,357 +39,357 @@
 typedef int (*ord_fn_t) (const void* a, const void* b);
 
 #define REPO_STAT_LOG_STR "%-5lu commits in %-*s  +%lu | -%lu  " \
-						  "[AVG +%.2f | -%.2f]  ~%s\n"
+                          "[AVG +%.2f | -%.2f]  ~%s\n"
 #define FLOAT_AVG(x,y) ((float) ((float) x / (y)))
 
 static thread_pool_t pool;
 
 static int order_by_date_asc(const void* a, const void* b)
 {
-	commit_t **first = (commit_t **)a;
-	commit_t **second = (commit_t **)b;
+    commit_t **first = (commit_t **)a;
+    commit_t **second = (commit_t **)b;
 
-	if ((*first)->date == (*second)->date) { return 0; }
-	return (*first)->date < (*second)->date ? -1 : 1;
+    if ((*first)->date == (*second)->date) { return 0; }
+    return (*first)->date < (*second)->date ? -1 : 1;
 }
 
 static int order_by_date_desc(const void* a, const void* b)
 {
-	return -order_by_date_asc(a,b);
+    return -order_by_date_asc(a,b);
 }
 
 static commit_t **get_commit_refs(const commit_arr_t *commit_arr,
-								  size_t commit_with_resp,
-								  responsability_t resp,
-								  const settings_t *settings)
+                                  size_t commit_with_resp,
+                                  responsability_t resp,
+                                  const settings_t *settings)
 {
-	commit_t **commits_with_resp = malloc(commit_with_resp * sizeof(commit_t *));
-	for (size_t i = 0, n_resp = 0; i < commit_arr->len; i++) {
-		commit_t *commit = commit_array_get(commit_arr, i);
-		if (commit->responsability == resp) {
-			commits_with_resp[n_resp] = commit;
-			n_resp++;
-		}
-	}
-	if (settings->sorted) {
-		ord_fn_t ord_fn = settings->sort_order == ASC
-						  ? order_by_date_asc
-						  : order_by_date_desc;
-		qsort(commits_with_resp,
-			  commit_with_resp,
-			  sizeof(commit_t *),
-			  ord_fn);
-	}
+    commit_t **commits_with_resp = malloc(commit_with_resp * sizeof(commit_t *));
+    for (size_t i = 0, n_resp = 0; i < commit_arr->len; i++) {
+        commit_t *commit = commit_array_get(commit_arr, i);
+        if (commit->responsability == resp) {
+            commits_with_resp[n_resp] = commit;
+            n_resp++;
+        }
+    }
+    if (settings->sorted) {
+        ord_fn_t ord_fn = settings->sort_order == ASC
+                          ? order_by_date_asc
+                          : order_by_date_desc;
+        qsort(commits_with_resp,
+              commit_with_resp,
+              sizeof(commit_t *),
+              ord_fn);
+    }
 
-	return commits_with_resp;
+    return commits_with_resp;
 }
 
 static return_code_t build_indexes(repository_t *repo,
-								   const settings_t *settings)
+                                   const settings_t *settings)
 {
-	commit_t **authored = get_commit_refs(repo->history->commit_arr,
-										  repo->history->n_authored,
-										  AUTHORED, settings);
-	commit_t **co_authored = get_commit_refs(repo->history->commit_arr,
-											 repo->history->n_co_authored,
-											 CO_AUTHORED, settings);
+    commit_t **authored = get_commit_refs(repo->history->commit_arr,
+                                          repo->history->n_authored,
+                                          AUTHORED, settings);
+    commit_t **co_authored = get_commit_refs(repo->history->commit_arr,
+                                             repo->history->n_co_authored,
+                                             CO_AUTHORED, settings);
 
-	if (!authored || !co_authored) { return INDEX_ALLOCATION_ERROR; }
+    if (!authored || !co_authored) { return INDEX_ALLOCATION_ERROR; }
 
-	repo->history->authored_idx = authored;
-	repo->history->co_authored_idx = co_authored;
+    repo->history->authored_idx = authored;
+    repo->history->co_authored_idx = co_authored;
 
-	return OK;
+    return OK;
 }
 
 static return_code_t merge_cached_history(work_history_t *history,
-								  const work_history_t *cached_history)
+                                  const work_history_t *cached_history)
 {
-	for (size_t i = 0; i < cached_history->commit_arr->len; i++) {
-		commit_t *cached_commit = commit_array_get(cached_history->commit_arr, i);
-		if (commit_array_add(history->commit_arr, cached_commit) != OK) {
-			(void)log_err("merge_cached_history: cannot merge commit `%s`\n",
-						  cached_commit->hash.val);
-			return RUNTIME_ARRAY_REALLOC_ERROR;
-		}
+    for (size_t i = 0; i < cached_history->commit_arr->len; i++) {
+        commit_t *cached_commit = commit_array_get(cached_history->commit_arr, i);
+        if (commit_array_add(history->commit_arr, cached_commit) != OK) {
+            (void)log_err("merge_cached_history: cannot merge commit `%s`\n",
+                          cached_commit->hash.val);
+            return RUNTIME_ARRAY_REALLOC_ERROR;
+        }
 
-		if (cached_commit->responsability == AUTHORED) {
-			history->n_authored++;
-		} else {
-			history->n_co_authored++;
-		}
+        if (cached_commit->responsability == AUTHORED) {
+            history->n_authored++;
+        } else {
+            history->n_co_authored++;
+        }
 
-		history->tot_lines_added += cached_commit->stats.lines_added;
-		history->tot_lines_removed += cached_commit->stats.lines_removed;
-	}
+        history->tot_lines_added += cached_commit->stats.lines_added;
+        history->tot_lines_removed += cached_commit->stats.lines_removed;
+    }
 
-	return OK;
+    return OK;
 }
 
 static return_code_t get_repo_history(repository_t *repo,
-							  const settings_t *settings)
+                              const settings_t *settings)
 {
-	const char *branch_name = repo->branches
-							  ? str_array_get(repo->branches, 0).val
-							  : NULL;
-	return_code_t ret = OK;
+    const char *branch_name = repo->branches
+                              ? str_array_get(repo->branches, 0).val
+                              : NULL;
+    return_code_t ret = OK;
 
-	if (settings->no_cache) {
-		repo->history = get_commit_history(repo->path,
-										   branch_name,
-										   settings);
-		return repo->history ? OK : RUNTIME_MALLOC_ERROR;
-	}
+    if (settings->no_cache) {
+        repo->history = get_commit_history(repo->path,
+                                           branch_name,
+                                           settings);
+        return repo->history ? OK : RUNTIME_MALLOC_ERROR;
+    }
 
-	work_history_t *cached_history = NULL;
-	str_t cached_head = empty_str();
-	ret = load_cached_history(repo, &cached_history, &cached_head);
-	if (ret != OK) { return ret; }
+    work_history_t *cached_history = NULL;
+    str_t cached_head = empty_str();
+    ret = load_cached_history(repo, &cached_history, &cached_head);
+    if (ret != OK) { return ret; }
 
-	if (!cached_history || cached_history->commit_arr->len == 0) {
-		repo->history = get_commit_history(repo->path, branch_name, settings);
-		if (cached_history) {
-			history_free(&cached_history);
-		}
-		str_free(cached_head);
-		return repo->history ? OK : RUNTIME_MALLOC_ERROR;
-	}
+    if (!cached_history || cached_history->commit_arr->len == 0) {
+        repo->history = get_commit_history(repo->path, branch_name, settings);
+        if (cached_history) {
+            history_free(&cached_history);
+        }
+        str_free(cached_head);
+        return repo->history ? OK : RUNTIME_MALLOC_ERROR;
+    }
 
-	bool stop_found = false;
-	work_history_t *new_history = get_commit_history_since(repo->path,
-														   branch_name,
-														   settings,
-														   &cached_head,
-														   &stop_found);
-	str_free(cached_head);
+    bool stop_found = false;
+    work_history_t *new_history = get_commit_history_since(repo->path,
+                                                           branch_name,
+                                                           settings,
+                                                           &cached_head,
+                                                           &stop_found);
+    str_free(cached_head);
 
-	if (!new_history) {
-		history_free(&cached_history);
-		return RUNTIME_MALLOC_ERROR;
-	}
+    if (!new_history) {
+        history_free(&cached_history);
+        return RUNTIME_MALLOC_ERROR;
+    }
 
-	if (!stop_found) {
-		history_free(&new_history);
-		history_free(&cached_history);
-		repo->history = get_commit_history(repo->path, branch_name, settings);
-		return repo->history ? OK : RUNTIME_MALLOC_ERROR;
-	}
+    if (!stop_found) {
+        history_free(&new_history);
+        history_free(&cached_history);
+        repo->history = get_commit_history(repo->path, branch_name, settings);
+        return repo->history ? OK : RUNTIME_MALLOC_ERROR;
+    }
 
-	ret = merge_cached_history(new_history, cached_history);
-	history_free(&cached_history);
-	if (ret != OK) {
-		history_free(&new_history);
-		return ret;
-	}
+    ret = merge_cached_history(new_history, cached_history);
+    history_free(&cached_history);
+    if (ret != OK) {
+        history_free(&new_history);
+        return ret;
+    }
 
-	repo->history = new_history;
-	return OK;
+    repo->history = new_history;
+    return OK;
 }
 
 static void print_output(const repository_array_t *repos,
-						 const settings_t *settings,
-						 repository_stats_t stats)
+                         const settings_t *settings,
+                         repository_stats_t stats)
 {
-	if (settings->output_mode == STDOUT) {
-		print_stdout(repos, settings, stats);
-		return;
-	}
+    if (settings->output_mode == STDOUT) {
+        print_stdout(repos, settings, stats);
+        return;
+    }
 
-	FILE *out = fopen(settings->output.val, "w");
-	if (!out) {
-		(void)log_err("print_output: cannot open file: %s\n",
-					  settings->output.val);
-		return;
-	}
+    FILE *out = fopen(settings->output.val, "w");
+    if (!out) {
+        (void)log_err("print_output: cannot open file: %s\n",
+                      settings->output.val);
+        return;
+    }
 
-	switch (settings->output_mode) {
-	case LATEX:
-		generate_latex_file(out, repos, settings);
-		break;
-	case HTML:
-		generate_html_file(out, repos, settings);
-		break;
-	case JEKYLL:
-		generate_markdown_file(out, repos, settings);
-		break;
-	default:
-		(void)log_err("corrupted output mode [%d]... stdout selected",
-					  settings->output_mode);
-		break;
-	}
+    switch (settings->output_mode) {
+    case LATEX:
+        generate_latex_file(out, repos, settings);
+        break;
+    case HTML:
+        generate_html_file(out, repos, settings);
+        break;
+    case JEKYLL:
+        generate_markdown_file(out, repos, settings);
+        break;
+    default:
+        (void)log_err("corrupted output mode [%d]... stdout selected",
+                      settings->output_mode);
+        break;
+    }
 
-	fclose(out);
+    fclose(out);
 }
 
 static void *walk_repo(void* arg)
 {
-	size_t max_name_len = *(size_t *)arg;
-	thread_worker_t *worker;
+    size_t max_name_len = *(size_t *)arg;
+    thread_worker_t *worker;
 
-	while (1) {
-		pthread_mutex_lock(&pool.current_worker_lock);
-		if (pool.current_worker >= pool.n_workers) {
-			pthread_mutex_unlock(&pool.current_worker_lock);
-			break;
-		}
-		worker = pool.workers + pool.current_worker;
-		pool.current_worker++;
-		pthread_mutex_unlock(&pool.current_worker_lock);
+    while (1) {
+        pthread_mutex_lock(&pool.current_worker_lock);
+        if (pool.current_worker >= pool.n_workers) {
+            pthread_mutex_unlock(&pool.current_worker_lock);
+            break;
+        }
+        worker = pool.workers + pool.current_worker;
+        pool.current_worker++;
+        pthread_mutex_unlock(&pool.current_worker_lock);
 
-		const char *branch_name = worker->repo->branches
-								  ? str_array_get(worker->repo->branches, 0).val
-								  : NULL;
+        const char *branch_name = worker->repo->branches
+                                  ? str_array_get(worker->repo->branches, 0).val
+                                  : NULL;
 
-		worker->ret = get_repo_history(worker->repo, pool.settings);
-		if (worker->ret != OK || !worker->repo->history) {
-			if (worker->ret == OK) {
-				worker->ret = RUNTIME_MALLOC_ERROR;
-			}
-			(void)log_err("walk_repo: cannot retrieve commit history for %s\n",
-						  worker->repo->name.val);
-			continue;
-		}
-		worker->ret = build_indexes(worker->repo, pool.settings);
+        worker->ret = get_repo_history(worker->repo, pool.settings);
+        if (worker->ret != OK || !worker->repo->history) {
+            if (worker->ret == OK) {
+                worker->ret = RUNTIME_MALLOC_ERROR;
+            }
+            (void)log_err("walk_repo: cannot retrieve commit history for %s\n",
+                          worker->repo->name.val);
+            continue;
+        }
+        worker->ret = build_indexes(worker->repo, pool.settings);
 
-		/* Print log with stats */
-		const size_t n_commits = worker->repo->history->commit_arr->len;
-		const size_t lines_added = worker->repo->history->tot_lines_added;
-		const size_t lines_removed = worker->repo->history->tot_lines_removed;
-		(void)log_info(REPO_STAT_LOG_STR,
-					   n_commits,
-					   max_name_len,
-					   worker->repo->name.val,
-					   lines_added,
-					   lines_removed,
-					   FLOAT_AVG(lines_added, n_commits),
-					   FLOAT_AVG(lines_removed, n_commits),
-					   branch_name ? branch_name : "HEAD");
-	}
-	
-	return NULL;
+        /* Print log with stats */
+        const size_t n_commits = worker->repo->history->commit_arr->len;
+        const size_t lines_added = worker->repo->history->tot_lines_added;
+        const size_t lines_removed = worker->repo->history->tot_lines_removed;
+        (void)log_info(REPO_STAT_LOG_STR,
+                       n_commits,
+                       max_name_len,
+                       worker->repo->name.val,
+                       lines_added,
+                       lines_removed,
+                       FLOAT_AVG(lines_added, n_commits),
+                       FLOAT_AVG(lines_removed, n_commits),
+                       branch_name ? branch_name : "HEAD");
+    }
+    
+    return NULL;
 }
 
 static return_code_t init_thread_pool(const repository_array_t *repos,
-									  const settings_t *settings)
+                                      const settings_t *settings)
 {
-	pool.threads = malloc(settings->n_threads * sizeof(pthread_t));
-	if (!pool.threads) { goto err; }
-	pool.workers = malloc(repos->len * sizeof(thread_worker_t));
-	if (!pool.workers) { goto err; }
-	pool.settings = settings;
-	pool.n_threads = settings->n_threads;
-	pool.n_workers = repos->len;
-	pool.current_worker = 0;
-	pthread_mutex_init(&pool.current_worker_lock, NULL);
+    pool.threads = malloc(settings->n_threads * sizeof(pthread_t));
+    if (!pool.threads) { goto err; }
+    pool.workers = malloc(repos->len * sizeof(thread_worker_t));
+    if (!pool.workers) { goto err; }
+    pool.settings = settings;
+    pool.n_threads = settings->n_threads;
+    pool.n_workers = repos->len;
+    pool.current_worker = 0;
+    pthread_mutex_init(&pool.current_worker_lock, NULL);
 
-	return OK;
+    return OK;
 
 err:
-	(void)log_err("init_thread_pool: memory allocation for thread pool failed.");
-	return RUNTIME_MALLOC_ERROR;
+    (void)log_err("init_thread_pool: memory allocation for thread pool failed.");
+    return RUNTIME_MALLOC_ERROR;
 }
 
 static return_code_t sync_selected_commits_file(const repository_array_t *repos,
-										const settings_t *settings)
+                                        const settings_t *settings)
 {
-	return_code_t ret = OK;
+    return_code_t ret = OK;
 
-	if (!settings->no_cache) {
-		if (settings->force || !commit_file_exists()) {
-			/* We have to create or overwrite the commits file */
-			ret = write_repos_on_file(repos);
-			if (ret != OK) { return ret; }
-		}
-	}
+    if (!settings->no_cache) {
+        if (settings->force || !commit_file_exists()) {
+            /* We have to create or overwrite the commits file */
+            ret = write_repos_on_file(repos);
+            if (ret != OK) { return ret; }
+        }
+    }
 
-	if (settings->interactive) {
-		if (settings->no_cache && !commit_file_exists()) {
-			ret = write_repos_on_file(repos);
-			if (ret != OK) { return ret; }
-		}
+    if (settings->interactive) {
+        if (settings->no_cache && !commit_file_exists()) {
+            ret = write_repos_on_file(repos);
+            if (ret != OK) { return ret; }
+        }
 
-		ret = choose_commits_through_editor(settings);
-		if (ret != OK) { return ret; }
-	}
+        ret = choose_commits_through_editor(settings);
+        if (ret != OK) { return ret; }
+    }
 
-	return ret;
+    return ret;
 }
 
 return_code_t walk_through_repos(const repository_array_t *repos,
-								 const settings_t *settings,
-								 repository_stats_t stats)
+                                 const settings_t *settings,
+                                 repository_stats_t stats)
 {
-	return_code_t ret = OK;
-	size_t max_name_len = stats.max_name_len;
+    return_code_t ret = OK;
+    size_t max_name_len = stats.max_name_len;
 
-	ret = init_thread_pool(repos, settings);
-	if (ret != OK) { return RUNTIME_MALLOC_ERROR; }
+    ret = init_thread_pool(repos, settings);
+    if (ret != OK) { return RUNTIME_MALLOC_ERROR; }
 
-	(void)log_info("Created thread pool [size %lu]\n", pool.n_threads);
+    (void)log_info("Created thread pool [size %lu]\n", pool.n_threads);
 
-	__sync_synchronize();
+    __sync_synchronize();
 
-	for (size_t i = 0; i < repos->len; i++) {
-		repository_t *repo = repo_array_get(repos, i);
-		pool.workers[i] = (thread_worker_t) {
-			.repo = repo,
-			.ret = OK
-		};
-	}
+    for (size_t i = 0; i < repos->len; i++) {
+        repository_t *repo = repo_array_get(repos, i);
+        pool.workers[i] = (thread_worker_t) {
+            .repo = repo,
+            .ret = OK
+        };
+    }
 
-	for (size_t i = 0; i < pool.n_threads; i++) {
-		if (pthread_create(pool.threads + i, NULL, walk_repo, &max_name_len) != 0) {
-			(void)log_err("walk_through_repos: cannot create thread #%zu\n", i);
-			return RUNTIME_THREAD_CREATE_ERROR;
-		}
-	}
+    for (size_t i = 0; i < pool.n_threads; i++) {
+        if (pthread_create(pool.threads + i, NULL, walk_repo, &max_name_len) != 0) {
+            (void)log_err("walk_through_repos: cannot create thread #%zu\n", i);
+            return RUNTIME_THREAD_CREATE_ERROR;
+        }
+    }
 
-	for (size_t i = 0; i < pool.n_threads; i++) {
-		pthread_join(pool.threads[i], NULL);
-	}
+    for (size_t i = 0; i < pool.n_threads; i++) {
+        pthread_join(pool.threads[i], NULL);
+    }
 
-	for (size_t i = 0; i < pool.n_workers; i++) {
-		if (pool.workers[i].ret != OK) {
-			(void)log_err("walk_through_repos: worker #%zu failed with error code %d",
-						  i, pool.workers[i].ret);
-			return pool.workers[i].ret;
-		}
-	}
+    for (size_t i = 0; i < pool.n_workers; i++) {
+        if (pool.workers[i].ret != OK) {
+            (void)log_err("walk_through_repos: worker #%zu failed with error code %d",
+                          i, pool.workers[i].ret);
+            return pool.workers[i].ret;
+        }
+    }
 
-	(void)log_info("--------------\n");
+    (void)log_info("--------------\n");
 
-	/* Index/cache rationale:
-	 *     - `.tur/commits_cache` always stores the full commit history (when cache is enabled);
-	 *     - `.tur/commits_index` stores only selected commits (interactive/output selection);
-	 *     - If no_cache == 1 && interactive == 0, no file in `.tur/` is used;
-	 *     - If no_cache == 1 && interactive == 1, `.tur/commits_index` is temporary and removed;
-	 *     - If no_cache == 0 && interactive == 0, `.tur/commits_index` is written if missing/forced;
-	 *     - If no_cache == 0 && interactive == 1, `.tur/commits_index` is edited by the user.
-	 */
-	ret = sync_selected_commits_file(repos, settings);
-	if (ret != OK) { goto print_and_exit; }
+    /* Index/cache rationale:
+     *     - `.tur/commits_cache` always stores the full commit history (when cache is enabled);
+     *     - `.tur/commits_index` stores only selected commits (interactive/output selection);
+     *     - If no_cache == 1 && interactive == 0, no file in `.tur/` is used;
+     *     - If no_cache == 1 && interactive == 1, `.tur/commits_index` is temporary and removed;
+     *     - If no_cache == 0 && interactive == 0, `.tur/commits_index` is written if missing/forced;
+     *     - If no_cache == 0 && interactive == 1, `.tur/commits_index` is edited by the user.
+     */
+    ret = sync_selected_commits_file(repos, settings);
+    if (ret != OK) { goto print_and_exit; }
 
-	if (cached_or_inter(settings)) {
-		ret = rebuild_indexes(repos);
-		if (ret != OK) { goto print_and_exit; }
-	}
+    if (cached_or_inter(settings)) {
+        ret = rebuild_indexes(repos);
+        if (ret != OK) { goto print_and_exit; }
+    }
 
-	if (!settings->no_cache) {
-		ret = write_full_cache_on_file(repos);
-		if (ret != OK) { goto print_and_exit; }
-	}
+    if (!settings->no_cache) {
+        ret = write_full_cache_on_file(repos);
+        if (ret != OK) { goto print_and_exit; }
+    }
 
-	if (settings->no_cache && commit_file_exists()) {
-		(void)log_info("Removing temporary commit file `%s`...\n",
-					   COMMITS_FILE);
-		ret = delete_commits_index();
-		if (ret != OK) {
-			(void)log_err("Cannot delete temporary commit file `%s`...\n", COMMITS_FILE);
-		}
-	}
+    if (settings->no_cache && commit_file_exists()) {
+        (void)log_info("Removing temporary commit file `%s`...\n",
+                       COMMITS_FILE);
+        ret = delete_commits_index();
+        if (ret != OK) {
+            (void)log_err("Cannot delete temporary commit file `%s`...\n", COMMITS_FILE);
+        }
+    }
 
 print_and_exit:
-	print_output(repos, settings, stats);
+    print_output(repos, settings, stats);
 
-	return ret;
+    return ret;
 }

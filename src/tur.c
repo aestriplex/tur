@@ -39,205 +39,205 @@
 
 static settings_t settings;
 static struct option long_options[] = {
-	{ "help",        no_argument,       0, 'h' },
-	{ "diffs",       no_argument,       0, 'd' },
-	{ "force",       no_argument,       0, 'f' },
-	{ "group",       no_argument,       0, 'g' },
-	{ "interactive", no_argument,       0, 'i' },
-	{ "message",     no_argument,       0, 'm' },
-	{ "version",     no_argument,       0, 'v' },
-	{ "date-only",   no_argument,       0,  1  },
-	{ "no-ansi",     no_argument,       0,  2  },
-	{ "no-merge",    no_argument,       0,  3  },
-	{ "no-cache",    no_argument,       0,  4  },
-	{ "clear-cache", no_argument,       0,  5  },
-	{ "emails",      required_argument, 0, 'e' },
-	{ "out",         required_argument, 0, 'o' },
-	{ "repos",       required_argument, 0, 'r' },
-	{ "sort",        required_argument, 0, 's' },
-	{ "title",       required_argument, 0, 't' },
-	{ 0, 0, 0, 0 }
+    { "help",        no_argument,       0, 'h' },
+    { "diffs",       no_argument,       0, 'd' },
+    { "force",       no_argument,       0, 'f' },
+    { "group",       no_argument,       0, 'g' },
+    { "interactive", no_argument,       0, 'i' },
+    { "message",     no_argument,       0, 'm' },
+    { "version",     no_argument,       0, 'v' },
+    { "date-only",   no_argument,       0,  1  },
+    { "no-ansi",     no_argument,       0,  2  },
+    { "no-merge",    no_argument,       0,  3  },
+    { "no-cache",    no_argument,       0,  4  },
+    { "clear-cache", no_argument,       0,  5  },
+    { "emails",      required_argument, 0, 'e' },
+    { "out",         required_argument, 0, 'o' },
+    { "repos",       required_argument, 0, 'r' },
+    { "sort",        required_argument, 0, 's' },
+    { "title",       required_argument, 0, 't' },
+    { 0, 0, 0, 0 }
 };
 
 static void print_help(void)
 {
-	printf("T U R\n"
-		   "----------------------------------------\n"
-		   "Developed by aestriplex, (c) 2025 - 2026\n"
-		   "version %s\n"
-		   "\n"
-		   "Usage: tur [OPTIONS]\n"
-		   "Options:\n"
-		   "  -h, --help             Show this help message and exit\n"
-		   "  -d, --diffs            Show diffs stats (rows added and removed, file changed)\n"
-		   "  -f, --force            Force overwrite of `.tur/commits_index` (interactive selection file).\n"
-		   "                         It does not disable incremental cache loading from `.tur/commits_cache`.\n"
-		   "  -g, --group            Group commit by repository\n"
-		   "                         Default: false\n"
-		   "  -i, --interactive      Execute TUR in interactive mode. It opens an editor to let\n"
-		   "                         you choose which commits include in the output (`.tur/commits_index`).\n"
-		   "                         Full cache data is stored separately in `.tur/commits_cache`.\n"
-		   "                         The editor\n"
-		   "                         can be set with the environment variable `GIT_EDITOR`\n"
-		   "                               Default editor: VI\n"
-		   "  -m, --message          Shows the first line of the commit message\n"
-		   "  -v, --version          Prints the verison on tur\n"
-		   "                         Default: false\n"
-		   "  --clear-cache          Delete `.tur/commits_index` and `.tur/commits_cache` (irreversible)\n"
-		   "  --date-only            Each commit will be printed without time information\n"
-		   "                         Format: Dec 28, 1994\n"
-		   "  --no-ansi              Avoid ANSI escape characters (e.g. escape characters\n"
-		   "                         for color handling in terminal)\n"
-		   "                         NOTE: this option is active only when printing to stdout.\n"
-		   "                               All other files ignore it.\n"
-		   "  --no-cache             Disable cache files in `.tur/`; commits are read only from repositories\n"
-		   "                         for this run\n"
-		   "  --no-merge             Exclude merge commits\n"
-		   "  -e, --emails <e_1,...> Specify a list of email addresses\n"
-		   "                         This list expects the emails separated by a comma.\n"
-		   "  -o, --out FILE         Specify an output file. Allowed extensions are:\n"
-		   "                             .tex          (LaTeX)\n"
-		   "                             .html / .html (HTML)\n"
-		   "                             .md           (Markdown)\n"
-		   "                         Default: stdout\n"
-		   "  -r, --repos REPOS      Specify the file containing the list of repositories.\n"
-		   "                         Default: .rlist in the current folder\n"
-		   "  -s, --sort <order>     Sort commit by date.\n"
-		   "                         Order:\n"
-		   "                             ASC Ascending order;\n"
-		   "                             DESC Descending order.\n"
-		   "                         Default: false.\n"
-		   "\n"
-		   "Examples:\n"
-		   "  tur -e user@example.com\n"
-		   "  tur -e user1@example.com,user2@example.com -o commits.tex\n"
-		   "  tur -dmg -e user1@example.com,user2@example.com -o commits.html -s DESC\n"
-		   "\n"
-		   "\n",
-		   __TUR_VERSION__);
+    printf("T U R\n"
+           "----------------------------------------\n"
+           "Developed by aestriplex, (c) 2025 - 2026\n"
+           "version %s\n"
+           "\n"
+           "Usage: tur [OPTIONS]\n"
+           "Options:\n"
+           "  -h, --help             Show this help message and exit\n"
+           "  -d, --diffs            Show diffs stats (rows added and removed, file changed)\n"
+           "  -f, --force            Force overwrite of `.tur/commits_index` (interactive selection file).\n"
+           "                         It does not disable incremental cache loading from `.tur/commits_cache`.\n"
+           "  -g, --group            Group commit by repository\n"
+           "                         Default: false\n"
+           "  -i, --interactive      Execute TUR in interactive mode. It opens an editor to let\n"
+           "                         you choose which commits include in the output (`.tur/commits_index`).\n"
+           "                         Full cache data is stored separately in `.tur/commits_cache`.\n"
+           "                         The editor\n"
+           "                         can be set with the environment variable `GIT_EDITOR`\n"
+           "                               Default editor: VI\n"
+           "  -m, --message          Shows the first line of the commit message\n"
+           "  -v, --version          Prints the verison on tur\n"
+           "                         Default: false\n"
+           "  --clear-cache          Delete `.tur/commits_index` and `.tur/commits_cache` (irreversible)\n"
+           "  --date-only            Each commit will be printed without time information\n"
+           "                         Format: Dec 28, 1994\n"
+           "  --no-ansi              Avoid ANSI escape characters (e.g. escape characters\n"
+           "                         for color handling in terminal)\n"
+           "                         NOTE: this option is active only when printing to stdout.\n"
+           "                               All other files ignore it.\n"
+           "  --no-cache             Disable cache files in `.tur/`; commits are read only from repositories\n"
+           "                         for this run\n"
+           "  --no-merge             Exclude merge commits\n"
+           "  -e, --emails <e_1,...> Specify a list of email addresses\n"
+           "                         This list expects the emails separated by a comma.\n"
+           "  -o, --out FILE         Specify an output file. Allowed extensions are:\n"
+           "                             .tex          (LaTeX)\n"
+           "                             .html / .html (HTML)\n"
+           "                             .md           (Markdown)\n"
+           "                         Default: stdout\n"
+           "  -r, --repos REPOS      Specify the file containing the list of repositories.\n"
+           "                         Default: .rlist in the current folder\n"
+           "  -s, --sort <order>     Sort commit by date.\n"
+           "                         Order:\n"
+           "                             ASC Ascending order;\n"
+           "                             DESC Descending order.\n"
+           "                         Default: false.\n"
+           "\n"
+           "Examples:\n"
+           "  tur -e user@example.com\n"
+           "  tur -e user1@example.com,user2@example.com -o commits.tex\n"
+           "  tur -dmg -e user1@example.com,user2@example.com -o commits.html -s DESC\n"
+           "\n"
+           "\n",
+           __TUR_VERSION__);
 }
 
 int main(int argc, char *argv[])
 {
-	return_code_t ret = OK;
-	int ch, option_index = 0;
+    return_code_t ret = OK;
+    int ch, option_index = 0;
 
-	if (argc == 1) {
-		print_help();
-		goto end;
-	}
+    if (argc == 1) {
+        print_help();
+        goto end;
+    }
 
-	settings = default_settings();
-	(void)init_default_loggers();
+    settings = default_settings();
+    (void)init_default_loggers();
 
-	while ((ch = getopt_long(argc, argv, "hdfgimve:o:r:s:t:", long_options, &option_index)) != -1) {
-		switch (ch) {
-		case 'h':
-			print_help();
-			goto end;
-		case 'd':
-			settings.show_diffs = true;
-			break;
-		case 'f':
-			settings.force = true;
-			break;
-		case 'g' :
-			settings.grouped = true;
-			break;
-		case 'i':
-			settings.interactive = true;
-			settings.editor = get_editor_or_default();
-			break;
-		case 'm':
-			settings.print_msg = true;
-			break;
-		case 'v':
-			printf("TUR version %s\n", __TUR_VERSION__);
-			goto end;
-		case 1:
-			settings.date_only = true;
-			break;
-		case 2:
-			settings.no_ansi = true;
-			break;
-		case 3:
-			settings.no_merge = true;
-			break;
-		case 4:
-			settings.no_cache = true;
-			break;
-		case 5:
-			ret = delete_commits_index();
-			if (ret != OK) {
-				(void)log_err("Cannot remove the commit index `%s`...\n", COMMITS_FILE);
-				ret = OK;
-			} else {
-				(void)log_info("Removed commit index `%s` ...\n", COMMITS_FILE);
-			}
+    while ((ch = getopt_long(argc, argv, "hdfgimve:o:r:s:t:", long_options, &option_index)) != -1) {
+        switch (ch) {
+        case 'h':
+            print_help();
+            goto end;
+        case 'd':
+            settings.show_diffs = true;
+            break;
+        case 'f':
+            settings.force = true;
+            break;
+        case 'g' :
+            settings.grouped = true;
+            break;
+        case 'i':
+            settings.interactive = true;
+            settings.editor = get_editor_or_default();
+            break;
+        case 'm':
+            settings.print_msg = true;
+            break;
+        case 'v':
+            printf("TUR version %s\n", __TUR_VERSION__);
+            goto end;
+        case 1:
+            settings.date_only = true;
+            break;
+        case 2:
+            settings.no_ansi = true;
+            break;
+        case 3:
+            settings.no_merge = true;
+            break;
+        case 4:
+            settings.no_cache = true;
+            break;
+        case 5:
+            ret = delete_commits_index();
+            if (ret != OK) {
+                (void)log_err("Cannot remove the commit index `%s`...\n", COMMITS_FILE);
+                ret = OK;
+            } else {
+                (void)log_info("Removed commit index `%s` ...\n", COMMITS_FILE);
+            }
 
-			ret = delete_full_cache();
-			if (ret != OK) {
-				(void)log_err("Cannot remove the full cache `%s`...\n", FULL_CACHE_FILE);
-				ret = OK;
-			} else {
-				(void)log_info("Removed full cache `%s` ...\n", FULL_CACHE_FILE);
-			}
-			break;
-		case 'e':
-			settings.emails = parse_emails(optarg);
-			break;
-		case 'o':
-			settings.output_mode = parse_output_file_ext(optarg);
-			settings.output = str_init(optarg, (uint16_t) strlen(optarg));
-			break;
-		case 'r':
-			settings.repos_path = str_init(optarg, (uint16_t) strlen(optarg));
-			break;
-		case 's':
-			settings.sorted = true;
-			ret = parse_sort_order(optarg, strlen(optarg), &settings.sort_order); 
-			if (ret != OK) {
-				(void)log_err("Unknown sort order '%s'. Set deafult: ASC\n", optarg);
-				ret = OK;
-			}
-			break;
-		case 't':
-			if (!strlen(optarg)) {
-				(void)log_err("Error parsing `--title` option. got an empty string. "
-							  "Title has been disabled");
-				break;
-			}
-			settings.title = str_init(optarg, (uint16_t) strlen(optarg));
-			break;
-		default:
-			print_help();
-			return -1;
-		}
-	}
+            ret = delete_full_cache();
+            if (ret != OK) {
+                (void)log_err("Cannot remove the full cache `%s`...\n", FULL_CACHE_FILE);
+                ret = OK;
+            } else {
+                (void)log_info("Removed full cache `%s` ...\n", FULL_CACHE_FILE);
+            }
+            break;
+        case 'e':
+            settings.emails = parse_emails(optarg);
+            break;
+        case 'o':
+            settings.output_mode = parse_output_file_ext(optarg);
+            settings.output = str_init(optarg, (uint16_t) strlen(optarg));
+            break;
+        case 'r':
+            settings.repos_path = str_init(optarg, (uint16_t) strlen(optarg));
+            break;
+        case 's':
+            settings.sorted = true;
+            ret = parse_sort_order(optarg, strlen(optarg), &settings.sort_order); 
+            if (ret != OK) {
+                (void)log_err("Unknown sort order '%s'. Set deafult: ASC\n", optarg);
+                ret = OK;
+            }
+            break;
+        case 't':
+            if (!strlen(optarg)) {
+                (void)log_err("Error parsing `--title` option. got an empty string. "
+                              "Title has been disabled");
+                break;
+            }
+            settings.title = str_init(optarg, (uint16_t) strlen(optarg));
+            break;
+        default:
+            print_help();
+            return -1;
+        }
+    }
 
-	if (!settings.emails || settings.emails->len == 0) {
-		(void)log_err("You should specify at least one email address\n");
-		print_help();
-		goto end;
-	}
+    if (!settings.emails || settings.emails->len == 0) {
+        (void)log_err("You should specify at least one email address\n");
+        print_help();
+        goto end;
+    }
 
-	git_libgit2_init();
+    git_libgit2_init();
 
-	repository_array_t *repos = NULL;
+    repository_array_t *repos = NULL;
 
-	repo_array_init(&repos);
+    repo_array_init(&repos);
 
-	ret = get_repos_array(repos, &settings);
-	if (ret != OK) { goto clean; }
+    ret = get_repos_array(repos, &settings);
+    if (ret != OK) { goto clean; }
 
-	repository_stats_t repos_stats = get_repos_stats(repos);
+    repository_stats_t repos_stats = get_repos_stats(repos);
 
-	ret = walk_through_repos(repos, &settings, repos_stats);
-	if (ret != OK) { goto clean; }
+    ret = walk_through_repos(repos, &settings, repos_stats);
+    if (ret != OK) { goto clean; }
 
 clean:
-	git_libgit2_shutdown();
+    git_libgit2_shutdown();
 
 end:
-	return ret;
+    return ret;
 }

@@ -32,32 +32,32 @@
 
 settings_t default_settings(void)
 {
-	long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
+    long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
 
-	if (num_cores < 0) {
-		(void)log_err("sysconf: cannot get number of cores\n");
-		exit(1);
-	}
+    if (num_cores < 0) {
+        (void)log_err("sysconf: cannot get number of cores\n");
+        exit(1);
+    }
 
-	return (settings_t) {
-		.output_mode = STDOUT,
-		.output = empty_str(),
-		.clear_cache = false,
-		.no_cache = false,
-		.repos_path = str_init(DEFAULT_REPOS_LIST_PATH, DEFAULT_REPOS_LIST_PATH_SIZE),
-		.emails = NULL,
-		.grouped = false,
-		.sorted = false,
-		.show_diffs = false,
-		.print_msg = false,
-		.date_only = false,
-		.sort_order = ASC,
-		.n_threads = (size_t) num_cores,
-		.no_ansi = false,
-		.no_merge = false,
-		.title = empty_str(),
-		.interactive = false,
-		.editor = empty_str(),
-		.force = false,
-	};
+    return (settings_t) {
+        .output_mode = STDOUT,
+        .output = empty_str(),
+        .clear_cache = false,
+        .no_cache = false,
+        .repos_path = str_init(DEFAULT_REPOS_LIST_PATH, DEFAULT_REPOS_LIST_PATH_SIZE),
+        .emails = NULL,
+        .grouped = false,
+        .sorted = false,
+        .show_diffs = false,
+        .print_msg = false,
+        .date_only = false,
+        .sort_order = ASC,
+        .n_threads = (size_t) num_cores,
+        .no_ansi = false,
+        .no_merge = false,
+        .title = empty_str(),
+        .interactive = false,
+        .editor = empty_str(),
+        .force = false,
+    };
 }

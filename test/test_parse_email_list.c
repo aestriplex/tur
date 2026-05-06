@@ -31,96 +31,96 @@
 
 void test_parse_emails(void)
 {
-	{
-		char *test_input = "email1@example.com,email2@example.com";
-		str_array_t *result = parse_emails(test_input);
-		str_t email1 = str_array_get(result, 0);
-		str_t email2 = str_array_get(result, 1);
+    {
+        char *test_input = "email1@example.com,email2@example.com";
+        str_array_t *result = parse_emails(test_input);
+        str_t email1 = str_array_get(result, 0);
+        str_t email2 = str_array_get(result, 1);
 
-		assert_true(result->len == 2, "Count of emails should be 2");
-		assert_true(email1.len == 18 && str_arr_equals(email1, "email1@example.com"),
-					"First email is 'email1@example.com'");
-		assert_true(email2.len == 18 && str_arr_equals(email2, "email2@example.com"),
-					"Second email is 'email2@example.com'");
+        assert_true(result->len == 2, "Count of emails should be 2");
+        assert_true(email1.len == 18 && str_arr_equals(email1, "email1@example.com"),
+                    "First email is 'email1@example.com'");
+        assert_true(email2.len == 18 && str_arr_equals(email2, "email2@example.com"),
+                    "Second email is 'email2@example.com'");
 
-		str_array_free(&result);
-	}
+        str_array_free(&result);
+    }
 
-	{
-		char *test_input = "single.email@example.com";
-		str_array_t *result = parse_emails(test_input);
-		str_t email1 = str_array_get(result, 0);
+    {
+        char *test_input = "single.email@example.com";
+        str_array_t *result = parse_emails(test_input);
+        str_t email1 = str_array_get(result, 0);
 
-		assert_true(result->len == 1, "Count of emails should be 1");
-		assert_true(email1.len == 24 && str_arr_equals(email1, "single.email@example.com"),
-					"Email 'single.email@example.com'");
-		
-		str_array_free(&result);
-	}
+        assert_true(result->len == 1, "Count of emails should be 1");
+        assert_true(email1.len == 24 && str_arr_equals(email1, "single.email@example.com"),
+                    "Email 'single.email@example.com'");
+        
+        str_array_free(&result);
+    }
 
-	{
-		char *test_input = "";
-		str_array_t *result = parse_emails(test_input);
+    {
+        char *test_input = "";
+        str_array_t *result = parse_emails(test_input);
 
-		assert_true(result->len == 0, "Count of empty list should be 0");
+        assert_true(result->len == 0, "Count of empty list should be 0");
 
-		str_array_free(&result);
-	}
+        str_array_free(&result);
+    }
 
-	{
-		char *test_input = "     ";
-		str_array_t *result = parse_emails(test_input);
+    {
+        char *test_input = "     ";
+        str_array_t *result = parse_emails(test_input);
 
-		assert_true(result->len == 0, "Count of empty list with spaces should be 0");
+        assert_true(result->len == 0, "Count of empty list with spaces should be 0");
 
-		str_array_free(&result);
-	}
+        str_array_free(&result);
+    }
 
-	{
-		char *test_input = "email1@example.com,";
-		str_array_t *result = parse_emails(test_input);
-		str_t email1 = str_array_get(result, 0);
+    {
+        char *test_input = "email1@example.com,";
+        str_array_t *result = parse_emails(test_input);
+        str_t email1 = str_array_get(result, 0);
 
-		assert_true(result->len == 1, "Count of emails should be 1");
-		assert_true(email1.len == 18 && str_arr_equals(email1, "email1@example.com"),
-					"The emails should be 'email1@example.com'");
+        assert_true(result->len == 1, "Count of emails should be 1");
+        assert_true(email1.len == 18 && str_arr_equals(email1, "email1@example.com"),
+                    "The emails should be 'email1@example.com'");
 
-		str_array_free(&result);
-	}
+        str_array_free(&result);
+    }
 
-	{
-		char test_input[1024];
-		memset(test_input, 0, 1024);
-		for (int i = 0; i < 50; i++) {
-			strcat(test_input, "email");
-			char email[20];
-			snprintf(email, 20, "%d@example.com", i);
-			strcat(test_input, email);
-			if (i < 49) {
-				strcat(test_input, ",");
-			}
-		}
+    {
+        char test_input[1024];
+        memset(test_input, 0, 1024);
+        for (int i = 0; i < 50; i++) {
+            strcat(test_input, "email");
+            char email[20];
+            snprintf(email, 20, "%d@example.com", i);
+            strcat(test_input, email);
+            if (i < 49) {
+                strcat(test_input, ",");
+            }
+        }
 
-		str_array_t *result = parse_emails(test_input);
+        str_array_t *result = parse_emails(test_input);
 
-		assert_true(result->len == 50, "Count of emails should be 50");
+        assert_true(result->len == 50, "Count of emails should be 50");
 
-		bool condition = true;
-		for (int i = 0; i < 50; i++) {
-			char expected_email[20];
-			str_t got_email = str_array_get(result, i);
-			snprintf(expected_email, 20, "email%d@example.com", i);
-			condition &= str_arr_equals(got_email, expected_email);
-		}
+        bool condition = true;
+        for (int i = 0; i < 50; i++) {
+            char expected_email[20];
+            str_t got_email = str_array_get(result, i);
+            snprintf(expected_email, 20, "email%d@example.com", i);
+            condition &= str_arr_equals(got_email, expected_email);
+        }
 
-		assert_true(condition, "All the emails are correct");
+        assert_true(condition, "All the emails are correct");
 
-		str_array_free(&result);
-	}
+        str_array_free(&result);
+    }
 }
 
 int main(void)
 {
-	test_parse_emails();
-	print_report();
+    test_parse_emails();
+    print_report();
 }

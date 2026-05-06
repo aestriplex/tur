@@ -28,146 +28,146 @@
 
 static const char *favorite_md(const commit_t *commit)
 {
-	return commit->is_favorite ? " ★" : "";
+    return commit->is_favorite ? " ★" : "";
 }
 
 static void print_commit_diffs(FILE *out, const commit_t *commit)
 {
-	fprintf(out, "%zu file%c changed "
-				 "<span style='color:green;'>+%zu</span> "
-				 "| <span style='color:red;'>-%zu</span>\n",
-			commit->stats.files_changed,
-			(commit->stats.files_changed > 1 ? 's': ASCII_SPACE),
-			commit->stats.lines_added,
-			commit->stats.lines_removed);
+    fprintf(out, "%zu file%c changed "
+                 "<span style='color:green;'>+%zu</span> "
+                 "| <span style='color:red;'>-%zu</span>\n",
+            commit->stats.files_changed,
+            (commit->stats.files_changed > 1 ? 's': ASCII_SPACE),
+            commit->stats.lines_added,
+            commit->stats.lines_removed);
 }
 
 static void print_commit_message(FILE *out, const commit_t * commit)
 {
-	fprintf(out, "%s\n", get_first_line(commit->msg).val);
+    fprintf(out, "%s\n", get_first_line(commit->msg).val);
 }
 
 static void generate_md_file_grouped(FILE *out,
-									 const repository_t *repo,
-									 const work_history_t *history,
-									 const settings_t *settings)
+                                     const repository_t *repo,
+                                     const work_history_t *history,
+                                     const settings_t *settings)
 {
-	commit_t **const authored = history->authored_idx;
-	commit_t **const co_authored = history->co_authored_idx;
+    commit_t **const authored = history->authored_idx;
+    commit_t **const co_authored = history->co_authored_idx;
 
-	if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
+    if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
 
-	fprintf(out, "## %s\n", repo->name.val);
-		
-	if (repo->history->n_authored == 0) { goto co_authored; }
+    fprintf(out, "## %s\n", repo->name.val);
+        
+    if (repo->history->n_authored == 0) { goto co_authored; }
 
-	fprintf(out, "#### Authored\n");
-	
-	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "%zu. ", n_c + 1);
-		if (settings->print_msg) {
-			print_commit_message(out, authored[n_c]);
-		}
-		fprintf(out, "[%s](%s) %s\n",
-				authored[n_c]->hash.val,
-				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
-				format_date(authored[n_c]->date, settings->date_only).val);
-		fprintf(out, "%s", favorite_md(authored[n_c]));
-		fprintf(out, "\n");
-		if (settings->show_diffs) {
-			print_commit_diffs(out, authored[n_c]);
-		}
-	}
+    fprintf(out, "#### Authored\n");
+    
+    for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
+        fprintf(out, "%zu. ", n_c + 1);
+        if (settings->print_msg) {
+            print_commit_message(out, authored[n_c]);
+        }
+        fprintf(out, "[%s](%s) %s\n",
+                authored[n_c]->hash.val,
+                repo->format.commit_url(repo->url, authored[n_c]->hash).val,
+                format_date(authored[n_c]->date, settings->date_only).val);
+        fprintf(out, "%s", favorite_md(authored[n_c]));
+        fprintf(out, "\n");
+        if (settings->show_diffs) {
+            print_commit_diffs(out, authored[n_c]);
+        }
+    }
 
 co_authored:
-	
-	if (repo->history->n_co_authored == 0) { return; }
+    
+    if (repo->history->n_co_authored == 0) { return; }
 
-	fprintf(out, "#### Coauthored\n");
-	
-	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(out, "%zu. ", n_c + 1);
-		if (settings->print_msg) {
-			print_commit_message(out, co_authored[n_c]);
-		}
-		fprintf(out, "[%s](%s) %s\n",
-				co_authored[n_c]->hash.val,
-				repo->format.commit_url(repo->url, co_authored[n_c]->hash).val,
-				format_date(co_authored[n_c]->date, settings->date_only).val);
-		fprintf(out, "%s", favorite_md(co_authored[n_c]));
-		fprintf(out, "\n");
-		if (settings->show_diffs) {
-			print_commit_diffs(out, co_authored[n_c]);
-		}
-	}
+    fprintf(out, "#### Coauthored\n");
+    
+    for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
+        fprintf(out, "%zu. ", n_c + 1);
+        if (settings->print_msg) {
+            print_commit_message(out, co_authored[n_c]);
+        }
+        fprintf(out, "[%s](%s) %s\n",
+                co_authored[n_c]->hash.val,
+                repo->format.commit_url(repo->url, co_authored[n_c]->hash).val,
+                format_date(co_authored[n_c]->date, settings->date_only).val);
+        fprintf(out, "%s", favorite_md(co_authored[n_c]));
+        fprintf(out, "\n");
+        if (settings->show_diffs) {
+            print_commit_diffs(out, co_authored[n_c]);
+        }
+    }
 }
 
 static void generate_md_file_list(FILE *out,
-								  const repository_t *repo,
-								  const work_history_t *history,
-								  const settings_t *settings)
+                                  const repository_t *repo,
+                                  const work_history_t *history,
+                                  const settings_t *settings)
 {
-	commit_t **const authored = history->authored_idx;
-	commit_t **const co_authored = history->co_authored_idx;
+    commit_t **const authored = history->authored_idx;
+    commit_t **const co_authored = history->co_authored_idx;
 
-	size_t n_commit = 1;
-	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(out, "%zu. ", n_commit);
-		if (settings->print_msg) {
-			print_commit_message(out, authored[n_c]);
-		}
-		fprintf(out, "%s: [%s](%s) [A] %s\n",
-				repo->name.val,
-				authored[n_c]->hash.val,
-				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
-				format_date(authored[n_c]->date, settings->date_only).val);
-		fprintf(out, "%s", favorite_md(authored[n_c]));
-		fprintf(out, "\n");
-		if (settings->show_diffs) {
-			print_commit_diffs(out, authored[n_c]);
-		}
-		fprintf(out, "\n");
-		n_commit++;
-	}
+    size_t n_commit = 1;
+    for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
+        fprintf(out, "%zu. ", n_commit);
+        if (settings->print_msg) {
+            print_commit_message(out, authored[n_c]);
+        }
+        fprintf(out, "%s: [%s](%s) [A] %s\n",
+                repo->name.val,
+                authored[n_c]->hash.val,
+                repo->format.commit_url(repo->url, authored[n_c]->hash).val,
+                format_date(authored[n_c]->date, settings->date_only).val);
+        fprintf(out, "%s", favorite_md(authored[n_c]));
+        fprintf(out, "\n");
+        if (settings->show_diffs) {
+            print_commit_diffs(out, authored[n_c]);
+        }
+        fprintf(out, "\n");
+        n_commit++;
+    }
 
-	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(out, "%zu. ", n_commit);
-		if (settings->print_msg) {
-			print_commit_message(out, co_authored[n_c]);
-		}
-		fprintf(out, "%zu. %s: [%s](%s) [C] %s\n",
-				n_commit,
-				repo->name.val,
-				co_authored[n_c]->hash.val,
-				repo->format.commit_url(repo->url, co_authored[n_c]->hash).val,
-				format_date(co_authored[n_c]->date, settings->date_only).val);
-		fprintf(out, "%s", favorite_md(co_authored[n_c]));
-		fprintf(out, "\n");
-		if (settings->show_diffs) {
-			print_commit_diffs(out, co_authored[n_c]);
-		}
-		fprintf(out, "\n");
-		n_commit++;
-	}
+    for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
+        fprintf(out, "%zu. ", n_commit);
+        if (settings->print_msg) {
+            print_commit_message(out, co_authored[n_c]);
+        }
+        fprintf(out, "%zu. %s: [%s](%s) [C] %s\n",
+                n_commit,
+                repo->name.val,
+                co_authored[n_c]->hash.val,
+                repo->format.commit_url(repo->url, co_authored[n_c]->hash).val,
+                format_date(co_authored[n_c]->date, settings->date_only).val);
+        fprintf(out, "%s", favorite_md(co_authored[n_c]));
+        fprintf(out, "\n");
+        if (settings->show_diffs) {
+            print_commit_diffs(out, co_authored[n_c]);
+        }
+        fprintf(out, "\n");
+        n_commit++;
+    }
 }
 
 void generate_markdown_file(FILE *out, const repository_array_t *repos, const settings_t *settings)
 {
-	fprintf(out, "{::comment}\n"
-				 "This file is automatically generated by TUR.\n"
-				 "{:/comment}\n\n");
-	
-	if (str_not_empty(settings->title)) {
-		fprintf(out, "# %s\n", settings->title.val);
-	}
+    fprintf(out, "{::comment}\n"
+                 "This file is automatically generated by TUR.\n"
+                 "{:/comment}\n\n");
+    
+    if (str_not_empty(settings->title)) {
+        fprintf(out, "# %s\n", settings->title.val);
+    }
 
-	for (size_t i = 0; i < repos->len; i++) {
-		repository_t *repo = repo_array_get(repos, i);
+    for (size_t i = 0; i < repos->len; i++) {
+        repository_t *repo = repo_array_get(repos, i);
 
-		if (settings->grouped) {
-			generate_md_file_grouped(out, repo, repo->history, settings);
-		} else {
-			generate_md_file_list(out, repo, repo->history, settings);
-		}
-	}
+        if (settings->grouped) {
+            generate_md_file_grouped(out, repo, repo->history, settings);
+        } else {
+            generate_md_file_list(out, repo, repo->history, settings);
+        }
+    }
 }

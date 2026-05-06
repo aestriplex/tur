@@ -35,198 +35,198 @@
 
 static str_t get_repo_name(str_t repo_path)
 {
-	char *repo_name = basename((char *)repo_path.val);
-	return str_init(repo_name, (uint16_t) strlen(repo_name));
+    char *repo_name = basename((char *)repo_path.val);
+    return str_init(repo_name, (uint16_t) strlen(repo_name));
 }
 
 static repository_t init_repo(str_t path, unsigned id)
 {
-	return (repository_t) {
-		.id = id,
-		.path = path,
-		.url = empty_str(),
-		.name = get_repo_name(path),
-		.history = NULL,
-		.format = { 0 },
-	};
+    return (repository_t) {
+        .id = id,
+        .path = path,
+        .url = empty_str(),
+        .name = get_repo_name(path),
+        .history = NULL,
+        .format = { 0 },
+    };
 }
 
 static fmt_commit_url select_function(str_t url)
 {
-	if (str_contains_chars(url, "github.com")) { return &get_github_commit_url; }
-	if (str_contains_chars(url, "gitlab")) { return &get_gitlab_commit_url; }
-	return &get_raw_url;
+    if (str_contains_chars(url, "github.com")) { return &get_github_commit_url; }
+    if (str_contains_chars(url, "gitlab")) { return &get_gitlab_commit_url; }
+    return &get_raw_url;
 }
 
 static str_array_t *get_branches(const char *line, size_t len)
 {
-	str_array_t *result = NULL;
+    str_array_t *result = NULL;
 
-	char *to_parse = malloc(len + 1);
-	if (!to_parse) {
-		(void)log_err("get_branches: cannot allocate to_parse string\n");
-		exit(1);
-	}
+    char *to_parse = malloc(len + 1);
+    if (!to_parse) {
+        (void)log_err("get_branches: cannot allocate to_parse string\n");
+        exit(1);
+    }
 
-	memcpy(to_parse, line, len);
-	to_parse[len] = '\0';
+    memcpy(to_parse, line, len);
+    to_parse[len] = '\0';
 
-	str_array_init(&result);
+    str_array_init(&result);
 
-	char *token = strtok(to_parse, ",");
-	while (token) {
-		str_t branch_str = str_init(token, strnlen(token, len));
-		if (str_array_add(result, branch_str) != OK) {
-			(void)log_err("get_branches: an error occurred while adding a "
-						  "branch in branches array...");
-			str_array_free(&result);
-			free(to_parse);
-			return NULL;
-		}
-		str_free(branch_str);
-		token = strtok(NULL, ",");
-	}
+    char *token = strtok(to_parse, ",");
+    while (token) {
+        str_t branch_str = str_init(token, strnlen(token, len));
+        if (str_array_add(result, branch_str) != OK) {
+            (void)log_err("get_branches: an error occurred while adding a "
+                          "branch in branches array...");
+            str_array_free(&result);
+            free(to_parse);
+            return NULL;
+        }
+        str_free(branch_str);
+        token = strtok(NULL, ",");
+    }
 
-	free(to_parse);
-	return result;
+    free(to_parse);
+    return result;
 }
 
 repository_t parse_repository(const char *line, ssize_t len, unsigned id)
 {
-	repository_t repo = { 0 };
-	const char *bracket_open = strchr(line, '[');
-	
-	if (bracket_open == NULL) {
-		return init_repo(str_init(line, len), id);
-	}
+    repository_t repo = { 0 };
+    const char *bracket_open = strchr(line, '[');
+    
+    if (bracket_open == NULL) {
+        return init_repo(str_init(line, len), id);
+    }
 
-	size_t path_and_banches_len = bracket_open - line;
-	const char *path_str = line;
-	const char *branches_str = NULL;
-	size_t path_len = 0;
-	size_t branches_len = 0;
-	const char *colon = memchr(line, ':', path_and_banches_len);
+    size_t path_and_banches_len = bracket_open - line;
+    const char *path_str = line;
+    const char *branches_str = NULL;
+    size_t path_len = 0;
+    size_t branches_len = 0;
+    const char *colon = memchr(line, ':', path_and_banches_len);
 
-	if (colon) {
-		path_len = (size_t)(colon - line);
-		branches_str = colon + 1;
-		branches_len = path_and_banches_len - path_len - 1;
-	} else {
-		path_len = path_and_banches_len;
-		branches_str = NULL;
-		branches_len = 0;
-	}
+    if (colon) {
+        path_len = (size_t)(colon - line);
+        branches_str = colon + 1;
+        branches_len = path_and_banches_len - path_len - 1;
+    } else {
+        path_len = path_and_banches_len;
+        branches_str = NULL;
+        branches_len = 0;
+    }
 
-	repo.id = id;
-	repo.path = str_init(path_str, path_len);
-	repo.name = get_repo_name(repo.path);
-	repo.branches = branches_str
-					? get_branches(branches_str, branches_len)
-					: NULL;
+    repo.id = id;
+    repo.path = str_init(path_str, path_len);
+    repo.name = get_repo_name(repo.path);
+    repo.branches = branches_str
+                    ? get_branches(branches_str, branches_len)
+                    : NULL;
 
-	int nesting = 1;
-	const char *bracket_close = NULL;
-	for (const char *p = bracket_open + 1; p < line + len; p++) {
-		if (*p == '[') {
-			nesting++;
-		} else if (*p == ']') {
-			nesting--;
-			if (nesting == 0) {
-				bracket_close = p;
-				break;
-			}
-		}
-	}
-	
-	size_t url_len;
-	if (!bracket_close) {
-		url_len = len - path_and_banches_len - 1;
-	} else {
-		url_len = bracket_close - bracket_open - 1;
-	}
+    int nesting = 1;
+    const char *bracket_close = NULL;
+    for (const char *p = bracket_open + 1; p < line + len; p++) {
+        if (*p == '[') {
+            nesting++;
+        } else if (*p == ']') {
+            nesting--;
+            if (nesting == 0) {
+                bracket_close = p;
+                break;
+            }
+        }
+    }
+    
+    size_t url_len;
+    if (!bracket_close) {
+        url_len = len - path_and_banches_len - 1;
+    } else {
+        url_len = bracket_close - bracket_open - 1;
+    }
 
-	repo.url = url_len == 0
-			   ? empty_str()
-			   : str_init(bracket_open + 1, url_len);
+    repo.url = url_len == 0
+               ? empty_str()
+               : str_init(bracket_open + 1, url_len);
 
-	repo.format = (fmt_t) {
-		.commit_url = select_function(repo.url),
-	};
+    repo.format = (fmt_t) {
+        .commit_url = select_function(repo.url),
+    };
 
-	return repo;
+    return repo;
 }
 
 return_code_t get_repos_array(repository_array_t *repos, const settings_t *settings)
 {
-	return_code_t ret = OK;
-	unsigned id = 0;
-	size_t len = 0;
-	ssize_t read;
-	char *line = NULL;
-	FILE *repos_list;
+    return_code_t ret = OK;
+    unsigned id = 0;
+    size_t len = 0;
+    ssize_t read;
+    char *line = NULL;
+    FILE *repos_list;
 
-	repos_list = fopen(settings->repos_path.val, "r");
-	if (!repos_list) { return INVALID_REPOS_LIST_PATH; }
+    repos_list = fopen(settings->repos_path.val, "r");
+    if (!repos_list) { return INVALID_REPOS_LIST_PATH; }
 
-	while ((read = getline(&line, &len, repos_list)) != -1) {
-		char *trimmed = line;
-		while (*trimmed && isspace((unsigned char)*trimmed)) { trimmed++; }
+    while ((read = getline(&line, &len, repos_list)) != -1) {
+        char *trimmed = line;
+        while (*trimmed && isspace((unsigned char)*trimmed)) { trimmed++; }
 
-		char *end = trimmed + strlen(trimmed) - 1;
-		while (end > trimmed && isspace((unsigned char)*end)) {
-			*end = '\0';
-			end--;
-		}
+        char *end = trimmed + strlen(trimmed) - 1;
+        while (end > trimmed && isspace((unsigned char)*end)) {
+            *end = '\0';
+            end--;
+        }
 
-		if (*trimmed == '\0') { continue; } 
+        if (*trimmed == '\0') { continue; } 
 
-		repository_t repo = parse_repository(line, read, id);
-		ret = repo_array_add(repos, &repo);
-		if (ret != OK) {
-			(void)log_err("get_repos_array: cannot create a repository "
-						  "list [%d]\n", ret);
-			goto cleanup;
-		}
+        repository_t repo = parse_repository(line, read, id);
+        ret = repo_array_add(repos, &repo);
+        if (ret != OK) {
+            (void)log_err("get_repos_array: cannot create a repository "
+                          "list [%d]\n", ret);
+            goto cleanup;
+        }
 
-		id++;
-	}
+        id++;
+    }
 
-	ret = log_info("%lu repositories found...\n", repos->len);
+    ret = log_info("%lu repositories found...\n", repos->len);
 
 cleanup:
-	if (line) {
-		free(line);
-	}
-	fclose(repos_list);
+    if (line) {
+        free(line);
+    }
+    fclose(repos_list);
 
-	return ret;
+    return ret;
 }
 
 repository_stats_t get_repos_stats(const repository_array_t *repos)
 {
-	repository_stats_t stats = { 0 };
+    repository_stats_t stats = { 0 };
 
-	for (size_t i = 0; i < repos->len; i++) {
-		repository_t *repo = repo_array_get(repos, i);
-		if (repo->name.len > stats.max_name_len) {
-			stats.max_name_len = repo->name.len;
-		}
-	}
+    for (size_t i = 0; i < repos->len; i++) {
+        repository_t *repo = repo_array_get(repos, i);
+        if (repo->name.len > stats.max_name_len) {
+            stats.max_name_len = repo->name.len;
+        }
+    }
 
-	return stats;
+    return stats;
 }
 
 repository_t *repository_copy(const repository_t *src)
 {
-	repository_t *new = malloc(sizeof(repository_t));
-	new->url = str_copy(src->url);
-	new->path = str_copy(src->path);
-	new->name = str_copy(src->name);
-	new->id = src->id;
-	new->format = src->format;
-	new->branches = str_array_copy(src->branches);
-	new->history = history_copy(src->history);
-	return new;
+    repository_t *new = malloc(sizeof(repository_t));
+    new->url = str_copy(src->url);
+    new->path = str_copy(src->path);
+    new->name = str_copy(src->name);
+    new->id = src->id;
+    new->format = src->format;
+    new->branches = str_array_copy(src->branches);
+    new->history = history_copy(src->history);
+    return new;
 }
 
 /*
@@ -234,60 +234,60 @@ repository_t *repository_copy(const repository_t *src)
  */
 static void assign_repo(void *src, void *elem)
 {
-	repository_t *repo = repository_copy((repository_t *)elem);
-	*(repository_t *)src = *repo;
-	free(repo);
+    repository_t *repo = repository_copy((repository_t *)elem);
+    *(repository_t *)src = *repo;
+    free(repo);
 }
 
 static int compare_repo(void *r1, void *r2)
 {
-	repository_t *repo1 = (repository_t *)r1;
-	repository_t *repo2 = (repository_t *)r2;
-	return repo1->id > repo2->id
-		   ? -1
-		   : repo1->id != repo2->id;
+    repository_t *repo1 = (repository_t *)r1;
+    repository_t *repo2 = (repository_t *)r2;
+    return repo1->id > repo2->id
+           ? -1
+           : repo1->id != repo2->id;
 }
 
 static void free_repo(void *r)
 {
-	repository_t *repo = (repository_t *)r;
-	str_free(repo->url);
-	str_free(repo->path);
-	str_free(repo->name);
-	if (repo->history) {
-		history_free(&repo->history);
-	}
-	if (repo->branches) {
-		str_array_free(&repo->branches);
-	}
+    repository_t *repo = (repository_t *)r;
+    str_free(repo->url);
+    str_free(repo->path);
+    str_free(repo->name);
+    if (repo->history) {
+        history_free(&repo->history);
+    }
+    if (repo->branches) {
+        str_array_free(&repo->branches);
+    }
 }
 
 void repo_array_init(repository_array_t **arr)
 {
-	array_init(arr, sizeof(repository_t));
+    array_init(arr, sizeof(repository_t));
 }
 
 repository_t *repo_array_get(const repository_array_t *src, size_t i)
 {
-	return (repository_t *)src->values + i;
+    return (repository_t *)src->values + i;
 }
 
 return_code_t repo_array_add(repository_array_t *src, repository_t *repo)
 {
-	return array_add(src, repo, assign_repo);
+    return array_add(src, repo, assign_repo);
 }
 
 repository_array_t *repo_array_copy(const repository_array_t *src)
 {
-	return array_copy(src, assign_repo);
+    return array_copy(src, assign_repo);
 }
 
 bool repo_array_contains(const repository_array_t *src, repository_t *repo)
 {
-	return array_contains(src, repo, compare_repo);
+    return array_contains(src, repo, compare_repo);
 }
 
 void repo_array_free(repository_array_t **arr)
 {
-	array_free(arr, free_repo);
+    array_free(arr, free_repo);
 }

@@ -29,8 +29,8 @@
 #include <stdio.h>
 
 typedef enum {
-	PASS_ON_FAIL,
-	EXIT_ON_FAIL,
+    PASS_ON_FAIL,
+    EXIT_ON_FAIL,
 } exit_mode_t;
 
 void set_exit_mode(exit_mode_t exit_mode);

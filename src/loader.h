@@ -25,7 +25,7 @@
 #include "repo.h"
 
 return_code_t load_cached_history(const repository_t *repo,
-							  work_history_t **history,
-							  str_t *cached_head);
+                              work_history_t **history,
+                              str_t *cached_head);
 
 #endif /* __LOADER_H__ */

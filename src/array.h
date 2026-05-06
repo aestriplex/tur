@@ -32,10 +32,10 @@ typedef int (*compare_fn_t)(void*, void*);
 typedef void (*free_fn_t)(void*);
 
 typedef struct {
-	void *values;
-	size_t len;
-	size_t capacity;
-	size_t element_size;
+    void *values;
+    size_t len;
+    size_t capacity;
+    size_t element_size;
 } array_t;
 
 return_code_t array_init(array_t **arr, size_t elem_sz);

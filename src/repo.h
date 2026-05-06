@@ -33,21 +33,21 @@
 typedef str_t (*fmt_commit_url) (str_t, str_t);
 
 typedef struct {
-	fmt_commit_url commit_url;
+    fmt_commit_url commit_url;
 } fmt_t;
 
 typedef struct {
-	unsigned id;
-	str_t url;
-	str_t path;
-	str_t name;
-	str_array_t *branches;
-	fmt_t format;
-	work_history_t *history;
+    unsigned id;
+    str_t url;
+    str_t path;
+    str_t name;
+    str_array_t *branches;
+    fmt_t format;
+    work_history_t *history;
 } repository_t;
 
 typedef struct {
-	size_t max_name_len;
+    size_t max_name_len;
 } repository_stats_t;
 
 typedef array_t repository_array_t;

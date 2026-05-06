@@ -27,37 +27,37 @@
 #include <stdbool.h>
 
 typedef enum {
-	STDOUT = 0,
-	LATEX,
-	HTML,
-	JEKYLL
+    STDOUT = 0,
+    LATEX,
+    HTML,
+    JEKYLL
 } tur_output_t;
 
 typedef enum {
-	ASC = 0,
-	DESC
+    ASC = 0,
+    DESC
 } sort_ordering_t;
 
 typedef struct {
-	bool show_diffs;
-	bool clear_cache;
-	bool no_cache;
-	bool grouped;
-	bool sorted;
-	sort_ordering_t sort_order;
-	str_array_t *emails;
-	tur_output_t output_mode;
-	str_t output;
-	str_t repos_path;
-	bool print_msg;
-	bool date_only;
-	size_t n_threads;
-	bool no_ansi;
-	bool no_merge;
-	str_t title;
-	bool interactive;
-	str_t editor;
-	bool force;
+    bool show_diffs;
+    bool clear_cache;
+    bool no_cache;
+    bool grouped;
+    bool sorted;
+    sort_ordering_t sort_order;
+    str_array_t *emails;
+    tur_output_t output_mode;
+    str_t output;
+    str_t repos_path;
+    bool print_msg;
+    bool date_only;
+    size_t n_threads;
+    bool no_ansi;
+    bool no_merge;
+    str_t title;
+    bool interactive;
+    str_t editor;
+    bool force;
 } settings_t;
 
 settings_t default_settings(void);

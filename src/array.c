@@ -29,69 +29,69 @@
 
 return_code_t array_init(array_t **arr, size_t elem_sz)
 {
-	array_t *array = malloc(sizeof(array_t));
-	if (!array) { return RUNTIME_MALLOC_ERROR; }
-	array->len = 0;
-	array->capacity = DEFAULT_ARRAY_SIZE;
-	array->element_size = elem_sz;
-	array->values = malloc(DEFAULT_ARRAY_SIZE * elem_sz);
-	if (!array->values) {
-		free(array);
-		return RUNTIME_ARRAY_REALLOC_ERROR;
-	}
-	*arr = array;
+    array_t *array = malloc(sizeof(array_t));
+    if (!array) { return RUNTIME_MALLOC_ERROR; }
+    array->len = 0;
+    array->capacity = DEFAULT_ARRAY_SIZE;
+    array->element_size = elem_sz;
+    array->values = malloc(DEFAULT_ARRAY_SIZE * elem_sz);
+    if (!array->values) {
+        free(array);
+        return RUNTIME_ARRAY_REALLOC_ERROR;
+    }
+    *arr = array;
 
-	return OK;
+    return OK;
 }
 
 return_code_t array_add(array_t *src, void *elem, assign_fn_t assign_fn)
 {
-	if (src->len >= src->capacity) {
-		src->capacity += DEFAULT_ARRAY_SIZE;
-		src->values = realloc(src->values, src->capacity * src->element_size);
-		if (!src->values) { return RUNTIME_ARRAY_REALLOC_ERROR; }
-	}
-	assign_fn((uint8_t *)src->values + src->len * src->element_size,
-			  elem);
-	src->len++;
+    if (src->len >= src->capacity) {
+        src->capacity += DEFAULT_ARRAY_SIZE;
+        src->values = realloc(src->values, src->capacity * src->element_size);
+        if (!src->values) { return RUNTIME_ARRAY_REALLOC_ERROR; }
+    }
+    assign_fn((uint8_t *)src->values + src->len * src->element_size,
+              elem);
+    src->len++;
 
-	return OK;
+    return OK;
 }
 
 array_t *array_copy(const array_t *src, assign_fn_t assign_fn)
 {
-	if (!src) { return NULL; }
+    if (!src) { return NULL; }
 
-	size_t elem_size = src->element_size;
-	array_t *copy = NULL;
-	array_init(&copy, elem_size);
+    size_t elem_size = src->element_size;
+    array_t *copy = NULL;
+    array_init(&copy, elem_size);
 
-	for (size_t i = 0; i < src->len; i++) {
-		uint8_t *arr_offset = (uint8_t *)src->values + i * elem_size;
-		if (array_add(copy, arr_offset, assign_fn) != OK) { return NULL; }
-	}
+    for (size_t i = 0; i < src->len; i++) {
+        uint8_t *arr_offset = (uint8_t *)src->values + i * elem_size;
+        if (array_add(copy, arr_offset, assign_fn) != OK) { return NULL; }
+    }
 
-	return copy;
+    return copy;
 }
 
 bool array_contains(const array_t *src, void *elem, compare_fn_t compare_elem)
 {
-	for (size_t i = 0; i < src->len; i++) {
-		size_t offset = i * src->element_size;
-		if (compare_elem((uint8_t *)src->values + offset, elem) == 0) {
-			return true;
-		}
-	}
-	return false;
+    for (size_t i = 0; i < src->len; i++) {
+        size_t offset = i * src->element_size;
+        if (compare_elem((uint8_t *)src->values + offset, elem) == 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void array_free(array_t **arr, free_fn_t free_element_fn)
 {
-	const array_t *array = *arr;
-	for (size_t i = 0; i < array->len; i++) {
-		free_element_fn((uint8_t *)array->values + i * array->element_size);
-	}
-	free(array->values);
-	free(*arr);
-	*arr = NULL;
+    const array_t *array = *arr;
+    for (size_t i = 0; i < array->len; i++) {
+        free_element_fn((uint8_t *)array->values + i * array->element_size);
+    }
+    free(array->values);
+    free(*arr);
+    *arr = NULL;
 }

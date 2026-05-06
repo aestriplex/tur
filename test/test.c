@@ -33,30 +33,30 @@ static on_fail_fn on_fail = exit_on_fail;
 
 void assert_true(bool condition, const char *label)
 {
-	if (condition) { 
-		printf(GREEN "PASSED (" TICK "): %s" RESET "\n", label);
-		passed++;
-		return;
-	}
+    if (condition) { 
+        printf(GREEN "PASSED (" TICK "): %s" RESET "\n", label);
+        passed++;
+        return;
+    }
 
-	printf(RED "FAILED (" CROSS "): %s\n" RESET, label);
-	failed++;
-	on_fail();
+    printf(RED "FAILED (" CROSS "): %s\n" RESET, label);
+    failed++;
+    on_fail();
 }
 
 void set_exit_mode(exit_mode_t exit_mode)
 {
-	if (exit_mode == PASS_ON_FAIL) {
-		on_fail = pass_on_fail;
-	} else {
-		on_fail = exit_on_fail;
-	}
+    if (exit_mode == PASS_ON_FAIL) {
+        on_fail = pass_on_fail;
+    } else {
+        on_fail = exit_on_fail;
+    }
 }
 
 void print_report(void)
 {
-	printf("%s======================\n"
-		   "PASSED: %lu\nFAILED: %lu\n"
-		   "======================" RESET "\n",
-		   failed == 0 ? GREEN : RED, passed, failed);
+    printf("%s======================\n"
+           "PASSED: %lu\nFAILED: %lu\n"
+           "======================" RESET "\n",
+           failed == 0 ? GREEN : RED, passed, failed);
 }

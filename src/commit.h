@@ -35,44 +35,44 @@
 typedef array_t  commit_arr_t;
 
 typedef enum {
-	AUTHORED,
-	CO_AUTHORED
+    AUTHORED,
+    CO_AUTHORED
 } responsability_t;
 
 typedef struct {
-	size_t files_changed;
-	size_t lines_added;
-	size_t lines_removed;
+    size_t files_changed;
+    size_t lines_added;
+    size_t lines_removed;
 } commit_stats_t;
 
 typedef struct {
-	str_t hash;
-	bool is_favorite;
-	responsability_t responsability;
-	time_t date;
-	str_t msg;
-	commit_stats_t stats;
+    str_t hash;
+    bool is_favorite;
+    responsability_t responsability;
+    time_t date;
+    str_t msg;
+    commit_stats_t stats;
 } commit_t;
 
 /* Commits in the indexes are just pointers to the commits in commit_arr.
  * !!! DO NOT FREE THEM !!!
  */
 typedef struct {
-	commit_arr_t *commit_arr;
-	commit_t **authored_idx;
-	commit_t **co_authored_idx;
-	size_t n_authored;
-	size_t n_co_authored;
-	size_t tot_lines_added;
-	size_t tot_lines_removed;
+    commit_arr_t *commit_arr;
+    commit_t **authored_idx;
+    commit_t **co_authored_idx;
+    size_t n_authored;
+    size_t n_co_authored;
+    size_t tot_lines_added;
+    size_t tot_lines_removed;
 } work_history_t;
 
 work_history_t *get_commit_history(str_t repo_path, const char *branch_name, const settings_t *settings);
 work_history_t *get_commit_history_since(str_t repo_path,
-										 const char *branch_name,
-										 const settings_t *settings,
-										 const str_t *stop_hash,
-										 bool *stop_found);
+                                         const char *branch_name,
+                                         const settings_t *settings,
+                                         const str_t *stop_hash,
+                                         bool *stop_found);
 return_code_t get_branch_head_hash(str_t repo_path, const char *branch_name, str_t *hash);
 commit_t *get_commit_with_id(const commit_arr_t* commit_arr, str_t id);
 commit_t *commit_copy(const commit_t *source);

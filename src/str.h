@@ -30,8 +30,8 @@
 #include <stdio.h>
 
 typedef struct {
-	const char*val;
-	uint16_t len;
+    const char*val;
+    uint16_t len;
 } str_t;
 
 typedef array_t str_array_t;
