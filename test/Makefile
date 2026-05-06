@@ -25,11 +25,13 @@ INCLUDE_PATH = /usr/local/include
 LIB_PATH = /usr/local/lib
 LIB = -lgit2
 TEST_BINS = test_parse_repository test_parse_email_list test_str test_utils test_opts_args test_lookup_table test_array
+MALLOC_ENV =
 
 # Change include and lib path for macOS with Apple Silicon
 UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
 ifeq ($(UNAME_S), Darwin)
+	MALLOC_ENV = MallocNanoZone=0
 	ifeq ($(UNAME_M), arm64)
 		INCLUDE_PATH = /opt/homebrew/include
 		LIB_PATH = /opt/homebrew/lib
@@ -45,13 +47,13 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 all: $(TEST_BINS)
-	./test_parse_repository
-	./test_parse_email_list
-	./test_str
-	./test_utils
-	./test_opts_args
-	./test_lookup_table
-	./test_array
+	$(MALLOC_ENV) ./test_parse_repository
+	$(MALLOC_ENV) ./test_parse_email_list
+	$(MALLOC_ENV) ./test_str
+	$(MALLOC_ENV) ./test_utils
+	$(MALLOC_ENV) ./test_opts_args
+	$(MALLOC_ENV) ./test_lookup_table
+	$(MALLOC_ENV) ./test_array
 
 test_parse_repository: test.c test_parse_repository.c repo.o str.o utils.o log.o array.o commit.o
 	$(CC) $(CVARS) $(CFLAGS) -I$(INCLUDE_PATH) -o $@ $^ -L$(LIB_PATH) $(LIB)
