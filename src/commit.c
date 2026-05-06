@@ -194,6 +194,57 @@ static uint16_t get_commit_stats(commit_stats_t *stats, const git_commit *commit
 	return OK;
 }
 
+return_code_t get_branch_head_hash(str_t repo_path, const char *branch_name, str_t *hash)
+{
+	if (!hash) { return NULL_PARAMETER; }
+	*hash = empty_str();
+
+	git_repository *git_repo = NULL;
+	git_reference *branch_ref = NULL;
+	git_object *branch_commit = NULL;
+	const git_oid *head_oid = NULL;
+	return_code_t ret = OK;
+
+	if (git_repository_open(&git_repo, repo_path.val) != 0) {
+		(void)log_err("Failed to open repository `%s`\n", repo_path.val);
+		return RUNTIME_MALLOC_ERROR;
+	}
+
+	if (branch_name) {
+		if (git_branch_lookup(&branch_ref, git_repo, branch_name, GIT_BRANCH_LOCAL) != 0) {
+			(void)log_err("%s: Cannot find a *local* branch named `%s`\n", repo_path.val, branch_name);
+			ret = COMMIT_NOT_FOUND;
+			goto cleanup;
+		}
+
+		if (git_reference_peel(&branch_commit, branch_ref, GIT_OBJECT_COMMIT) != 0) {
+			(void)log_err("%s: Cannot find the HEAD of `%s`\n", repo_path.val, branch_name);
+			ret = COMMIT_NOT_FOUND;
+			goto cleanup;
+		}
+
+		head_oid = git_object_id(branch_commit);
+	} else {
+		git_oid oid;
+		if (git_reference_name_to_id(&oid, git_repo, "HEAD") != 0) {
+			(void)log_err("%s: Cannot resolve HEAD\n", repo_path.val);
+			ret = COMMIT_NOT_FOUND;
+			goto cleanup;
+		}
+		head_oid = &oid;
+		*hash = str_init(git_oid_tostr_s(head_oid), GIT_HASH_LEN);
+		goto cleanup;
+	}
+
+	*hash = str_init(git_oid_tostr_s(head_oid), GIT_HASH_LEN);
+
+cleanup:
+	git_object_free(branch_commit);
+	git_reference_free(branch_ref);
+	git_repository_free(git_repo);
+	return ret;
+}
+
 work_history_t *get_commit_history_since(str_t repo_path,
 										 const char *branch_name,
 										 const settings_t *settings,

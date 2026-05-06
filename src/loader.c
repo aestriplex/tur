@@ -113,10 +113,31 @@ static return_code_t parse_cache_commit_line(commit_t *commit, char *line)
 	return OK;
 }
 
-return_code_t load_cached_history(const repository_t *repo, work_history_t **history)
+static str_t parse_cached_head(const char *line)
+{
+	const char *head_prefix = "\t@HEAD=";
+	char *head_ptr = strstr(line, head_prefix);
+	if (!head_ptr) {
+		return empty_str();
+	}
+
+	head_ptr += strlen(head_prefix);
+	if (*head_ptr == '\0') {
+		return empty_str();
+	}
+
+	return str_init(head_ptr, strlen(head_ptr));
+}
+
+return_code_t load_cached_history(const repository_t *repo,
+							  work_history_t **history,
+							  str_t *cached_head)
 {
 	if (!repo || !history) { return NULL_PARAMETER; }
 	*history = NULL;
+	if (cached_head) {
+		*cached_head = empty_str();
+	}
 
 	if (!full_cache_file_exists()) { return OK; }
 
@@ -143,6 +164,9 @@ return_code_t load_cached_history(const repository_t *repo, work_history_t **his
 			if (ret != OK) { goto cleanup; }
 
 			in_target_repo = current_repo_id == repo->id;
+			if (in_target_repo && cached_head) {
+				*cached_head = parse_cached_head(line);
+			}
 			if (!in_target_repo && *history) {
 				break;
 			}

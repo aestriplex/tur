@@ -257,8 +257,23 @@ return_code_t write_full_cache_on_file(const repository_array_t *repos)
 		repository_t *repo = repo_array_get(repos, i);
 		const work_history_t *history = repo->history;
 		const commit_arr_t *commit_arr = history->commit_arr;
+		const char *branch_name = repo->branches
+								  ? str_array_get(repo->branches, 0).val
+								  : NULL;
+		str_t branch_head = empty_str();
 
-		fprintf(fp, "+ %u) %s\n", repo->id, repo->name.val);
+		ret = get_branch_head_hash(repo->path, branch_name, &branch_head);
+		if (ret != OK) {
+			fclose(fp);
+			return ret;
+		}
+
+		fprintf(fp,
+				"+ %u) %s\t@HEAD=%s\n",
+				repo->id,
+				repo->name.val,
+				str_not_empty(branch_head) ? branch_head.val : "");
+		str_free(branch_head);
 		for (size_t j = 0; j < commit_arr->len; j++) {
 			commit_t *commit = commit_array_get(commit_arr, j);
 			print_cache_commit_line(fp, commit);

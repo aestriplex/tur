@@ -129,21 +129,21 @@ static return_code_t merge_cached_history(work_history_t *history,
 static return_code_t get_repo_history(repository_t *repo,
 							  const settings_t *settings)
 {
+	const char *branch_name = repo->branches
+							  ? str_array_get(repo->branches, 0).val
+							  : NULL;
+	return_code_t ret = OK;
+
 	if (settings->no_cache) {
 		repo->history = get_commit_history(repo->path,
-								  repo->branches
-								  ? str_array_get(repo->branches, 0).val
-								  : NULL,
-								  settings);
+										   branch_name,
+										   settings);
 		return repo->history ? OK : RUNTIME_MALLOC_ERROR;
 	}
 
-	const char *branch_name = repo->branches
-						 ? str_array_get(repo->branches, 0).val
-						 : NULL;
-
 	work_history_t *cached_history = NULL;
-	return_code_t ret = load_cached_history(repo, &cached_history);
+	str_t cached_head = empty_str();
+	ret = load_cached_history(repo, &cached_history, &cached_head);
 	if (ret != OK) { return ret; }
 
 	if (!cached_history || cached_history->commit_arr->len == 0) {
@@ -151,16 +151,17 @@ static return_code_t get_repo_history(repository_t *repo,
 		if (cached_history) {
 			history_free(&cached_history);
 		}
+		str_free(cached_head);
 		return repo->history ? OK : RUNTIME_MALLOC_ERROR;
 	}
 
-	const commit_t *latest_cached = commit_array_get(cached_history->commit_arr, 0);
 	bool stop_found = false;
 	work_history_t *new_history = get_commit_history_since(repo->path,
-													 branch_name,
-													 settings,
-													 &latest_cached->hash,
-													 &stop_found);
+														   branch_name,
+														   settings,
+														   &cached_head,
+														   &stop_found);
+	str_free(cached_head);
 
 	if (!new_history) {
 		history_free(&cached_history);

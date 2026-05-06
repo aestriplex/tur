@@ -73,6 +73,7 @@ work_history_t *get_commit_history_since(str_t repo_path,
 										 const settings_t *settings,
 										 const str_t *stop_hash,
 										 bool *stop_found);
+return_code_t get_branch_head_hash(str_t repo_path, const char *branch_name, str_t *hash);
 commit_t *get_commit_with_id(const commit_arr_t* commit_arr, str_t id);
 commit_t *commit_copy(const commit_t *source);
 work_history_t *history_copy(const work_history_t *src);
