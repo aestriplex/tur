@@ -1,6 +1,6 @@
 /* codes.h
  * -----------------------------------------------------------------------
- * Copyright (C) 2025  Matteo Nicoli
+ * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
  * This file is part of TUR.
  *
@@ -22,7 +22,7 @@
 #ifndef __CODES_H__
 #define __CODES_H__
 
-#define __TUR_VERSION__ "1.3.1-dev"
+#define __TUR_VERSION__ "1.4-dev"
 
 typedef enum {
 	OK                            = 0x00,

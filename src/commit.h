@@ -1,6 +1,6 @@
 /* commit.h
  * -----------------------------------------------------------------------
- * Copyright (C) 2025  Matteo Nicoli
+ * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
  * This file is part of TUR.
  *
@@ -26,6 +26,7 @@
 #include "settings.h"
 #include "str.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
 
@@ -46,6 +47,7 @@ typedef struct {
 
 typedef struct {
 	str_t hash;
+	bool is_favorite;
 	responsability_t responsability;
 	time_t date;
 	str_t msg;
@@ -56,20 +58,21 @@ typedef struct {
  * !!! DO NOT FREE THEM !!!
  */
 typedef struct {
-	commit_t **authored;
-	commit_t **co_authored;
-} indexes_t;
-
-typedef struct {
 	commit_arr_t *commit_arr;
+	commit_t **authored_idx;
+	commit_t **co_authored_idx;
 	size_t n_authored;
 	size_t n_co_authored;
-	indexes_t indexes;
 	size_t tot_lines_added;
 	size_t tot_lines_removed;
 } work_history_t;
 
 work_history_t *get_commit_history(str_t repo_path, const char *branch_name, const settings_t *settings);
+work_history_t *get_commit_history_since(str_t repo_path,
+										 const char *branch_name,
+										 const settings_t *settings,
+										 const str_t *stop_hash,
+										 bool *stop_found);
 commit_t *get_commit_with_id(const commit_arr_t* commit_arr, str_t id);
 commit_t *commit_copy(const commit_t *source);
 work_history_t *history_copy(const work_history_t *src);

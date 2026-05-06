@@ -1,6 +1,6 @@
 /* utils.h
  * -----------------------------------------------------------------------
- * Copyright (C) 2025  Matteo Nicoli
+ * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
  * This file is part of TUR.
  *
@@ -47,6 +47,8 @@ str_t get_first_line(str_t input);
 char* trim_whitespace(const char *str);
 str_t escape_special_chars(str_t input);
 str_t get_editor_or_default(void);
+bool non_cached_non_inter(const settings_t *settings);
+bool cached_or_inter(const settings_t *settings);
 return_code_t parse_commit_id(unsigned *id, const char *line);
 
 #endif /* __UTILS_H__ */

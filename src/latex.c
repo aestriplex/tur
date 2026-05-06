@@ -1,6 +1,6 @@
 /* latex.c
  * -----------------------------------------------------------------------
- * Copyright (C) 2025  Matteo Nicoli
+ * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
  * This file is part of TUR.
  *
@@ -28,6 +28,11 @@
 
 #define LIST_ITEMS_SPACING "\\setlength\\itemsep{1em}"
 
+static const char *favorite_tex(const commit_t *commit)
+{
+	return commit->is_favorite ? " \\turfav{}" : "";
+}
+
 static void print_commit_diffs(FILE *out, const commit_t * commit)
 {
 	fprintf(out, "\\\\%zu file%c changed "
@@ -46,11 +51,11 @@ static void print_commit_message(FILE *out, const commit_t * commit)
 
 static void generate_latex_file_grouped(FILE *out,
 										const repository_t *repo,
-										const indexes_t *indexes,
+										const work_history_t *history,
 										const settings_t *settings)
 {
-	commit_t **const authored = indexes->authored;
-	commit_t **const co_authored = indexes->co_authored;
+	commit_t **const authored = history->authored_idx;
+	commit_t **const co_authored = history->co_authored_idx;
 
 	if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
 
@@ -73,6 +78,7 @@ static void generate_latex_file_grouped(FILE *out,
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val,
 				format_date(authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_tex(authored[n_c]));
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -99,6 +105,7 @@ co_authored:
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val,
 				format_date(co_authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_tex(co_authored[n_c]));
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -109,11 +116,11 @@ co_authored:
 
 static void generate_latex_file_list(FILE *out, const
 									 repository_t *repo,
-									 const indexes_t *indexes,
+									 const work_history_t *history,
 									 const settings_t *settings)
 {
-	commit_t **const authored = indexes->authored;
-	commit_t **const co_authored = indexes->co_authored;
+	commit_t **const authored = history->authored_idx;
+	commit_t **const co_authored = history->co_authored_idx;
 
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
 		fprintf(out, "\t\\item \\label{%s:item:%s}",
@@ -127,6 +134,8 @@ static void generate_latex_file_list(FILE *out, const
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				authored[n_c]->hash.val,
 				format_date(authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_tex(authored[n_c]));
+		fprintf(out, "\n");
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -144,6 +153,8 @@ static void generate_latex_file_list(FILE *out, const
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				co_authored[n_c]->hash.val,
 				format_date(co_authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_tex(co_authored[n_c]));
+		fprintf(out, "\n");
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -157,7 +168,9 @@ void generate_latex_file(FILE *out, const repository_array_t *repos, const setti
 				 "include it in a LaTeX document with both "
 				 "*xcolor* and *hyperref* packages.\n\n"
 				 "%% Commands definition\n"
-				 "\\newcommand{\\turtexpar}[1]{\\textbf{#1}}");
+				 "\\definecolor{americanrose}{rgb}{1.0, 0.01, 0.24}\n"
+				 "\\newcommand{\\turtexpar}[1]{\\textbf{#1}}\n"
+				 "\\newcommand{\\turfav}{ {\\Large \\textcolor{americanrose}{$\\star$}}}");
 
 	if (str_not_empty(settings->title)) {
 		fprintf(out, "\n\n\\section{%s}", settings->title.val);
@@ -171,13 +184,15 @@ void generate_latex_file(FILE *out, const repository_array_t *repos, const setti
 		repository_t *repo = repo_array_get(repos, i);
 
 		if (settings->grouped) {
-			generate_latex_file_grouped(out, repo, &repo->history->indexes, settings);
+			generate_latex_file_grouped(out, repo, repo->history, settings);
 		} else {
-			generate_latex_file_list(out, repo, &repo->history->indexes, settings);
+			generate_latex_file_list(out, repo, repo->history, settings);
 		}
 	}
 
 	if (!settings->grouped) {
-		fprintf(out, "\\end{enumerate}\n");
+		fprintf(out, "\\end{enumerate}\n"
+					 "\\vspace{1cm}\n\n"
+					 "\\noindent (\\turfav{} indicates a valuable contribution)\n");
 	}
 }

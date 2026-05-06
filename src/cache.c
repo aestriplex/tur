@@ -1,6 +1,6 @@
 /* cache.c
  * -----------------------------------------------------------------------
- * Copyright (C) 2025  Matteo Nicoli
+ * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
  * This file is part of TUR.
  *
@@ -26,6 +26,7 @@
 #include "lookup_table.h"
 #include "utils.h"
 
+#include <errno.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -40,7 +41,65 @@ uint32_t id_hash(void *key)
 
 static void print_commit_line(FILE *fp, const commit_t *commit)
 {
-	fprintf(fp, "%s\t%s\n", commit->hash.val, get_first_line(commit->msg).val);
+	fprintf(fp,
+			"%s\t%s%s%s\n",
+			commit->hash.val,
+			get_first_line(commit->msg).val,
+			commit->is_favorite ? "\t" : "",
+			commit->is_favorite ? FAVORITE_STR : "");
+}
+
+static char get_resp_char(responsability_t resp)
+{
+	return resp == AUTHORED ? 'A' : 'C';
+}
+
+static void print_cache_commit_line(FILE *fp, const commit_t *commit)
+{
+	fprintf(fp,
+			"%s\t%c\t%lld\t%zu\t%zu\t%zu\t%d\t%s\n",
+			commit->hash.val,
+			get_resp_char(commit->responsability),
+			(long long)commit->date,
+			commit->stats.files_changed,
+			commit->stats.lines_added,
+			commit->stats.lines_removed,
+			commit->is_favorite ? 1 : 0,
+			get_first_line(commit->msg).val);
+}
+
+static return_code_t repo_index(repository_t *repo, const cacheidx_arr_t *commits)
+{
+	size_t authored_count = 0, co_authored_count = 0;
+	work_history_t *history = repo->history;
+
+	for (size_t i = 0; i < history->commit_arr->len; i++) {
+		commit_t *commit = commit_array_get(history->commit_arr, i);
+		commit->is_favorite = false;
+	}
+
+	for (size_t i = 0; i < commits->len; i++) {
+		cache_index_t *commit_idx = cache_array_get(commits, i);
+		commit_t *c = get_commit_with_id(history->commit_arr, commit_idx->hash);
+		if (!c) {
+			(void)log_err("repo_index: cannot find commit `%s`\n",
+						  commit_idx->hash.val);
+			return COMMIT_NOT_FOUND;
+		}
+
+		c->is_favorite = commit_idx->is_favorite;
+
+		if (c->responsability == AUTHORED) {
+			history->authored_idx[authored_count++] = c;
+		} else {
+			history->co_authored_idx[co_authored_count++] = c;
+		}
+	}
+
+	history->n_authored = authored_count;
+	history->n_co_authored = co_authored_count;
+
+	return OK;
 }
 
 static return_code_t parse_commit_file(table_t *repo_table)
@@ -88,9 +147,10 @@ static return_code_t parse_commit_file(table_t *repo_table)
 			/* If the commit name contains the string "[*]", then the commit
 			 * is labelled as a favorite.
 			 */
+			bool is_favorite = strstr(end_of_hash, FAVORITE_STR);
 			cache_index_t idx = (cache_index_t) {
 				.hash = hash,
-				.is_favorite = strstr(end_of_hash, FAVORITE_STR),
+				.is_favorite = is_favorite,
 			};
 
 			ret = cache_array_add(current_commits, &idx);
@@ -115,40 +175,14 @@ cleanup:
 	return ret;
 }
 
-static return_code_t repo_index(repository_t *repo, const cacheidx_arr_t *commits)
-{
-	size_t authored_count = 0, co_authored_count = 0;
-	work_history_t *history = repo->history;
-
-	for (size_t i = 0; i < commits->len; i++) {
-		cache_index_t *commit_idx = cache_array_get(commits, i);
-		commit_t *c = get_commit_with_id(history->commit_arr, commit_idx->hash);
-		if (!c) {
-			(void)log_err("repo_index: cannot find commit `%s`\n",
-						  commit_idx->hash.val);
-			return COMMIT_NOT_FOUND;
-		}
-
-		if (c->responsability == AUTHORED) {
-			history->indexes.authored[authored_count++] = c;
-		} else {
-			history->indexes.co_authored[co_authored_count++] = c;
-		}
-	}
-
-	history->n_authored = authored_count;
-	history->n_co_authored = co_authored_count;
-
-	return OK;
-}
-
 return_code_t check_or_create_tur_dir(void)
 {
 	struct stat st = { 0 };
 
 	if (stat(TUR_DIR, &st) == -1) {
 		if (mkdir(TUR_DIR, 0700) != 0) {
-			(void)log_err("Cannot create the directory `%s`\n", TUR_DIR);
+			(void)log_err("Cannot create the directory `%s` "
+						  "with permission 700\n", TUR_DIR);
 			return CANNOT_CREATE_TUR_DIR;
 		}
 	}
@@ -160,6 +194,12 @@ bool commit_file_exists(void)
 {
 	struct stat st = { 0 };
 	return stat(COMMITS_FILE, &st) != -1;
+}
+
+bool full_cache_file_exists(void)
+{
+	struct stat st = { 0 };
+	return stat(FULL_CACHE_FILE, &st) != -1;
 }
 
 return_code_t write_repos_on_file(const repository_array_t *repos)
@@ -181,8 +221,8 @@ return_code_t write_repos_on_file(const repository_array_t *repos)
 	for (size_t i = 0; i < repos->len; i++) {
 		repository_t *repo = repo_array_get(repos, i);
 		const work_history_t *history = repo->history;
-		commit_t **const authored = history->indexes.authored;
-		commit_t **const co_authored = history->indexes.co_authored;
+		commit_t **const authored = history->authored_idx;
+		commit_t **const co_authored = history->co_authored_idx;
 
 		fprintf(fp, "+ %u) %s\n", repo->id, repo->name.val);
 		for (size_t j = 0; j < history->n_authored; j++) {
@@ -190,6 +230,38 @@ return_code_t write_repos_on_file(const repository_array_t *repos)
 		}
 		for (size_t j = 0; j < history->n_co_authored; j++) {
 			print_commit_line(fp, co_authored[j]);
+		}
+	}
+
+	fclose(fp);
+	return ret;
+}
+
+return_code_t write_full_cache_on_file(const repository_array_t *repos)
+{
+	return_code_t ret = OK;
+	FILE *fp = NULL;
+
+	ret = check_or_create_tur_dir();
+	if (ret != OK) {
+		return ret;
+	}
+
+	fp = fopen(FULL_CACHE_FILE, "w");
+	if (!fp) {
+		(void)log_err("Cannot create file `%s`...\n", FULL_CACHE_FILE);
+		return CANNOT_CREATE_COMMITS_FILE;
+	}
+
+	for (size_t i = 0; i < repos->len; i++) {
+		repository_t *repo = repo_array_get(repos, i);
+		const work_history_t *history = repo->history;
+		const commit_arr_t *commit_arr = history->commit_arr;
+
+		fprintf(fp, "+ %u) %s\n", repo->id, repo->name.val);
+		for (size_t j = 0; j < commit_arr->len; j++) {
+			commit_t *commit = commit_array_get(commit_arr, j);
+			print_cache_commit_line(fp, commit);
 		}
 	}
 
@@ -224,12 +296,27 @@ return_code_t rebuild_indexes(const repository_array_t *repos)
 
 return_code_t delete_cache(void)
 {
-	if (remove(TUR_DIR) != 0) { return CANNOT_DELETE_TUR_DIR; }
+	if (remove(TUR_DIR) != 0) {
+		perror("Error deleting cache dir");
+		return CANNOT_DELETE_TUR_DIR;
+	}
 	return OK;
 }
 
-return_code_t delete_commits_file(void)
+return_code_t delete_commits_index(void)
 {
-	if (remove(COMMITS_FILE) != 0) { return CANNOT_DELETE_COMMITS_FILE; }
+	if (remove(COMMITS_FILE) != 0) {
+		perror("Error deleting commits index file");
+		return CANNOT_DELETE_COMMITS_FILE;
+	}
+	return OK;
+}
+
+return_code_t delete_full_cache(void)
+{
+	if (remove(FULL_CACHE_FILE) != 0) {
+		perror("Error deleting full cache file");
+		return CANNOT_DELETE_COMMITS_FILE;
+	}
 	return OK;
 }

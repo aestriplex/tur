@@ -1,4 +1,4 @@
-/* test.c
+/* loader.h - loads the commits, either from repositories or from cache
  * -----------------------------------------------------------------------
  * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
@@ -19,44 +19,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "test.h"
+#ifndef __LOADER_H__
+#define __LOADER_H__
 
-#include <stdlib.h>
+#include "repo.h"
 
-typedef void(*on_fail_fn)(void);
+return_code_t load_cached_history(const repository_t *repo, work_history_t **history);
 
-static void exit_on_fail(void) { exit(1); }
-static void pass_on_fail(void) { ; }
-static unsigned long passed = 0;
-static unsigned long failed = 0;
-static on_fail_fn on_fail = exit_on_fail;
-
-void assert_true(bool condition, const char *label)
-{
-	if (condition) { 
-		printf(GREEN "PASSED (" TICK "): %s" RESET "\n", label);
-		passed++;
-		return;
-	}
-
-	printf(RED "FAILED (" CROSS "): %s\n" RESET, label);
-	failed++;
-	on_fail();
-}
-
-void set_exit_mode(exit_mode_t exit_mode)
-{
-	if (exit_mode == PASS_ON_FAIL) {
-		on_fail = pass_on_fail;
-	} else {
-		on_fail = exit_on_fail;
-	}
-}
-
-void print_report(void)
-{
-	printf("%s======================\n"
-		   "PASSED: %lu\nFAILED: %lu\n"
-		   "======================" RESET "\n",
-		   failed == 0 ? GREEN : RED, passed, failed);
-}
+#endif /* __LOADER_H__ */

@@ -1,6 +1,6 @@
 /* markdown.c
  * -----------------------------------------------------------------------
- * Copyright (C) 2025  Matteo Nicoli
+ * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
  * This file is part of TUR.
  *
@@ -26,6 +26,11 @@
 
 #include <stdio.h>
 
+static const char *favorite_md(const commit_t *commit)
+{
+	return commit->is_favorite ? " ★" : "";
+}
+
 static void print_commit_diffs(FILE *out, const commit_t *commit)
 {
 	fprintf(out, "%zu file%c changed "
@@ -44,11 +49,11 @@ static void print_commit_message(FILE *out, const commit_t * commit)
 
 static void generate_md_file_grouped(FILE *out,
 									 const repository_t *repo,
-									 const indexes_t *indexes,
+									 const work_history_t *history,
 									 const settings_t *settings)
 {
-	commit_t **const authored = indexes->authored;
-	commit_t **const co_authored = indexes->co_authored;
+	commit_t **const authored = history->authored_idx;
+	commit_t **const co_authored = history->co_authored_idx;
 
 	if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
 
@@ -67,6 +72,8 @@ static void generate_md_file_grouped(FILE *out,
 				authored[n_c]->hash.val,
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				format_date(authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_md(authored[n_c]));
+		fprintf(out, "\n");
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -87,6 +94,8 @@ co_authored:
 				co_authored[n_c]->hash.val,
 				repo->format.commit_url(repo->url, co_authored[n_c]->hash).val,
 				format_date(co_authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_md(co_authored[n_c]));
+		fprintf(out, "\n");
 		if (settings->show_diffs) {
 			print_commit_diffs(out, co_authored[n_c]);
 		}
@@ -95,11 +104,11 @@ co_authored:
 
 static void generate_md_file_list(FILE *out,
 								  const repository_t *repo,
-								  const indexes_t *indexes,
+								  const work_history_t *history,
 								  const settings_t *settings)
 {
-	commit_t **const authored = indexes->authored;
-	commit_t **const co_authored = indexes->co_authored;
+	commit_t **const authored = history->authored_idx;
+	commit_t **const co_authored = history->co_authored_idx;
 
 	size_t n_commit = 1;
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
@@ -112,6 +121,8 @@ static void generate_md_file_list(FILE *out,
 				authored[n_c]->hash.val,
 				repo->format.commit_url(repo->url, authored[n_c]->hash).val,
 				format_date(authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_md(authored[n_c]));
+		fprintf(out, "\n");
 		if (settings->show_diffs) {
 			print_commit_diffs(out, authored[n_c]);
 		}
@@ -130,6 +141,8 @@ static void generate_md_file_list(FILE *out,
 				co_authored[n_c]->hash.val,
 				repo->format.commit_url(repo->url, co_authored[n_c]->hash).val,
 				format_date(co_authored[n_c]->date, settings->date_only).val);
+		fprintf(out, "%s", favorite_md(co_authored[n_c]));
+		fprintf(out, "\n");
 		if (settings->show_diffs) {
 			print_commit_diffs(out, co_authored[n_c]);
 		}
@@ -152,9 +165,9 @@ void generate_markdown_file(FILE *out, const repository_array_t *repos, const se
 		repository_t *repo = repo_array_get(repos, i);
 
 		if (settings->grouped) {
-			generate_md_file_grouped(out, repo, &repo->history->indexes, settings);
+			generate_md_file_grouped(out, repo, repo->history, settings);
 		} else {
-			generate_md_file_list(out, repo, &repo->history->indexes, settings);
+			generate_md_file_list(out, repo, repo->history, settings);
 		}
 	}
 }

@@ -1,6 +1,6 @@
 /* stdout.c
  * -----------------------------------------------------------------------
- * Copyright (C) 2025  Matteo Nicoli
+ * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
  * This file is part of TUR.
  *
@@ -24,6 +24,11 @@
 
 #include <stdio.h>
 
+static const char *favorite_stdout(const commit_t *commit)
+{
+	return commit->is_favorite ? " ★" : "";
+}
+
 static void print_commit_diffs(const commit_t * commit, const settings_t *settings)
 {
 	char *msg = settings->no_ansi
@@ -42,10 +47,12 @@ static void print_commit_message(const commit_t * commit, const char *indent)
 	fprintf(stdout, "%s| %s\n", indent, get_first_line(commit->msg).val);
 }
 
-static void print_stdout_grouped(const repository_t *repo, const indexes_t *indexes, const settings_t *settings)
+static void print_stdout_grouped(const repository_t *repo,
+								 const work_history_t *history,
+								 const settings_t *settings)
 {
-	commit_t **const authored = indexes->authored;
-	commit_t **const co_authored = indexes->co_authored;
+	commit_t **const authored = history->authored_idx;
+	commit_t **const co_authored = history->co_authored_idx;
 
 	if (repo->history->n_authored == 0 && repo->history->n_co_authored == 0) { return; }
 
@@ -61,6 +68,7 @@ static void print_stdout_grouped(const repository_t *repo, const indexes_t *inde
 		fprintf(stdout, "\t| %s %s",
 				authored[n_c]->hash.val,
 				format_date(authored[n_c]->date, settings->date_only).val);
+		fprintf(stdout, "%s", favorite_stdout(authored[n_c]));
 		if (settings->show_diffs) {
 			print_commit_diffs(authored[n_c], settings);
 		}
@@ -79,6 +87,7 @@ co_authored:
 		fprintf(stdout, "\t| %s %s",
 				co_authored[n_c]->hash.val,
 				format_date(co_authored[n_c]->date, settings->date_only).val);
+		fprintf(stdout, "%s", favorite_stdout(co_authored[n_c]));
 
 		if (settings->show_diffs) {
 			print_commit_diffs(co_authored[n_c], settings);
@@ -87,11 +96,13 @@ co_authored:
 	}
 }
 
-static void print_stdout_list(const repository_t *repo, const indexes_t *indexes,
-							  const settings_t *settings, size_t max_name_len)
+static void print_stdout_list(const repository_t *repo,
+							  const work_history_t *history,
+							  const settings_t *settings,
+							  size_t max_name_len)
 {
-	commit_t **const authored = indexes->authored;
-	commit_t **const co_authored = indexes->co_authored;
+	commit_t **const authored = history->authored_idx;
+	commit_t **const co_authored = history->co_authored_idx;
 	const char *fmt_string = "| %-*s   %s %s [%c]";
 
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
@@ -104,6 +115,7 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 				authored[n_c]->hash.val,
 				format_date(authored[n_c]->date, settings->date_only).val,
 				'A');
+		fprintf(stdout, "%s", favorite_stdout(authored[n_c]));
 		
 		if (settings->show_diffs) {
 			print_commit_diffs(authored[n_c], settings);
@@ -121,6 +133,7 @@ static void print_stdout_list(const repository_t *repo, const indexes_t *indexes
 				co_authored[n_c]->hash.val,
 				format_date(co_authored[n_c]->date, settings->date_only).val,
 				'C');
+		fprintf(stdout, "%s", favorite_stdout(co_authored[n_c]));
 		
 		if (settings->show_diffs) {
 			print_commit_diffs(co_authored[n_c], settings);
@@ -135,9 +148,9 @@ void print_stdout(const repository_array_t *repos, const settings_t *settings, r
 		repository_t *repo = repo_array_get(repos, i);
 
 		if (settings->grouped) {
-			print_stdout_grouped(repo, &repo->history->indexes, settings);
+			print_stdout_grouped(repo, repo->history, settings);
 		} else {
-			print_stdout_list(repo, &repo->history->indexes, settings, stats.max_name_len);
+			print_stdout_list(repo, repo->history, settings, stats.max_name_len);
 		}
 	}
 

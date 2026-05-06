@@ -1,6 +1,6 @@
 /* utils.c
  * -----------------------------------------------------------------------
- * Copyright (C) 2025  Matteo Nicoli
+ * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
  * This file is part of TUR.
  *
@@ -162,6 +162,16 @@ str_t get_editor_or_default(void)
 	const char* editor = getenv("GIT_EDITOR");
 	if (!editor) editor = DEFAULT_EDITOR;
 	return str_init(editor, strnlen(editor, 20));
+}
+
+bool non_cached_non_inter(const settings_t *settings)
+{
+	return settings->no_cache && !settings->interactive;
+}
+
+bool cached_or_inter(const settings_t *settings)
+{
+	return !non_cached_non_inter(settings);
 }
 
 return_code_t parse_commit_id(unsigned *id, const char *line)

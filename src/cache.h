@@ -1,6 +1,6 @@
 /* cache.h
  * -----------------------------------------------------------------------
- * Copyright (C) 2025  Matteo Nicoli
+ * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
  * This file is part of TUR.
  *
@@ -28,13 +28,17 @@
 #include <stdint.h>
 
 #define TUR_DIR ".tur/"
+#define FULL_CACHE_FILE ".tur/commits_cache"
 #define COMMITS_FILE ".tur/commits_index"
 
 bool commit_file_exists(void);
+bool full_cache_file_exists(void);
 return_code_t delete_cache(void);
-return_code_t delete_commits_file(void);
+return_code_t delete_commits_index(void);
+return_code_t delete_full_cache(void);
 return_code_t check_or_create_tur_dir(void);
 return_code_t write_repos_on_file(const repository_array_t *repos);
+return_code_t write_full_cache_on_file(const repository_array_t *repos);
 return_code_t rebuild_indexes(const repository_array_t *repos);
 
 #endif /* __CACHE_H__ */

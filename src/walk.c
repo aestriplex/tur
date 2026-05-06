@@ -1,6 +1,6 @@
 /* walk.c
  * -----------------------------------------------------------------------
- * Copyright (C) 2025  Matteo Nicoli
+ * Copyright (C) 2025 - 2026 Matteo Nicoli
  *
  * This file is part of TUR.
  *
@@ -23,9 +23,11 @@
 #include "codes.h"
 #include "commit.h"
 #include "editor.h"
+#include "loader.h"
 #include "log.h"
 #include "repo.h"
 #include "settings.h"
+#include "utils.h"
 #include "view.h"
 #include "walk.h"
 
@@ -81,15 +83,6 @@ static commit_t **get_commit_refs(const commit_arr_t *commit_arr,
 
 	return commits_with_resp;
 }
-static bool non_cached_non_inter(const settings_t *settings)
-{
-	return settings->no_cache && !settings->interactive;
-}
-
-static bool cached_or_inter(const settings_t *settings)
-{
-	return !non_cached_non_inter(settings);
-}
 
 static return_code_t build_indexes(repository_t *repo,
 								   const settings_t *settings)
@@ -101,12 +94,94 @@ static return_code_t build_indexes(repository_t *repo,
 											 repo->history->n_co_authored,
 											 CO_AUTHORED, settings);
 
-	repo->history->indexes.authored = authored;
-	repo->history->indexes.co_authored = co_authored;
+	if (!authored || !co_authored) { return INDEX_ALLOCATION_ERROR; }
 
-	const indexes_t *idx = &repo->history->indexes; 
-	if (!idx->authored || !idx->co_authored) { return INDEX_ALLOCATION_ERROR; }
+	repo->history->authored_idx = authored;
+	repo->history->co_authored_idx = co_authored;
 
+	return OK;
+}
+
+static return_code_t merge_cached_history(work_history_t *history,
+								  const work_history_t *cached_history)
+{
+	for (size_t i = 0; i < cached_history->commit_arr->len; i++) {
+		commit_t *cached_commit = commit_array_get(cached_history->commit_arr, i);
+		if (commit_array_add(history->commit_arr, cached_commit) != OK) {
+			(void)log_err("merge_cached_history: cannot merge commit `%s`\n",
+						  cached_commit->hash.val);
+			return RUNTIME_ARRAY_REALLOC_ERROR;
+		}
+
+		if (cached_commit->responsability == AUTHORED) {
+			history->n_authored++;
+		} else {
+			history->n_co_authored++;
+		}
+
+		history->tot_lines_added += cached_commit->stats.lines_added;
+		history->tot_lines_removed += cached_commit->stats.lines_removed;
+	}
+
+	return OK;
+}
+
+static return_code_t get_repo_history(repository_t *repo,
+							  const settings_t *settings)
+{
+	if (settings->no_cache) {
+		repo->history = get_commit_history(repo->path,
+								  repo->branches
+								  ? str_array_get(repo->branches, 0).val
+								  : NULL,
+								  settings);
+		return repo->history ? OK : RUNTIME_MALLOC_ERROR;
+	}
+
+	const char *branch_name = repo->branches
+						 ? str_array_get(repo->branches, 0).val
+						 : NULL;
+
+	work_history_t *cached_history = NULL;
+	return_code_t ret = load_cached_history(repo, &cached_history);
+	if (ret != OK) { return ret; }
+
+	if (!cached_history || cached_history->commit_arr->len == 0) {
+		repo->history = get_commit_history(repo->path, branch_name, settings);
+		if (cached_history) {
+			history_free(&cached_history);
+		}
+		return repo->history ? OK : RUNTIME_MALLOC_ERROR;
+	}
+
+	const commit_t *latest_cached = commit_array_get(cached_history->commit_arr, 0);
+	bool stop_found = false;
+	work_history_t *new_history = get_commit_history_since(repo->path,
+													 branch_name,
+													 settings,
+													 &latest_cached->hash,
+													 &stop_found);
+
+	if (!new_history) {
+		history_free(&cached_history);
+		return RUNTIME_MALLOC_ERROR;
+	}
+
+	if (!stop_found) {
+		history_free(&new_history);
+		history_free(&cached_history);
+		repo->history = get_commit_history(repo->path, branch_name, settings);
+		return repo->history ? OK : RUNTIME_MALLOC_ERROR;
+	}
+
+	ret = merge_cached_history(new_history, cached_history);
+	history_free(&cached_history);
+	if (ret != OK) {
+		history_free(&new_history);
+		return ret;
+	}
+
+	repo->history = new_history;
 	return OK;
 }
 
@@ -164,10 +239,11 @@ static void *walk_repo(void* arg)
 								  ? str_array_get(worker->repo->branches, 0).val
 								  : NULL;
 
-		worker->repo->history = get_commit_history(worker->repo->path,
-												   branch_name, pool.settings);
-		if (!worker->repo->history) {
-			worker->ret = RUNTIME_MALLOC_ERROR;
+		worker->ret = get_repo_history(worker->repo, pool.settings);
+		if (worker->ret != OK || !worker->repo->history) {
+			if (worker->ret == OK) {
+				worker->ret = RUNTIME_MALLOC_ERROR;
+			}
 			(void)log_err("walk_repo: cannot retrieve commit history for %s\n",
 						  worker->repo->name.val);
 			continue;
@@ -212,12 +288,12 @@ err:
 	return RUNTIME_MALLOC_ERROR;
 }
 
-static return_code_t cache_commit_list(const repository_array_t *repos,
-									   const settings_t *settings)
+static return_code_t sync_selected_commits_file(const repository_array_t *repos,
+										const settings_t *settings)
 {
 	return_code_t ret = OK;
 
-	if (cached_or_inter(settings)) {
+	if (!settings->no_cache) {
 		if (settings->force || !commit_file_exists()) {
 			/* We have to create or overwrite the commits file */
 			ret = write_repos_on_file(repos);
@@ -226,6 +302,11 @@ static return_code_t cache_commit_list(const repository_array_t *repos,
 	}
 
 	if (settings->interactive) {
+		if (settings->no_cache && !commit_file_exists()) {
+			ret = write_repos_on_file(repos);
+			if (ret != OK) { return ret; }
+		}
+
 		ret = choose_commits_through_editor(settings);
 		if (ret != OK) { return ret; }
 	}
@@ -276,19 +357,15 @@ return_code_t walk_through_repos(const repository_array_t *repos,
 
 	(void)log_info("--------------\n");
 
-	/* The indexes are built following these rationale:
-	 *     - If no_cache == 1 && interactive == 0, then .tur/commits is ignored;
-	 *     - If no_cache == 1 && interactive == 1, then .tur/commits is temporarily written,
-	 *       and removed at the end of this function;
-	 *     - If no_cache == 0 && interactive == 0, then .tur/commits is written with the indexes
-	 *       built by this function;
-	 *     - If no_cache == 0 && interactive == 1, then .tur/commits is written with the indexes
-	 *       modified by the user in the text editor (interctive mode). If a file .tur/commits
-	 *       is already present, then
-	 *           * if force == 1, then the index is recalculated and the file overwritten;
-	 *           * otherwise, the file is loaded as is and the index is not recalculated.
+	/* Index/cache rationale:
+	 *     - `.tur/commits_cache` always stores the full commit history (when cache is enabled);
+	 *     - `.tur/commits_index` stores only selected commits (interactive/output selection);
+	 *     - If no_cache == 1 && interactive == 0, no file in `.tur/` is used;
+	 *     - If no_cache == 1 && interactive == 1, `.tur/commits_index` is temporary and removed;
+	 *     - If no_cache == 0 && interactive == 0, `.tur/commits_index` is written if missing/forced;
+	 *     - If no_cache == 0 && interactive == 1, `.tur/commits_index` is edited by the user.
 	 */
-	ret = cache_commit_list(repos, settings);
+	ret = sync_selected_commits_file(repos, settings);
 	if (ret != OK) { goto print_and_exit; }
 
 	if (cached_or_inter(settings)) {
@@ -296,10 +373,15 @@ return_code_t walk_through_repos(const repository_array_t *repos,
 		if (ret != OK) { goto print_and_exit; }
 	}
 
+	if (!settings->no_cache) {
+		ret = write_full_cache_on_file(repos);
+		if (ret != OK) { goto print_and_exit; }
+	}
+
 	if (settings->no_cache && commit_file_exists()) {
 		(void)log_info("Removing temporary commit file `%s`...\n",
 					   COMMITS_FILE);
-		ret = delete_commits_file();
+		ret = delete_commits_index();
 		if (ret != OK) {
 			(void)log_err("Cannot delete temporary commit file `%s`...\n", COMMITS_FILE);
 		}
