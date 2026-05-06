@@ -24,12 +24,15 @@
 
 #include <stdio.h>
 
-static const char *favorite_stdout(const commit_t *commit)
+static const char *favorite_stdout(const commit_t *commit,
+								   const settings_t *settings)
 {
-	return commit->is_favorite ? " \u2605" : "";
+	return commit->is_favorite
+		   ? " \u2605" : settings->grouped
+			 ? "" : "  ";
 }
 
-static void print_commit_diffs(const commit_t * commit, const settings_t *settings)
+static void print_commit_diffs(const commit_t *commit, const settings_t *settings)
 {
 	char *msg = settings->no_ansi
 						  ? "\t%zu file%s changed\t+%zu | -%zu%s"
@@ -42,7 +45,7 @@ static void print_commit_diffs(const commit_t * commit, const settings_t *settin
 			settings->print_msg ? "\n" : "");
 }
 
-static void print_commit_message(const commit_t * commit, const char *indent)
+static void print_commit_message(const commit_t *commit, const char *indent)
 {
 	fprintf(stdout, "%s| %s\n", indent, get_first_line(commit->msg).val);
 }
@@ -62,7 +65,7 @@ static void print_stdout_grouped(const repository_t *repo,
 
 	fprintf(stdout, "Authored commits:\n");
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(stdout, "%s", favorite_stdout(authored[n_c]));
+		fprintf(stdout, "%s", favorite_stdout(authored[n_c], settings));
 		if (settings->print_msg) {
 			print_commit_message(authored[n_c], "\t");
 		}
@@ -81,7 +84,7 @@ co_authored:
 
 	fprintf(stdout, "Co-authored commits:\n");
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(stdout, "%s", favorite_stdout(co_authored[n_c]));
+		fprintf(stdout, "%s", favorite_stdout(co_authored[n_c], settings));
 		if (settings->print_msg) {
 			print_commit_message(co_authored[n_c], "\t");
 		}
@@ -103,14 +106,15 @@ static void print_stdout_list(const repository_t *repo,
 {
 	commit_t **const authored = history->authored_idx;
 	commit_t **const co_authored = history->co_authored_idx;
-	const char *fmt_string = "| %-*s   %s %s [%c]";
+	const char *fmt_string = "%s| %-*s   %s %s [%c]";
 
 	for (size_t n_c = 0; n_c < repo->history->n_authored; n_c++) {
-		fprintf(stdout, "%s", favorite_stdout(authored[n_c]));
+		fprintf(stdout, "%s", favorite_stdout(authored[n_c], settings));
 		if (settings->print_msg) {
 			print_commit_message(authored[n_c], "");
 		}
 		fprintf(stdout, fmt_string,
+				"  ",
 				(int)max_name_len,
 				repo->name.val,
 				authored[n_c]->hash.val,
@@ -124,11 +128,12 @@ static void print_stdout_list(const repository_t *repo,
 	}
 
 	for (size_t n_c = 0; n_c < repo->history->n_co_authored; n_c++) {
-		fprintf(stdout, "%s", favorite_stdout(authored[n_c]));
+		fprintf(stdout, "%s", favorite_stdout(authored[n_c], settings));
 		if (settings->print_msg) {
 			print_commit_message(co_authored[n_c], "");
 		}
 		fprintf(stdout, fmt_string,
+				"  ",
 				(int)max_name_len,
 				repo->name.val,
 				co_authored[n_c]->hash.val,
