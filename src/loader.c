@@ -116,7 +116,7 @@ static return_code_t parse_cache_commit_line(commit_t *commit, char *line)
 static str_t parse_cached_head(const char *line)
 {
     const char *head_prefix = "\t@HEAD=";
-    char *head_ptr = strstr(line, head_prefix);
+    const char *head_ptr = strstr(line, head_prefix);
     if (!head_ptr) {
         return empty_str();
     }
