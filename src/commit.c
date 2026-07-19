@@ -299,6 +299,34 @@ work_history_t *get_commit_history_since(str_t repo_path,
         }
     }
 
+    if (should_stop) {
+        git_oid stop_oid;
+        git_oid head_oid;
+        bool have_head = false;
+
+        if (branch_name) {
+            git_oid_cpy(&head_oid, git_object_id(branch_commit));
+            have_head = true;
+        } else if (git_reference_name_to_id(&head_oid, git_repo, "HEAD") == 0) {
+            have_head = true;
+        }
+
+        /* Hide the cached head and all of its ancestors so that the walker
+         * returns exactly the commits reachable from HEAD but not from the
+         * cached head (equivalent to `git log <cached_head>..HEAD`).
+         * The cached head is used only if it is still reachable from the
+         * current HEAD; otherwise (e.g. rebase/amend/force-push) `*stop_found`
+         * stays false and the caller performs a full rebuild. */
+        if (have_head && git_oid_fromstr(&stop_oid, stop_hash->val) == 0) {
+            bool reachable = git_oid_equal(&head_oid, &stop_oid)
+                             || git_graph_descendant_of(git_repo, &head_oid, &stop_oid) == 1;
+
+            if (reachable && git_revwalk_hide(walker, &stop_oid) == 0 && stop_found) {
+                *stop_found = true;
+            }
+        }
+    }
+
     history = malloc(sizeof(work_history_t));
     commit_array_init(&history->commit_arr);
     history->tot_lines_added = 0;
@@ -312,11 +340,6 @@ work_history_t *get_commit_history_since(str_t repo_path,
         if (git_commit_lookup(&raw_commit, git_repo, &oid) != 0) { continue; }
         
         const char *hash = git_oid_tostr_s(git_commit_id(raw_commit));
-        if (should_stop && str_arr_equals(*stop_hash, hash)) {
-            if (stop_found) { *stop_found = true; }
-            goto clean_commit;
-        }
-
         const char *msg = git_commit_message(raw_commit);
         const git_signature *author = git_commit_author(raw_commit);
 
@@ -356,10 +379,6 @@ work_history_t *get_commit_history_since(str_t repo_path,
 
     clean_commit:
         git_commit_free(raw_commit);
-
-        if (should_stop && stop_found && *stop_found) {
-            break;
-        }
     }
 
     git_revwalk_free(walker);
