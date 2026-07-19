@@ -125,32 +125,52 @@ char* trim_whitespace(const char *str)
     return trimmed;
 }
 
+/* Returns the LaTeX escape sequence for a special character, or NULL if the
+ * character does not need to be escaped. */
+static const char *latex_escape_for(char c)
+{
+    switch (c) {
+        case '&':  return "\\&";
+        case '%':  return "\\%";
+        case '$':  return "\\$";
+        case '#':  return "\\#";
+        case '_':  return "\\_";
+        case '{':  return "\\{";
+        case '}':  return "\\}";
+        case '~':  return "\\textasciitilde{}";
+        case '^':  return "\\textasciicircum{}";
+        case '\\': return "\\textbackslash{}";
+        case '`':  return "\\textasciigrave{}";
+        default:   return NULL;
+    }
+}
+
 str_t escape_special_chars(str_t input)
 {
-    uint16_t extra_chars = 0;
+    size_t new_len = 0;
     for (uint16_t i = 0; i < input.len; i++) {
-        if (input.val[i] == '_' || input.val[i] == '#') {
-            extra_chars++;
-        }
+        const char *repl = latex_escape_for(input.val[i]);
+        new_len += repl ? strlen(repl) : 1;
     }
-    
-    uint16_t new_len = input.len + extra_chars;
+
     char *escaped_str = malloc(new_len + 1);
     if (!escaped_str) {
         (void)log_err("escape_special_chars: memory allocation failed\n");
         return empty_str();
     }
-    
-    uint16_t j = 0;
+
+    size_t j = 0;
     for (uint16_t i = 0; i < input.len; i++) {
-        if (input.val[i] == '_' || input.val[i] == '#') {
-            escaped_str[j++] = '\\';
+        const char *repl = latex_escape_for(input.val[i]);
+        if (repl) {
+            while (*repl) { escaped_str[j++] = *repl++; }
+        } else {
+            escaped_str[j++] = input.val[i];
         }
-        escaped_str[j++] = input.val[i];
     }
     escaped_str[j] = '\0';
-    
-    str_t escaped_string = str_init(escaped_str, new_len);
+
+    str_t escaped_string = str_init(escaped_str, (uint16_t)new_len);
     free(escaped_str);
 
     return escaped_string;

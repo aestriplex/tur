@@ -130,10 +130,11 @@ static str_t parse_cached_head(const char *line)
 }
 
 return_code_t load_cached_history(const repository_t *repo,
-                              work_history_t **history,
-                              str_t *cached_head)
+                                  work_history_t **history,
+                                  str_t *cached_head)
 {
     if (!repo || !history) { return NULL_PARAMETER; }
+
     *history = NULL;
     if (cached_head) {
         *cached_head = empty_str();
@@ -186,6 +187,8 @@ return_code_t load_cached_history(const repository_t *repo,
         commit_t commit = { 0 };
         ret = parse_cache_commit_line(&commit, line);
         if (ret != OK) { goto cleanup; }
+
+        (*history)->has_any_favorite |= commit.is_favorite;
 
         ret = commit_array_add((*history)->commit_arr, &commit);
         if (ret != OK) {

@@ -103,7 +103,7 @@ static return_code_t build_indexes(repository_t *repo,
 }
 
 static return_code_t merge_cached_history(work_history_t *history,
-                                  const work_history_t *cached_history)
+                                          const work_history_t *cached_history)
 {
     for (size_t i = 0; i < cached_history->commit_arr->len; i++) {
         commit_t *cached_commit = commit_array_get(cached_history->commit_arr, i);
@@ -127,7 +127,7 @@ static return_code_t merge_cached_history(work_history_t *history,
 }
 
 static return_code_t get_repo_history(repository_t *repo,
-                              const settings_t *settings)
+                                      const settings_t *settings)
 {
     const char *branch_name = repo->branches
                               ? str_array_get(repo->branches, 0).val
@@ -143,6 +143,7 @@ static return_code_t get_repo_history(repository_t *repo,
 
     work_history_t *cached_history = NULL;
     str_t cached_head = empty_str();
+
     ret = load_cached_history(repo, &cached_history, &cached_head);
     if (ret != OK) { return ret; }
 

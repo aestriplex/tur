@@ -303,6 +303,7 @@ work_history_t *get_commit_history_since(str_t repo_path,
     commit_array_init(&history->commit_arr);
     history->tot_lines_added = 0;
     history->tot_lines_removed = 0;
+    history->has_any_favorite = false;
     
     responsability_t res;
 
