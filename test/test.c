@@ -40,6 +40,7 @@ void assert_true(bool condition, const char *label)
     }
 
     printf(RED "FAILED (" CROSS "): %s\n" RESET, label);
+    fflush(stdout);
     failed++;
     on_fail();
 }
