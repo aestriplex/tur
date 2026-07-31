@@ -124,16 +124,19 @@ str_t str_copy(str_t source)
 
 bool str_contains(str_t str, str_t substr)
 {
+    if (!str.val || !substr.val) { return false; }
     return strstr(str.val, substr.val) != NULL;
 }
 
-bool str_contains_chars(str_t str, const char * substr)
+bool str_contains_chars(str_t str, const char *substr)
 {
+    if (!str.val || !substr) { return false; }
     return strstr(str.val, substr) != NULL;
 }
 
-bool chars_contains_chars(const char *str, const char * substr)
+bool chars_contains_chars(const char *str, const char *substr)
 {
+    if (!str || !substr) { return false; }
     return strstr(str, substr) != NULL;
 }
 
