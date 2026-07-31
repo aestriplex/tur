@@ -39,6 +39,13 @@ static str_t get_repo_name(str_t repo_path)
     return str_init(repo_name, (uint16_t) strlen(repo_name));
 }
 
+static fmt_commit_url select_function(str_t url)
+{
+    if (str_contains_chars(url, "github.com")) { return &get_github_commit_url; }
+    if (str_contains_chars(url, "gitlab")) { return &get_gitlab_commit_url; }
+    return &get_raw_url;
+}
+
 static repository_t init_repo(str_t path, unsigned id)
 {
     return (repository_t) {
@@ -47,15 +54,8 @@ static repository_t init_repo(str_t path, unsigned id)
         .url = empty_str(),
         .name = get_repo_name(path),
         .history = NULL,
-        .format = { 0 },
+        .format = { .commit_url = &get_raw_url },
     };
-}
-
-static fmt_commit_url select_function(str_t url)
-{
-    if (str_contains_chars(url, "github.com")) { return &get_github_commit_url; }
-    if (str_contains_chars(url, "gitlab")) { return &get_gitlab_commit_url; }
-    return &get_raw_url;
 }
 
 static str_array_t *get_branches(const char *line, size_t len)
